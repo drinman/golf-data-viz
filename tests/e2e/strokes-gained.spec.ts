@@ -49,11 +49,12 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.locator('[data-testid="sg-results"] svg')
     ).toBeVisible();
 
-    // Verify SG categories are displayed
-    await expect(page.getByText("Off the Tee")).toBeVisible();
-    await expect(page.getByText("Approach")).toBeVisible();
-    await expect(page.getByText("Around the Green")).toBeVisible();
-    await expect(page.getByText("Putting")).toBeVisible();
+    // Verify SG categories in summary list (scoped to avoid duplicate radar axis labels)
+    const results = page.locator('[data-testid="sg-results"] ul');
+    await expect(results.getByText("Off the Tee")).toBeVisible();
+    await expect(results.getByText("Approach")).toBeVisible();
+    await expect(results.getByText("Around the Green")).toBeVisible();
+    await expect(results.getByText("Putting")).toBeVisible();
 
     // Verify bracket label in results
     await expect(page.getByText("10-15 handicap golfers")).toBeVisible();
