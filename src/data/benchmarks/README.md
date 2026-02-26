@@ -15,3 +15,4 @@ Static JSON files containing average golf statistics by handicap bracket.
 - All benchmarks are for **amateur** golfers, never PGA Tour
 - Data should be updated periodically as new aggregate reports are published
 - Bracket boundaries follow USGA handicap index ranges
+- Current JSON values are **seed data for development** and must be validated before production use

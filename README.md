@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Golf Data Viz
 
-## Getting Started
+Interactive golf analytics tools for mid-handicap players.
 
-First, run the development server:
+Initial product focus:
+- Strokes Gained Benchmarker (manual round input)
+- Peer handicap benchmarking (not PGA Tour baselines)
+- Shareable chart outputs
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19 + TypeScript (strict)
+- Tailwind CSS v4
+- Planned: Nivo/Recharts for data visualization
+- Planned: Supabase for auth/data storage
+
+## Project Status
+
+- App scaffolding and route structure are in place
+- Core golf domain types exist in `src/lib/golf/types.ts`
+- Benchmark and strokes gained engines are scaffolded with TODOs
+- Strokes gained tool route exists at `/strokes-gained`
+
+## Directory Layout
+
+```text
+src/
+  app/
+    (tools)/
+      strokes-gained/
+        _components/
+        page.tsx
+    layout.tsx
+    page.tsx
+  components/
+    charts/
+    ui/
+  data/
+    benchmarks/
+      handicap-brackets.json
+  hooks/
+  lib/
+    golf/
+      benchmarks.ts
+      strokes-gained.ts
+      types.ts
+    supabase/
+      client.ts
+      server.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Structure Conventions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/app`: routes, layouts, and route-local UI.
+- `src/app/(tools)`: feature route group for tool pages.
+- `src/lib/golf`: domain logic and golf-specific types/calculations.
+- `src/lib/supabase`: server/browser client setup and auth wiring.
+- `src/data/benchmarks`: static benchmark seed and source notes.
+- `src/components/charts`: reusable chart wrappers.
+- `src/components/ui`: reusable UI primitives.
+- `src/hooks`: shared React hooks.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Local Development
 
-## Learn More
+```bash
+npm ci
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy `.env.example` and set:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev`: start development server
+- `npm run lint`: run ESLint
+- `npm run build`: production build
+- `npm run start`: run built app
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Immediate Next Steps
+
+- Implement benchmark loader in `src/lib/golf/benchmarks.ts`
+- Implement SG calculations in `src/lib/golf/strokes-gained.ts`
+- Build the MVP form and chart components for `/strokes-gained`

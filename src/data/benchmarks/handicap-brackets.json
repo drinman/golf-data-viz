@@ -1,0 +1,130 @@
+{
+  "version": "0.1.0",
+  "updatedAt": "2026-02-26",
+  "provisional": true,
+  "notes": [
+    "Seed dataset for development and UI wiring.",
+    "Replace with validated benchmark data before production."
+  ],
+  "brackets": [
+    {
+      "bracket": "0-5",
+      "averageScore": 77.5,
+      "fairwayPercentage": 57,
+      "girPercentage": 48,
+      "puttsPerRound": 31,
+      "upAndDownPercentage": 48,
+      "penaltiesPerRound": 1.3,
+      "scoring": {
+        "eaglesPerRound": 0.02,
+        "birdiesPerRound": 2.2,
+        "parsPerRound": 10.1,
+        "bogeysPerRound": 4.4,
+        "doublesPerRound": 1.1,
+        "triplePlusPerRound": 0.2
+      }
+    },
+    {
+      "bracket": "5-10",
+      "averageScore": 82.1,
+      "fairwayPercentage": 52,
+      "girPercentage": 40,
+      "puttsPerRound": 32,
+      "upAndDownPercentage": 41,
+      "penaltiesPerRound": 1.7,
+      "scoring": {
+        "eaglesPerRound": 0.01,
+        "birdiesPerRound": 1.4,
+        "parsPerRound": 8.7,
+        "bogeysPerRound": 5.9,
+        "doublesPerRound": 1.8,
+        "triplePlusPerRound": 0.4
+      }
+    },
+    {
+      "bracket": "10-15",
+      "averageScore": 87.0,
+      "fairwayPercentage": 47,
+      "girPercentage": 32,
+      "puttsPerRound": 33,
+      "upAndDownPercentage": 34,
+      "penaltiesPerRound": 2.2,
+      "scoring": {
+        "eaglesPerRound": 0,
+        "birdiesPerRound": 0.8,
+        "parsPerRound": 7.1,
+        "bogeysPerRound": 7,
+        "doublesPerRound": 2.4,
+        "triplePlusPerRound": 0.7
+      }
+    },
+    {
+      "bracket": "15-20",
+      "averageScore": 92.3,
+      "fairwayPercentage": 42,
+      "girPercentage": 24,
+      "puttsPerRound": 34,
+      "upAndDownPercentage": 28,
+      "penaltiesPerRound": 2.8,
+      "scoring": {
+        "eaglesPerRound": 0,
+        "birdiesPerRound": 0.4,
+        "parsPerRound": 5.6,
+        "bogeysPerRound": 7.8,
+        "doublesPerRound": 3.2,
+        "triplePlusPerRound": 1
+      }
+    },
+    {
+      "bracket": "20-25",
+      "averageScore": 97.5,
+      "fairwayPercentage": 38,
+      "girPercentage": 18,
+      "puttsPerRound": 35,
+      "upAndDownPercentage": 22,
+      "penaltiesPerRound": 3.3,
+      "scoring": {
+        "eaglesPerRound": 0,
+        "birdiesPerRound": 0.2,
+        "parsPerRound": 4.2,
+        "bogeysPerRound": 8.1,
+        "doublesPerRound": 3.9,
+        "triplePlusPerRound": 1.6
+      }
+    },
+    {
+      "bracket": "25-30",
+      "averageScore": 102.8,
+      "fairwayPercentage": 34,
+      "girPercentage": 13,
+      "puttsPerRound": 36,
+      "upAndDownPercentage": 18,
+      "penaltiesPerRound": 3.9,
+      "scoring": {
+        "eaglesPerRound": 0,
+        "birdiesPerRound": 0.1,
+        "parsPerRound": 3.1,
+        "bogeysPerRound": 8.3,
+        "doublesPerRound": 4.5,
+        "triplePlusPerRound": 2
+      }
+    },
+    {
+      "bracket": "30+",
+      "averageScore": 108.5,
+      "fairwayPercentage": 30,
+      "girPercentage": 9,
+      "puttsPerRound": 37,
+      "upAndDownPercentage": 14,
+      "penaltiesPerRound": 4.6,
+      "scoring": {
+        "eaglesPerRound": 0,
+        "birdiesPerRound": 0,
+        "parsPerRound": 2.2,
+        "bogeysPerRound": 8.1,
+        "doublesPerRound": 4.8,
+        "triplePlusPerRound": 2.9
+      }
+    }
+  ]
+}
