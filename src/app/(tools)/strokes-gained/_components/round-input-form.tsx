@@ -43,7 +43,10 @@ export function RoundInputForm({ onSubmit }: RoundInputFormProps) {
   } = useForm<RoundInputFormData>({
     resolver: zodResolver(roundInputSchema) as Resolver<RoundInputFormData>,
     defaultValues: {
-      date: new Date().toISOString().split("T")[0],
+      date: (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      })(),
       fairwayAttempts: 14,
       penaltyStrokes: 0,
       eagles: 0,

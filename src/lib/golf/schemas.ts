@@ -34,10 +34,25 @@ export const roundInputSchema = z
     course: z.string().min(1, "Course name is required").max(100),
     date: z.string().refine(
       (val) => {
-        const d = new Date(val + "T00:00:00");
-        return !isNaN(d.getTime()) && d <= new Date();
+        const match = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!match) return false;
+        const [, yearStr, monthStr, dayStr] = match;
+        const year = Number(yearStr);
+        const month = Number(monthStr);
+        const day = Number(dayStr);
+        // Round-trip: construct date and verify components match input
+        // (catches invalid dates like Feb 31 which JS normalizes to Mar 3)
+        const d = new Date(year, month - 1, day);
+        if (
+          d.getFullYear() !== year ||
+          d.getMonth() !== month - 1 ||
+          d.getDate() !== day
+        ) {
+          return false;
+        }
+        return d <= new Date();
       },
-      { message: "Date cannot be in the future" }
+      { message: "Enter a valid date that is not in the future" }
     ),
     score: z.coerce
       .number()
@@ -115,6 +130,14 @@ export const roundInputSchema = z
     {
       message: "Sand saves can't exceed attempts",
       path: ["sandSaves"],
+    }
+  )
+  .refine(
+    (data) =>
+      data.threePutts == null || data.threePutts <= data.totalPutts,
+    {
+      message: "Three-putts can't exceed total putts",
+      path: ["threePutts"],
     }
   );
 

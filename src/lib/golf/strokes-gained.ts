@@ -79,16 +79,18 @@ function calcATG(input: RoundInput, benchmark: BracketBenchmark): number {
 
 /** Calculate SG: Putting */
 function calcPutting(input: RoundInput, benchmark: BracketBenchmark): number {
-  // Putts per GIR comparison (guard against div-by-zero)
-  const playerGIR = Math.max(input.greensInRegulation, 1);
-  const playerPuttsPerGIR = input.totalPutts / playerGIR;
+  let puttsComponent: number;
 
-  const peerGIR = Math.max((benchmark.girPercentage / 100) * 18, 1);
-  const peerPuttsPerGIR = benchmark.puttsPerRound / peerGIR;
-
-  // Positive = player putts fewer per GIR = good
-  const puttsComponent =
-    (peerPuttsPerGIR - playerPuttsPerGIR) * SG_WEIGHTS.PUTTING_WEIGHT;
+  if (input.greensInRegulation === 0) {
+    // GIR=0: putts-per-GIR is undefined. Fall back to total putts comparison.
+    puttsComponent = (benchmark.puttsPerRound - input.totalPutts) * 0.2;
+  } else {
+    const playerPuttsPerGIR = input.totalPutts / input.greensInRegulation;
+    const peerGIR = Math.max((benchmark.girPercentage / 100) * 18, 1);
+    const peerPuttsPerGIR = benchmark.puttsPerRound / peerGIR;
+    puttsComponent =
+      (peerPuttsPerGIR - playerPuttsPerGIR) * SG_WEIGHTS.PUTTING_WEIGHT;
+  }
 
   // Three-putt bonus (if data available)
   let threePuttBonus = 0;

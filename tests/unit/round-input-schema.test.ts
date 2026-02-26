@@ -148,6 +148,45 @@ describe("roundInputSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  // === Cross-field: threePutts <= totalPutts ===
+  it("rejects threePutts > totalPutts", () => {
+    // Use threePutts=15 (within optionalInt max of 18) but totalPutts=10
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      threePutts: 15,
+      totalPutts: 10,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts threePutts <= totalPutts", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      threePutts: 2,
+      totalPutts: 33,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  // === Invalid calendar dates ===
+  // Use past-year dates so normalization produces past dates that would wrongly pass
+  // the "not future" check if calendar validity isn't verified.
+  it("rejects invalid calendar date (Feb 31)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      date: "2025-02-31", // normalizes to 2025-03-03, which is past → must still reject
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid calendar date (Apr 31)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      date: "2025-04-31", // normalizes to 2025-05-01, which is past → must still reject
+    });
+    expect(result.success).toBe(false);
+  });
+
   // === Edge: par-3 course ===
   it("accepts 0 fairway attempts with 0 fairways hit", () => {
     const result = roundInputSchema.safeParse({

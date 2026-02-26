@@ -269,6 +269,17 @@ describe("calculateStrokesGained", () => {
     expect(Number.isFinite(result.categories["putting"])).toBe(true);
   });
 
+  it("putting SG stays within reasonable range when GIR is 0", () => {
+    const round = makeRound({
+      greensInRegulation: 0,
+      totalPutts: 36,
+    });
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(Math.abs(result.categories["putting"])).toBeLessThan(10);
+    expect(Math.abs(result.total)).toBeLessThan(20);
+  });
+
   it("handles 0 GIR without division by zero", () => {
     const round = makeRound({
       greensInRegulation: 0,
