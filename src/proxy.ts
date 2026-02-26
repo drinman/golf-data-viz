@@ -17,7 +17,7 @@ export function hasAuthCookie(request: NextRequest): boolean {
   return request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Guard 1: no-op if Supabase not configured (CI, unconfigured dev)
   if (!isSupabaseConfigured()) {
     return NextResponse.next();

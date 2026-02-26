@@ -49,9 +49,13 @@ describe("Schema constraints (local Supabase)", () => {
     auth: { persistSession: false },
   });
 
+  // Track IDs of rows created by this test run for scoped cleanup
+  const insertedIds: string[] = [];
+
   afterAll(async () => {
-    // Clean up test data
-    await admin.from("rounds").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (insertedIds.length > 0) {
+      await admin.from("rounds").delete().in("id", insertedIds);
+    }
   });
 
   describe("migration applies cleanly", () => {
@@ -64,16 +68,20 @@ describe("Schema constraints (local Supabase)", () => {
 
       expect(error).toBeNull();
       expect(data?.id).toBeDefined();
+      if (data?.id) insertedIds.push(data.id);
     });
   });
 
   describe("RLS: insert policy blocks user_id spoofing", () => {
     it("allows anonymous insert with user_id = NULL", async () => {
-      const { error } = await anon
+      const { data, error } = await anon
         .from("rounds")
-        .insert(validRound({ user_id: null }));
+        .insert(validRound({ user_id: null }))
+        .select("id")
+        .single();
 
       expect(error).toBeNull();
+      if (data?.id) insertedIds.push(data.id);
     });
 
     it("rejects anonymous insert with a fake user_id", async () => {
@@ -131,7 +139,7 @@ describe("Schema constraints (local Supabase)", () => {
     });
 
     it("accepts both NULL for optional stat pairs", async () => {
-      const { error } = await admin
+      const { data, error } = await admin
         .from("rounds")
         .insert(
           validRound({
@@ -141,13 +149,16 @@ describe("Schema constraints (local Supabase)", () => {
             sand_save_attempts: null,
             three_putts: null,
           })
-        );
+        )
+        .select("id")
+        .single();
 
       expect(error).toBeNull();
+      if (data?.id) insertedIds.push(data.id);
     });
 
     it("accepts valid paired values", async () => {
-      const { error } = await admin
+      const { data, error } = await admin
         .from("rounds")
         .insert(
           validRound({
@@ -157,9 +168,12 @@ describe("Schema constraints (local Supabase)", () => {
             sand_save_attempts: 2,
             three_putts: 2,
           })
-        );
+        )
+        .select("id")
+        .single();
 
       expect(error).toBeNull();
+      if (data?.id) insertedIds.push(data.id);
     });
   });
 
@@ -202,11 +216,14 @@ describe("Schema constraints (local Supabase)", () => {
     });
 
     it("accepts three_putts equal to total_putts", async () => {
-      const { error } = await admin
+      const { data, error } = await admin
         .from("rounds")
-        .insert(validRound({ three_putts: 32, total_putts: 32 }));
+        .insert(validRound({ three_putts: 32, total_putts: 32 }))
+        .select("id")
+        .single();
 
       expect(error).toBeNull();
+      if (data?.id) insertedIds.push(data.id);
     });
   });
 
