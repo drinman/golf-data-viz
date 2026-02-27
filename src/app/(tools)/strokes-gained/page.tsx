@@ -54,13 +54,13 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      images: [`/strokes-gained/opengraph-image?d=${payload}`],
+      images: [`/strokes-gained/og?d=${payload}`],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/strokes-gained/opengraph-image?d=${payload}`],
+      images: [`/strokes-gained/og?d=${payload}`],
     },
   };
 }

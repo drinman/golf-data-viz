@@ -1,13 +1,13 @@
 import { ImageResponse } from "next/og";
+import { type NextRequest } from "next/server";
 import { decodeRound } from "@/lib/golf/share-codec";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import type { StrokesGainedCategory } from "@/lib/golf/types";
 
 export const runtime = "edge";
-export const alt = "Strokes Gained Breakdown";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+
+const SIZE = { width: 1200, height: 630 };
 
 const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
   "off-the-tee": "Off the Tee",
@@ -38,16 +38,8 @@ function formatSG(value: number): string {
   return `${sign}${value.toFixed(2)}`;
 }
 
-export default async function OGImage({
-  params,
-  searchParams,
-}: {
-  params: Promise<Record<string, string>>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  void params;
-  const sp = await searchParams;
-  const payload = typeof sp.d === "string" ? sp.d : undefined;
+export async function GET(request: NextRequest) {
+  const payload = request.nextUrl.searchParams.get("d") ?? undefined;
   const input = payload ? decodeRound(payload) : null;
 
   // Fallback: generic branded card
@@ -83,7 +75,7 @@ export default async function OGImage({
           </div>
         </div>
       ),
-      { ...size }
+      { ...SIZE }
     );
   }
 
@@ -201,6 +193,6 @@ export default async function OGImage({
         </div>
       </div>
     ),
-    { ...size }
+    { ...SIZE }
   );
 }

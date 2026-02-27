@@ -128,7 +128,7 @@ test.describe("Strokes Gained Benchmarker", () => {
       .locator('meta[property="og:image"]')
       .getAttribute("content");
     expect(ogImage).toBeTruthy();
-    expect(ogImage).toContain("opengraph-image");
+    expect(ogImage).toContain("/strokes-gained/og");
     expect(ogImage).toContain(`d=${dParam}`);
   });
 
