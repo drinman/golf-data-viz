@@ -10,6 +10,7 @@ import type { RoundInput } from "@/lib/golf/types";
 
 interface RoundInputFormProps {
   onSubmit: (data: RoundInput) => void;
+  initialValues?: Partial<RoundInput> | null;
 }
 
 function FormField({
@@ -33,7 +34,7 @@ function FormField({
 const inputClass =
   "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500";
 
-export function RoundInputForm({ onSubmit }: RoundInputFormProps) {
+export function RoundInputForm({ onSubmit, initialValues }: RoundInputFormProps) {
   const [showOptional, setShowOptional] = useState(false);
 
   const {
@@ -53,6 +54,7 @@ export function RoundInputForm({ onSubmit }: RoundInputFormProps) {
       eagles: 0,
       doubleBogeys: 0,
       triplePlus: 0,
+      ...initialValues,
     },
     mode: "onBlur",
   });

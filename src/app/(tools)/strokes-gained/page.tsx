@@ -1,96 +1,60 @@
-"use client";
-
-import { useState, useRef } from "react";
-import type {
-  RoundInput,
-  StrokesGainedResult,
-  RadarChartDatum,
-} from "@/lib/golf/types";
+import type { Metadata } from "next";
+import { decodeRound } from "@/lib/golf/share-codec";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
-import {
-  calculateStrokesGained,
-  toRadarChartData,
-} from "@/lib/golf/strokes-gained";
-import { RoundInputForm } from "./_components/round-input-form";
-import { ResultsSummary } from "./_components/results-summary";
-import { RadarChart } from "@/components/charts/radar-chart";
-import { saveRound } from "./actions";
+import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
+import type { StrokesGainedCategory } from "@/lib/golf/types";
+import StrokesGainedClient from "./_components/strokes-gained-client";
 
-export default function StrokesGainedPage() {
-  const [result, setResult] = useState<StrokesGainedResult | null>(null);
-  const [chartData, setChartData] = useState<RadarChartDatum[] | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
+const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
+  "off-the-tee": "Off the Tee",
+  approach: "Approach",
+  "around-the-green": "Around the Green",
+  putting: "Putting",
+};
 
-  function handleFormSubmit(input: RoundInput) {
-    const benchmark = getBracketForHandicap(input.handicapIndex);
-    const sgResult = calculateStrokesGained(input, benchmark);
-    const radar = toRadarChartData(sgResult);
+function formatSG(value: number): string {
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${value.toFixed(1)}`;
+}
 
-    setResult(sgResult);
-    setChartData(radar);
-    setSaveError(null);
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-    // Save to DB in background — surface errors to user
-    saveRound(input, sgResult)
-      .then((res) => {
-        if (!res.success) {
-          console.error("[StrokesGained] Save failed:", res.error);
-          setSaveError("Round could not be saved. Your results are still shown below.");
-        }
-      })
-      .catch((err) => {
-        console.error("[StrokesGained] Save transport error:", err);
-        setSaveError("Round could not be saved. Your results are still shown below.");
-      });
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const payload = typeof params.d === "string" ? params.d : undefined;
+  const input = payload ? decodeRound(payload) : null;
 
-    // Smooth scroll to results
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+  if (!input) {
+    return {
+      title: "Strokes Gained Benchmarker",
+      description:
+        "See where you gain and lose strokes vs your handicap peers.",
+    };
   }
 
-  return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900">
-        Strokes Gained Benchmarker
-      </h1>
-      <p className="mt-2 text-gray-600">
-        See where you gain and lose strokes vs your handicap peers.
-      </p>
+  const benchmark = getBracketForHandicap(input.handicapIndex);
+  const result = calculateStrokesGained(input, benchmark);
 
-      <div className="mt-8">
-        <RoundInputForm onSubmit={handleFormSubmit} />
-      </div>
+  const categoryHighlights = (
+    Object.keys(CATEGORY_LABELS) as StrokesGainedCategory[]
+  )
+    .map((key) => `${CATEGORY_LABELS[key]} ${formatSG(result.categories[key])}`)
+    .join(", ");
 
-      {saveError && (
-        <div
-          data-testid="save-error"
-          role="alert"
-          className="mt-6 flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-        >
-          <span>{saveError}</span>
-          <button
-            type="button"
-            onClick={() => setSaveError(null)}
-            className="ml-4 font-medium text-amber-600 hover:text-amber-800"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
+  return {
+    title: `SG Breakdown: ${formatSG(result.total)} total — ${input.course}`,
+    description: `Shot ${input.score} at ${input.course}. ${categoryHighlights}.`,
+  };
+}
 
-      {result && chartData && (
-        <div ref={resultsRef} data-testid="sg-results" className="mt-12 space-y-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Your Strokes Gained Breakdown
-          </h2>
-          <div style={{ height: 400 }}>
-            <RadarChart data={chartData} />
-          </div>
-          <ResultsSummary result={result} />
-        </div>
-      )}
-    </main>
-  );
+export default async function StrokesGainedPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const payload = typeof params.d === "string" ? params.d : undefined;
+  const initialInput = payload ? decodeRound(payload) : null;
+
+  return <StrokesGainedClient initialInput={initialInput} />;
 }

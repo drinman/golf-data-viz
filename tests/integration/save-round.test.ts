@@ -12,35 +12,12 @@ import { createClient } from "@supabase/supabase-js";
 import { toRoundInsert } from "@/lib/golf/round-mapper";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
-import type { RoundInput } from "@/lib/golf/types";
+import { makeRound } from "../fixtures/factories";
 
 const SUPABASE_URL = "http://127.0.0.1:54321";
 // Default local dev service role key (not a secret — local only)
 const SERVICE_ROLE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
-
-function makeRound(overrides: Partial<RoundInput> = {}): RoundInput {
-  return {
-    course: "Integration Test Course",
-    date: "2026-02-26",
-    score: 87,
-    handicapIndex: 14.3,
-    courseRating: 72.0,
-    slopeRating: 130,
-    fairwaysHit: 7,
-    fairwayAttempts: 14,
-    greensInRegulation: 6,
-    totalPutts: 33,
-    penaltyStrokes: 2,
-    eagles: 0,
-    birdies: 1,
-    pars: 7,
-    bogeys: 7,
-    doubleBogeys: 2,
-    triplePlus: 1,
-    ...overrides,
-  };
-}
 
 describe("Round mapper → DB integration", () => {
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {

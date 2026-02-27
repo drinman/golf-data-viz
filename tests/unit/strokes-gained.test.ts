@@ -4,31 +4,8 @@ import {
   toRadarChartData,
 } from "@/lib/golf/strokes-gained";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
-import type { RoundInput, StrokesGainedResult } from "@/lib/golf/types";
-
-// Helper: create a valid RoundInput with overrides
-function makeRound(overrides: Partial<RoundInput> = {}): RoundInput {
-  return {
-    course: "Test Course",
-    date: "2026-02-26",
-    score: 87,
-    handicapIndex: 14.3,
-    courseRating: 72.0,
-    slopeRating: 130,
-    fairwaysHit: 7,
-    fairwayAttempts: 14,
-    greensInRegulation: 6,
-    totalPutts: 33,
-    penaltyStrokes: 2,
-    eagles: 0,
-    birdies: 1,
-    pars: 7,
-    bogeys: 7,
-    doubleBogeys: 2,
-    triplePlus: 1,
-    ...overrides,
-  };
-}
+import type { StrokesGainedResult } from "@/lib/golf/types";
+import { makeRound } from "../fixtures/factories";
 
 // === Fixture rounds ===
 
