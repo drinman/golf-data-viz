@@ -14,6 +14,7 @@ import {
 import { RoundInputForm } from "./_components/round-input-form";
 import { ResultsSummary } from "./_components/results-summary";
 import { RadarChart } from "@/components/charts/radar-chart";
+import { saveRound } from "./actions";
 
 export default function StrokesGainedPage() {
   const [result, setResult] = useState<StrokesGainedResult | null>(null);
@@ -27,6 +28,15 @@ export default function StrokesGainedPage() {
 
     setResult(sgResult);
     setChartData(radar);
+
+    // Fire-and-forget: save to DB in background
+    saveRound(input, sgResult)
+      .then((res) => {
+        if (!res.success) console.error("[StrokesGained] Save failed:", res.error);
+      })
+      .catch((err) => {
+        console.error("[StrokesGained] Save transport error:", err);
+      });
 
     // Smooth scroll to results
     setTimeout(() => {
