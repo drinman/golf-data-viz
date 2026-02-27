@@ -123,11 +123,13 @@ test.describe("Strokes Gained Benchmarker", () => {
     expect(ogDesc).toContain("87");
     expect(ogDesc).toContain("Pacifica Sharp Park");
 
-    // OG image URL should exist
+    // OG image URL should contain the round-specific ?d= payload
     const ogImage = await page
       .locator('meta[property="og:image"]')
       .getAttribute("content");
     expect(ogImage).toBeTruthy();
+    expect(ogImage).toContain("opengraph-image");
+    expect(ogImage).toContain(`d=${dParam}`);
   });
 
   test("invalid ?d= param shows form without crash", async ({ page }) => {

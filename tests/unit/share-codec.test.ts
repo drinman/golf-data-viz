@@ -55,6 +55,36 @@ describe("share-codec", () => {
     });
   });
 
+  describe("non-ASCII course names", () => {
+    it("round-trips en-dash in course name", () => {
+      const input = makeRound({ course: "TPC Sawgrass – Stadium" });
+      const encoded = encodeRound(input);
+      const decoded = decodeRound(encoded);
+      expect(decoded).toEqual(input);
+    });
+
+    it("round-trips emoji in course name", () => {
+      const input = makeRound({ course: "Pebble Beach ⛳🏌️" });
+      const encoded = encodeRound(input);
+      const decoded = decodeRound(encoded);
+      expect(decoded).toEqual(input);
+    });
+
+    it("round-trips international characters", () => {
+      const input = makeRound({ course: "Münchhausen Golfplatz" });
+      const encoded = encodeRound(input);
+      const decoded = decodeRound(encoded);
+      expect(decoded).toEqual(input);
+    });
+
+    it("round-trips smart quotes", () => {
+      const input = makeRound({ course: "The \u201COld\u201D Course" });
+      const encoded = encodeRound(input);
+      const decoded = decodeRound(encoded);
+      expect(decoded).toEqual(input);
+    });
+  });
+
   describe("decodeRound – invalid payloads", () => {
     it("returns null for tampered payload", () => {
       const encoded = encodeRound(makeRound());

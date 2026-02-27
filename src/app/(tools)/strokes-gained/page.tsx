@@ -45,9 +45,23 @@ export async function generateMetadata({
     .map((key) => `${CATEGORY_LABELS[key]} ${formatSG(result.categories[key])}`)
     .join(", ");
 
+  const title = `SG Breakdown: ${formatSG(result.total)} total — ${input.course}`;
+  const description = `Shot ${input.score} at ${input.course}. ${categoryHighlights}.`;
+
   return {
-    title: `SG Breakdown: ${formatSG(result.total)} total — ${input.course}`,
-    description: `Shot ${input.score} at ${input.course}. ${categoryHighlights}.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [`/strokes-gained/opengraph-image?d=${payload}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`/strokes-gained/opengraph-image?d=${payload}`],
+    },
   };
 }
 
