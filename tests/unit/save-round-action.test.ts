@@ -171,4 +171,39 @@ describe("saveRound server action", () => {
     expect(result.success).toBe(false);
     expect(mockInsert).not.toHaveBeenCalled();
   });
+
+  it("inserts parsed.data (coerced/sanitized), not raw input", async () => {
+    // Simulate form-like payload with string numbers and blank optional
+    const rawInput = {
+      course: "Test Course",
+      date: "2026-02-26",
+      score: "87" as unknown as number, // string, schema will coerce to number
+      handicapIndex: "14.3" as unknown as number,
+      courseRating: "72.0" as unknown as number,
+      slopeRating: "130" as unknown as number,
+      fairwaysHit: "7" as unknown as number,
+      fairwayAttempts: "14" as unknown as number,
+      greensInRegulation: "6" as unknown as number,
+      totalPutts: "33" as unknown as number,
+      penaltyStrokes: "2" as unknown as number,
+      eagles: "0" as unknown as number,
+      birdies: "1" as unknown as number,
+      pars: "7" as unknown as number,
+      bogeys: "7" as unknown as number,
+      doubleBogeys: "2" as unknown as number,
+      triplePlus: "1" as unknown as number,
+      threePutts: "" as unknown as number, // blank → schema coerces to undefined → mapper maps to null
+    } as RoundInput;
+
+    await saveRound(rawInput, makeSGResult());
+
+    // The insert should receive coerced numbers, not strings
+    const insertedRow = mockInsert.mock.calls[0][0];
+    expect(typeof insertedRow.score).toBe("number");
+    expect(insertedRow.score).toBe(87);
+    expect(typeof insertedRow.handicap_index).toBe("number");
+    expect(insertedRow.handicap_index).toBe(14.3);
+    // Blank optional should become null (not empty string)
+    expect(insertedRow.three_putts).toBeNull();
+  });
 });

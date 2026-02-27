@@ -25,7 +25,7 @@ export async function saveRound(
     }
 
     const supabase = await createClient();
-    const row = toRoundInsert(input, sg);
+    const row = toRoundInsert(parsed.data as RoundInput, sg);
 
     const {
       data: { user },
