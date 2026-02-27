@@ -12,27 +12,33 @@ function makeRequest(dParam?: string): NextRequest {
 }
 
 describe("OG Image route", () => {
-  it("returns a Response with image/png content type for a valid payload", async () => {
+  it("renders a PNG for a valid payload", async () => {
     const round = makeRound({ course: "Pebble Beach", score: 82 });
     const encoded = encodeRound(round);
 
     const response = await GET(makeRequest(encoded));
 
-    expect(response).toBeInstanceOf(Response);
+    expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
+    const body = await response.arrayBuffer();
+    expect(body.byteLength).toBeGreaterThan(0);
   });
 
-  it("returns a Response for the fallback (no payload)", async () => {
+  it("renders a PNG for the fallback (no payload)", async () => {
     const response = await GET(makeRequest());
 
-    expect(response).toBeInstanceOf(Response);
+    expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
+    const body = await response.arrayBuffer();
+    expect(body.byteLength).toBeGreaterThan(0);
   });
 
-  it("returns fallback for an invalid payload", async () => {
+  it("renders fallback PNG for an invalid payload", async () => {
     const response = await GET(makeRequest("GARBAGE"));
 
-    expect(response).toBeInstanceOf(Response);
+    expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
+    const body = await response.arrayBuffer();
+    expect(body.byteLength).toBeGreaterThan(0);
   });
 });

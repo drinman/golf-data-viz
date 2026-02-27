@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
               {input.course}
             </div>
             <div style={{ fontSize: 24, color: "#6b7280", marginTop: 8 }}>
-              Shot {input.score} · vs {bracketLabel}
+              {`Shot ${input.score} · vs ${bracketLabel}`}
             </div>
           </div>
           <div
