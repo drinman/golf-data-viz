@@ -52,8 +52,11 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(results.getByText("Around the Green")).toBeVisible();
     await expect(results.getByText("Putting")).toBeVisible();
 
-    // Verify bracket label in results
-    await expect(page.getByText("10-15 handicap golfers")).toBeVisible();
+    // Verify bracket label in results summary
+    const sgResults = page.locator('[data-testid="sg-results"]');
+    await expect(
+      sgResults.getByText(/Compared to 10.15 HCP/)
+    ).toBeVisible();
   });
 
   test("submit round → URL updates with ?d= → navigate fresh → results auto-render", async ({

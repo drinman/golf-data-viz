@@ -6,6 +6,7 @@ import type {
   StrokesGainedResult,
   RadarChartDatum,
 } from "@/lib/golf/types";
+import { BRACKET_LABELS } from "@/lib/golf/constants";
 import { RadarChart } from "@/components/charts/radar-chart";
 
 const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
@@ -21,16 +22,6 @@ const CATEGORY_ORDER: StrokesGainedCategory[] = [
   "around-the-green",
   "putting",
 ];
-
-const BRACKET_LABELS: Record<string, string> = {
-  "0-5": "0–5 HCP",
-  "5-10": "5–10 HCP",
-  "10-15": "10–15 HCP",
-  "15-20": "15–20 HCP",
-  "20-25": "20–25 HCP",
-  "25-30": "25–30 HCP",
-  "30+": "30+ HCP",
-};
 
 function formatSG(value: number): string {
   const sign = value >= 0 ? "+" : "";
@@ -84,7 +75,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
         {/* Radar chart */}
         <div style={{ height: 320 }}>
-          <RadarChart data={chartData} />
+          <RadarChart data={chartData} bracketLabel={bracketLabel} />
         </div>
 
         {/* Category rows */}

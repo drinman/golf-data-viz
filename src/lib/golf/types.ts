@@ -86,5 +86,4 @@ export interface BracketBenchmark {
 export interface RadarChartDatum {
   category: string;
   player: number;
-  peerAverage: number;
 }

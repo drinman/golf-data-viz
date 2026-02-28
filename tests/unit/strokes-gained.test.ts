@@ -291,23 +291,14 @@ describe("toRadarChartData", () => {
     expect(chartData).toHaveLength(4);
   });
 
-  it("each datum has category, player, and peerAverage fields", () => {
+  it("each datum has category and player fields (no peerAverage series)", () => {
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(makeRound(), benchmark);
     const chartData = toRadarChartData(result);
     for (const datum of chartData) {
       expect(typeof datum.category).toBe("string");
       expect(typeof datum.player).toBe("number");
-      expect(typeof datum.peerAverage).toBe("number");
-    }
-  });
-
-  it("peerAverage is always 50 (baseline) for all categories", () => {
-    const benchmark = getBracketForHandicap(14.3);
-    const result = calculateStrokesGained(makeRound(), benchmark);
-    const chartData = toRadarChartData(result);
-    for (const datum of chartData) {
-      expect(datum.peerAverage).toBe(50);
+      expect(datum).not.toHaveProperty("peerAverage");
     }
   });
 
@@ -356,5 +347,21 @@ describe("toRadarChartData", () => {
     expect(labels).toContain("Approach");
     expect(labels).toContain("Around the Green");
     expect(labels).toContain("Putting");
+  });
+
+  it("chart contract: single player series, no peer polygon data", () => {
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(makeRound(), benchmark);
+    const chartData = toRadarChartData(result);
+
+    // Only "category" and "player" keys should exist
+    const allKeys = new Set(chartData.flatMap((d) => Object.keys(d)));
+    expect(allKeys).toEqual(new Set(["category", "player"]));
+
+    // Player values are on the 0-100 normalized scale (50 = peer baseline)
+    for (const datum of chartData) {
+      expect(datum.player).toBeGreaterThanOrEqual(0);
+      expect(datum.player).toBeLessThanOrEqual(100);
+    }
   });
 });

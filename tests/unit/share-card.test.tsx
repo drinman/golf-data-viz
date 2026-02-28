@@ -16,10 +16,10 @@ globalThis.ResizeObserver = class {
 
 function makeChartData(): RadarChartDatum[] {
   return [
-    { category: "Off the Tee", player: 60, peerAverage: 50 },
-    { category: "Approach", player: 40, peerAverage: 50 },
-    { category: "Around the Green", player: 55, peerAverage: 50 },
-    { category: "Putting", player: 45, peerAverage: 50 },
+    { category: "Off the Tee", player: 60 },
+    { category: "Approach", player: 40 },
+    { category: "Around the Green", player: 55 },
+    { category: "Putting", player: 45 },
   ];
 }
 

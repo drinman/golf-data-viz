@@ -4,6 +4,7 @@ import type {
   StrokesGainedCategory,
   StrokesGainedResult,
 } from "@/lib/golf/types";
+import { BRACKET_LABELS } from "@/lib/golf/constants";
 
 const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
   "off-the-tee": "Off the Tee",
@@ -18,16 +19,6 @@ const CATEGORY_ORDER: StrokesGainedCategory[] = [
   "around-the-green",
   "putting",
 ];
-
-const BRACKET_LABELS: Record<string, string> = {
-  "0-5": "0-5 handicap golfers",
-  "5-10": "5-10 handicap golfers",
-  "10-15": "10-15 handicap golfers",
-  "15-20": "15-20 handicap golfers",
-  "20-25": "20-25 handicap golfers",
-  "25-30": "25-30 handicap golfers",
-  "30+": "30+ handicap golfers",
-};
 
 function formatSG(value: number): string {
   const sign = value >= 0 ? "+" : "";

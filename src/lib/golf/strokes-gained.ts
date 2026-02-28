@@ -159,6 +159,5 @@ export function toRadarChartData(
   return categories.map((cat) => ({
     category: CATEGORY_LABELS[cat],
     player: clamp(50 + result.categories[cat] * 10, 0, 100),
-    peerAverage: 50,
   }));
 }

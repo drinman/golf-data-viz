@@ -45,10 +45,10 @@ vi.mock("@/lib/golf/strokes-gained", () => ({
     benchmarkBracket: "10-15" as const,
   })),
   toRadarChartData: vi.fn(() => [
-    { category: "Off the Tee", player: 40, peerAverage: 50 },
-    { category: "Approach", player: 55, peerAverage: 50 },
-    { category: "Around the Green", player: 35, peerAverage: 50 },
-    { category: "Putting", player: 42, peerAverage: 50 },
+    { category: "Off the Tee", player: 40 },
+    { category: "Approach", player: 55 },
+    { category: "Around the Green", player: 35 },
+    { category: "Putting", player: 42 },
   ]),
 }));
 

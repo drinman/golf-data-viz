@@ -8,6 +8,7 @@ import type {
   RadarChartDatum,
 } from "@/lib/golf/types";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
+import { BRACKET_LABELS } from "@/lib/golf/constants";
 import {
   calculateStrokesGained,
   toRadarChartData,
@@ -164,7 +165,10 @@ export default function StrokesGainedClient({
             Your Strokes Gained Breakdown
           </h2>
           <div style={{ height: 400 }}>
-            <RadarChart data={chartData} />
+            <RadarChart
+              data={chartData}
+              bracketLabel={BRACKET_LABELS[result.benchmarkBracket]}
+            />
           </div>
           <ResultsSummary result={result} />
 
