@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { trackEvent } from "@/lib/analytics/client";
 import type {
   RoundInput,
   StrokesGainedResult,
@@ -48,6 +49,7 @@ export default function StrokesGainedClient({
   const [copied, setCopied] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const formStartedRef = useRef(false);
 
   function handleFormSubmit(input: RoundInput) {
     const benchmark = getBracketForHandicap(input.handicapIndex);
@@ -58,6 +60,12 @@ export default function StrokesGainedClient({
     setChartData(radar);
     setLastInput(input);
     setSaveError(null);
+
+    trackEvent("calculation_completed", {
+      benchmark_bracket: sgResult.benchmarkBracket,
+      total_sg: sgResult.total,
+      score: input.score,
+    });
 
     // Update URL with shareable param (no navigation)
     const encoded = encodeRound(input);
@@ -88,11 +96,17 @@ export default function StrokesGainedClient({
 
   const handleDownloadPng = useCallback(async () => {
     if (!shareCardRef.current) return;
+    trackEvent("download_png_clicked", {
+      has_share_param: window.location.search.includes("d="),
+    });
     const blob = await captureElementAsPng(shareCardRef.current);
     downloadBlob(blob, "strokes-gained.png");
   }, []);
 
   const handleCopyLink = useCallback(async () => {
+    trackEvent("copy_link_clicked", {
+      has_share_param: window.location.search.includes("d="),
+    });
     await navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -107,7 +121,16 @@ export default function StrokesGainedClient({
         See where you gain and lose strokes vs your handicap peers.
       </p>
 
-      <div className="mt-8">
+      <div
+        className="mt-8"
+        data-testid="form-wrapper"
+        onFocusCapture={() => {
+          if (!formStartedRef.current) {
+            formStartedRef.current = true;
+            trackEvent("form_started");
+          }
+        }}
+      >
         <RoundInputForm
           onSubmit={handleFormSubmit}
           initialValues={initialInput}
