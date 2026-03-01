@@ -158,16 +158,16 @@ test.describe("Strokes Gained Benchmarker", () => {
     const sgResults = page.locator('[data-testid="sg-results"]');
 
     // Trust label with provisional flag and proxy language
-    await expect(
-      sgResults.getByText(
-        /Estimated SG Proxy \(provisional\).*Benchmarks v/
-      )
-    ).toBeVisible();
+    // Scoped to visible results summary (share card has a duplicate off-screen)
+    const trustLabel = sgResults
+      .getByText(/Estimated SG Proxy \(provisional\).*Benchmarks v/)
+      .first();
+    await expect(trustLabel).toBeVisible();
 
-    // Benchmarks link navigates to methodology page
-    const benchmarksLink = sgResults.getByRole("link", {
-      name: /Benchmarks/i,
-    });
+    // Benchmarks link navigates to methodology page (first = visible summary)
+    const benchmarksLink = sgResults
+      .getByRole("link", { name: /Benchmarks/i })
+      .first();
     await expect(benchmarksLink).toBeVisible();
     await benchmarksLink.click();
 
