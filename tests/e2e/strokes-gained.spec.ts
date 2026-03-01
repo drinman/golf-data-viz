@@ -173,9 +173,11 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Methodology page renders with key content
     await expect(page.locator("h1")).toContainText("Methodology");
-    await expect(page.getByText("Off the Tee")).toBeVisible();
-    await expect(page.getByText("Putting")).toBeVisible();
-    await expect(page.getByText(/proxy model/i)).toBeVisible();
+    // Scope to SG formulas table to avoid strict-mode duplicates
+    const formulasTable = page.locator("table").first();
+    await expect(formulasTable.getByText("Off the Tee")).toBeVisible();
+    await expect(formulasTable.getByText("Putting")).toBeVisible();
+    await expect(page.getByText(/proxy model/i).first()).toBeVisible();
   });
 
   test("form validation prevents submission with invalid scoring sum", async ({
