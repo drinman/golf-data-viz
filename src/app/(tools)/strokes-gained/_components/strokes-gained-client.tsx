@@ -7,7 +7,7 @@ import type {
   StrokesGainedResult,
   RadarChartDatum,
 } from "@/lib/golf/types";
-import { getBracketForHandicap } from "@/lib/golf/benchmarks";
+import { getBracketForHandicap, getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
 import {
   calculateStrokesGained,
@@ -28,6 +28,8 @@ interface StrokesGainedClientProps {
 export default function StrokesGainedClient({
   initialInput,
 }: StrokesGainedClientProps) {
+  const benchmarkMeta = getBenchmarkMeta();
+
   // Precompute initial state from shared URL (avoids useEffect + setState cascade)
   const initialComputed = initialInput
     ? (() => {
@@ -170,7 +172,7 @@ export default function StrokesGainedClient({
               bracketLabel={BRACKET_LABELS[result.benchmarkBracket]}
             />
           </div>
-          <ResultsSummary result={result} />
+          <ResultsSummary result={result} benchmarkMeta={benchmarkMeta} />
 
           {/* Share actions */}
           <div className="flex gap-3">
@@ -200,6 +202,7 @@ export default function StrokesGainedClient({
               chartData={chartData}
               courseName={lastInput.course}
               score={lastInput.score}
+              benchmarkMeta={benchmarkMeta}
             />
           </div>
         </div>

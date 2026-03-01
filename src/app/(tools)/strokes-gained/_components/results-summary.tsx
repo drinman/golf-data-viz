@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type {
+  BenchmarkMeta,
   StrokesGainedCategory,
   StrokesGainedResult,
 } from "@/lib/golf/types";
@@ -27,9 +29,10 @@ function formatSG(value: number): string {
 
 interface ResultsSummaryProps {
   result: StrokesGainedResult;
+  benchmarkMeta: BenchmarkMeta;
 }
 
-export function ResultsSummary({ result }: ResultsSummaryProps) {
+export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const entries = CATEGORY_ORDER.map((key) => ({
     key,
     label: CATEGORY_LABELS[key],
@@ -47,6 +50,13 @@ export function ResultsSummary({ result }: ResultsSummaryProps) {
     <div className="w-full max-w-lg space-y-6">
       {/* Benchmark bracket */}
       <p className="text-sm text-gray-500">Compared to {bracketLabel}</p>
+      <p className="text-xs italic text-gray-400">
+        Estimated SG Proxy{benchmarkMeta.provisional ? " (provisional)" : ""} &middot;{" "}
+        <Link href="/methodology" className="underline hover:text-gray-600">
+          Benchmarks
+        </Link>{" "}
+        v{benchmarkMeta.version}
+      </p>
 
       {/* Per-category breakdown */}
       <ul className="space-y-3">

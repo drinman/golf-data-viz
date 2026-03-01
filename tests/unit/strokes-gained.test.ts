@@ -201,6 +201,43 @@ describe("calculateStrokesGained", () => {
     }
   });
 
+  // Putting fix: low-GIR regression
+  it("low-GIR exact regression: 2 GIR / 34 putts → putting SG ≈ -0.22", () => {
+    const round = makeRound({
+      handicapIndex: 14.3,
+      greensInRegulation: 2,
+      totalPutts: 34,
+    });
+    delete round.threePutts;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.categories["putting"]).toBeCloseTo(-0.22, 1);
+  });
+
+  // Putting fix: GIR-invariance
+  it("putting SG is GIR-invariant when threePutts is absent", () => {
+    const benchmark = getBracketForHandicap(14.3);
+    const results = [2, 4, 8].map((gir) => {
+      const round = makeRound({ greensInRegulation: gir, totalPutts: 34 });
+      delete round.threePutts;
+      return calculateStrokesGained(round, benchmark).categories["putting"];
+    });
+    expect(results[0]).toBeCloseTo(results[1], 10);
+    expect(results[1]).toBeCloseTo(results[2], 10);
+  });
+
+  // Putting fix: three-putt cap
+  it("three-putt bonus is capped at ±0.5", () => {
+    const round = makeRound({
+      handicapIndex: 14.3,
+      totalPutts: 33, // ≈ peer avg → base ≈ 0
+      threePutts: 8, // uncapped = (3.3-8)*0.3 = -1.41
+    });
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.categories["putting"]).toBeCloseTo(-0.5, 0);
+  });
+
   // Edge cases
   it("handles par-3 course (0 fairway attempts) without error", () => {
     const round = makeRound({
@@ -253,7 +290,7 @@ describe("calculateStrokesGained", () => {
     });
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(Math.abs(result.categories["putting"])).toBeLessThan(10);
+    expect(Math.abs(result.categories["putting"])).toBeLessThan(3);
     expect(Math.abs(result.total)).toBeLessThan(20);
   });
 

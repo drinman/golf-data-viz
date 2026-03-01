@@ -31,6 +31,12 @@ vi.mock("@/lib/golf/benchmarks", () => ({
       triplePlusPerRound: 1.5,
     },
   })),
+  getBenchmarkMeta: vi.fn(() => ({
+    version: "0.1.0",
+    updatedAt: "2026-02-28",
+    provisional: true,
+    sources: [],
+  })),
 }));
 
 vi.mock("@/lib/golf/strokes-gained", () => ({

@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { ShareCard } from "@/app/(tools)/strokes-gained/_components/share-card";
 import { makeSGResult } from "../fixtures/factories";
-import type { RadarChartDatum } from "@/lib/golf/types";
+import type { BenchmarkMeta, RadarChartDatum } from "@/lib/golf/types";
 
 afterEach(cleanup);
 
@@ -108,5 +108,28 @@ describe("ShareCard", () => {
 
     // Default factory uses "10-15" bracket
     expect(screen.getByText(/10–15 HCP/)).toBeTruthy();
+  });
+
+  it("shows Estimated SG Proxy trust label", () => {
+    const result = makeSGResult();
+    const chartData = makeChartData();
+    const meta: BenchmarkMeta = {
+      version: "0.1.0",
+      updatedAt: "2026-02-28",
+      provisional: true,
+      sources: [],
+    };
+
+    render(
+      <ShareCard
+        result={result}
+        chartData={chartData}
+        courseName="Test"
+        score={85}
+        benchmarkMeta={meta}
+      />
+    );
+
+    expect(screen.getByText(/Estimated SG Proxy/)).toBeTruthy();
   });
 });

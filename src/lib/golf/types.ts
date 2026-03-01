@@ -82,6 +82,14 @@ export interface BracketBenchmark {
   };
 }
 
+/** Benchmark provenance metadata for trust signals */
+export interface BenchmarkMeta {
+  version: string;
+  updatedAt: string;
+  provisional: boolean;
+  sources: string[];
+}
+
 /** Chart-ready data shape for Nivo radar chart */
 export interface RadarChartDatum {
   category: string;

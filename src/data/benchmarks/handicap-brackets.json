@@ -1,7 +1,23 @@
 {
   "version": "0.1.0",
-  "updatedAt": "2026-02-26",
+  "updatedAt": "2026-02-28",
   "provisional": true,
+  "sources": [
+    "USGA handicap index statistics (2024)",
+    "Arccos aggregate performance reports (2023-2024)",
+    "Shot Scope performance data by handicap band (2024)",
+    "Lou Stagner published amateur statistics"
+  ],
+  "methodology": "Composite averages from public reports, weighted by recency. Not statistically sampled. See /methodology for details.",
+  "sampleSizeByBracket": {
+    "0-5": null,
+    "5-10": null,
+    "10-15": null,
+    "15-20": null,
+    "20-25": null,
+    "25-30": null,
+    "30+": null
+  },
   "notes": [
     "Seed dataset for development and UI wiring.",
     "Replace with validated benchmark data before production."

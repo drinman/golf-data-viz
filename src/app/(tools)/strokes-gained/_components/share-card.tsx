@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react";
 import type {
+  BenchmarkMeta,
   StrokesGainedCategory,
   StrokesGainedResult,
   RadarChartDatum,
@@ -33,10 +34,11 @@ interface ShareCardProps {
   chartData: RadarChartDatum[];
   courseName: string;
   score: number;
+  benchmarkMeta?: BenchmarkMeta;
 }
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
-  function ShareCard({ result, chartData, courseName, score }, ref) {
+  function ShareCard({ result, chartData, courseName, score, benchmarkMeta }, ref) {
     const bracketLabel =
       BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
 
@@ -60,6 +62,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             <p className="text-sm text-gray-500">
               Shot {score} &middot; vs {bracketLabel}
             </p>
+            {benchmarkMeta && (
+              <p className="text-xs italic text-gray-400">
+                Estimated SG Proxy{benchmarkMeta.provisional ? " (provisional)" : ""} &middot; Benchmarks v{benchmarkMeta.version}
+              </p>
+            )}
           </div>
           <div className="text-right">
             <span

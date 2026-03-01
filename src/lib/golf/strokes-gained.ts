@@ -79,25 +79,20 @@ function calcATG(input: RoundInput, benchmark: BracketBenchmark): number {
 
 /** Calculate SG: Putting */
 function calcPutting(input: RoundInput, benchmark: BracketBenchmark): number {
-  let puttsComponent: number;
+  const playerPuttsPerHole = input.totalPutts / 18;
+  const peerPuttsPerHole = benchmark.puttsPerRound / 18;
+  const puttsComponent =
+    (peerPuttsPerHole - playerPuttsPerHole) * SG_WEIGHTS.PUTTING_WEIGHT;
 
-  if (input.greensInRegulation === 0) {
-    // GIR=0: putts-per-GIR is undefined. Fall back to total putts comparison.
-    puttsComponent = (benchmark.puttsPerRound - input.totalPutts) * 0.2;
-  } else {
-    const playerPuttsPerGIR = input.totalPutts / input.greensInRegulation;
-    const peerGIR = Math.max((benchmark.girPercentage / 100) * 18, 1);
-    const peerPuttsPerGIR = benchmark.puttsPerRound / peerGIR;
-    puttsComponent =
-      (peerPuttsPerGIR - playerPuttsPerGIR) * SG_WEIGHTS.PUTTING_WEIGHT;
-  }
-
-  // Three-putt bonus (if data available)
+  // Three-putt bonus (if data available), capped to ±0.5
   let threePuttBonus = 0;
   if (input.threePutts != null) {
-    // Estimate peer three-putts (~10% of total putts for mid-handicappers)
     const peerThreePutts = benchmark.puttsPerRound * 0.1;
-    threePuttBonus = (peerThreePutts - input.threePutts) * 0.3;
+    threePuttBonus = clamp(
+      (peerThreePutts - input.threePutts) * 0.3,
+      -0.5,
+      0.5
+    );
   }
 
   return puttsComponent + threePuttBonus;

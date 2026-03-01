@@ -8,13 +8,16 @@
  * - Lou Stagner's published amateur statistics
  */
 
-import type { BracketBenchmark, HandicapBracket } from "./types";
+import type { BenchmarkMeta, BracketBenchmark, HandicapBracket } from "./types";
 import rawData from "@/data/benchmarks/handicap-brackets.json";
 
 interface BenchmarkFile {
   version: string;
   updatedAt: string;
   provisional: boolean;
+  sources: string[];
+  methodology: string;
+  sampleSizeByBracket: Record<string, number | null>;
   notes: string[];
   brackets: BracketBenchmark[];
 }
@@ -24,6 +27,16 @@ const data = rawData as BenchmarkFile;
 /** Load all bracket benchmarks from static JSON. */
 export function loadBrackets(): BracketBenchmark[] {
   return data.brackets;
+}
+
+/** Get benchmark provenance metadata for trust signals. */
+export function getBenchmarkMeta(): BenchmarkMeta {
+  return {
+    version: data.version,
+    updatedAt: data.updatedAt,
+    provisional: data.provisional,
+    sources: data.sources ?? [],
+  };
 }
 
 /** Map handicap index to bracket label. */

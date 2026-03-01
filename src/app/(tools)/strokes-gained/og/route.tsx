@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
 import { decodeRound } from "@/lib/golf/share-codec";
-import { getBracketForHandicap } from "@/lib/golf/benchmarks";
+import { getBracketForHandicap, getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import type { StrokesGainedCategory } from "@/lib/golf/types";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
@@ -75,6 +75,8 @@ export async function GET(request: NextRequest) {
   const result = calculateStrokesGained(input, benchmark);
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
+  const meta = getBenchmarkMeta();
+  const trustLabel = `Estimated SG Proxy${meta.provisional ? " (provisional)" : ""} · Benchmarks v${meta.version}`;
 
   const entries = CATEGORY_ORDER.map((key) => ({
     label: CATEGORY_LABELS[key],
@@ -108,6 +110,9 @@ export async function GET(request: NextRequest) {
             </div>
             <div style={{ fontSize: 24, color: "#6b7280", marginTop: 8 }}>
               {`Shot ${input.score} · vs ${bracketLabel}`}
+            </div>
+            <div style={{ fontSize: 14, color: "#9ca3af", marginTop: 6, fontStyle: "italic" }}>
+              {trustLabel}
             </div>
           </div>
           <div

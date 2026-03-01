@@ -149,6 +149,37 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.locator('[data-testid="sg-results"]')).not.toBeVisible();
   });
 
+  test("results show trust signals and Benchmarks link to methodology", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitRound(page);
+
+    const sgResults = page.locator('[data-testid="sg-results"]');
+
+    // Trust label with provisional flag and proxy language
+    // Scoped to visible results summary (share card has a duplicate off-screen)
+    const trustLabel = sgResults
+      .getByText(/Estimated SG Proxy \(provisional\).*Benchmarks v/)
+      .first();
+    await expect(trustLabel).toBeVisible();
+
+    // Benchmarks link navigates to methodology page (first = visible summary)
+    const benchmarksLink = sgResults
+      .getByRole("link", { name: /Benchmarks/i })
+      .first();
+    await expect(benchmarksLink).toBeVisible();
+    await benchmarksLink.click();
+
+    // Methodology page renders with key content
+    await expect(page.locator("h1")).toContainText("Methodology");
+    // Scope to SG formulas table to avoid strict-mode duplicates
+    const formulasTable = page.locator("table").first();
+    await expect(formulasTable.getByText("Off the Tee")).toBeVisible();
+    await expect(formulasTable.getByText("Putting")).toBeVisible();
+    await expect(page.getByText(/proxy model/i).first()).toBeVisible();
+  });
+
   test("form validation prevents submission with invalid scoring sum", async ({
     page,
   }) => {
