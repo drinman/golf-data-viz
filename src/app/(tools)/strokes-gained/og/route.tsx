@@ -29,6 +29,10 @@ function formatSG(value: number): string {
   return `${sign}${value.toFixed(2)}`;
 }
 
+function truncateText(value: string, max: number): string {
+  return value.length <= max ? value : `${value.slice(0, max - 1)}…`;
+}
+
 export async function GET(request: NextRequest) {
   const payload = request.nextUrl.searchParams.get("d") ?? undefined;
   const input = payload ? decodeRound(payload) : null;
@@ -73,6 +77,7 @@ export async function GET(request: NextRequest) {
   // Compute SG results
   const benchmark = getBracketForHandicap(input.handicapIndex);
   const result = calculateStrokesGained(input, benchmark);
+  const courseName = truncateText(input.course, 58);
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
   const meta = getBenchmarkMeta();
@@ -106,9 +111,16 @@ export async function GET(request: NextRequest) {
             alignItems: "flex-start",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              maxWidth: 820,
+              paddingRight: 24,
+            }}
+          >
             <div style={{ fontSize: 44, fontWeight: 700, color: "#111827" }}>
-              {input.course}
+              {courseName}
             </div>
             <div style={{ fontSize: 24, color: "#6b7280", marginTop: 8 }}>
               {`Shot ${input.score} · vs ${bracketLabel}`}
@@ -122,6 +134,7 @@ export async function GET(request: NextRequest) {
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-end",
+              minWidth: 180,
             }}
           >
             <div

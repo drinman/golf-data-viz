@@ -11,6 +11,7 @@ import type { RoundInput } from "@/lib/golf/types";
 interface RoundInputFormProps {
   onSubmit: (data: RoundInput) => void;
   initialValues?: Partial<RoundInput> | null;
+  isCalculating?: boolean;
 }
 
 function FormField({
@@ -24,8 +25,10 @@ function FormField({
 }) {
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      {children}
+      <label className="block space-y-1">
+        <span className="block text-sm font-medium text-gray-700">{label}</span>
+        {children}
+      </label>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -34,7 +37,7 @@ function FormField({
 const inputClass =
   "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500";
 
-export function RoundInputForm({ onSubmit, initialValues }: RoundInputFormProps) {
+export function RoundInputForm({ onSubmit, initialValues, isCalculating }: RoundInputFormProps) {
   const [showOptional, setShowOptional] = useState(false);
 
   const {
@@ -136,7 +139,7 @@ export function RoundInputForm({ onSubmit, initialValues }: RoundInputFormProps)
             {...register("course")}
           />
         </FormField>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <FormField label="Date" error={errors.date?.message}>
             <input type="date" className={inputClass} {...register("date")} />
           </FormField>
@@ -237,13 +240,13 @@ export function RoundInputForm({ onSubmit, initialValues }: RoundInputFormProps)
           </h2>
           <span
             className={`text-sm font-medium ${
-              scoringSum === 18 ? "text-green-600" : "text-amber-600"
+              scoringSum === 18 ? "text-green-600" : "text-amber-700"
             }`}
           >
             {scoringSum}/18 holes
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <FormField label="Eagles" error={errors.eagles?.message}>
             <input
               type="number"
@@ -369,9 +372,10 @@ export function RoundInputForm({ onSubmit, initialValues }: RoundInputFormProps)
       {/* Submit */}
       <button
         type="submit"
-        className="w-full rounded-md bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        disabled={isCalculating}
+        className="w-full rounded-md bg-green-700 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        See My Strokes Gained
+        {isCalculating ? "Calculating..." : "See My Strokes Gained"}
       </button>
     </form>
   );

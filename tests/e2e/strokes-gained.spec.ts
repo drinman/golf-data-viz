@@ -47,6 +47,26 @@ async function submitRound(page: import("@playwright/test").Page) {
   ).toBeVisible({ timeout: 5000 });
 }
 
+/** Helper: fill a complete round form WITHOUT submitting. */
+async function fillRound(page: import("@playwright/test").Page) {
+  await page.fill('[name="handicapIndex"]', "14.3");
+  await page.fill('[name="course"]', "Pacifica Sharp Park");
+  await page.fill('[name="courseRating"]', "72.0");
+  await page.fill('[name="slopeRating"]', "130");
+  await page.fill('[name="score"]', "87");
+  await page.fill('[name="fairwaysHit"]', "7");
+  await page.fill('[name="fairwayAttempts"]', "14");
+  await page.fill('[name="greensInRegulation"]', "6");
+  await page.fill('[name="totalPutts"]', "33");
+  await page.fill('[name="penaltyStrokes"]', "2");
+  await page.fill('[name="eagles"]', "0");
+  await page.fill('[name="birdies"]', "1");
+  await page.fill('[name="pars"]', "7");
+  await page.fill('[name="bogeys"]', "7");
+  await page.fill('[name="doubleBogeys"]', "2");
+  await page.fill('[name="triplePlus"]', "1");
+}
+
 test.describe("Strokes Gained Benchmarker", () => {
   test("full happy path: submit round and see radar chart", async ({
     page,
@@ -152,6 +172,9 @@ test.describe("Strokes Gained Benchmarker", () => {
     expect(ogDesc).toContain("87");
     expect(ogDesc).toContain("Pacifica Sharp Park");
 
+    const robots = await page.locator('meta[name="robots"]').getAttribute("content");
+    expect(robots?.toLowerCase()).toContain("noindex");
+
     // OG image URL should contain the round-specific ?d= payload
     const ogImage = await page
       .locator('meta[property="og:image"]')
@@ -232,6 +255,48 @@ test.describe("Strokes Gained Benchmarker", () => {
     // "Not Tracked" should still render after reload
     const reloadedResults = page.locator('[data-testid="sg-results"]');
     await expect(reloadedResults.getByText("Not Tracked").first()).toBeVisible();
+  });
+
+  test("submit button shows Calculating... while processing", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await fillRound(page);
+
+    const submitBtn = page.locator('button[type="submit"]');
+    await expect(submitBtn).toContainText("See My Strokes Gained");
+
+    // Click submit — button should flip to loading state
+    await submitBtn.click();
+    await expect(submitBtn).toContainText("Calculating...");
+    await expect(submitBtn).toBeDisabled();
+
+    // Eventually returns to normal
+    await expect(submitBtn).toContainText("See My Strokes Gained", {
+      timeout: 3000,
+    });
+    await expect(submitBtn).toBeEnabled();
+  });
+
+  test("PNG download button shows Preparing... while capturing", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitRound(page);
+
+    const dlBtn = page.getByTestId("download-png");
+    await expect(dlBtn).toContainText("Download PNG");
+
+    // Click download — button should flip to loading state
+    const downloadPromise = page.waitForEvent("download");
+    await dlBtn.click();
+    await expect(dlBtn).toContainText("Preparing...");
+    await expect(dlBtn).toBeDisabled();
+
+    // After download completes, button resets
+    await downloadPromise;
+    await expect(dlBtn).toContainText("Download PNG", { timeout: 5000 });
+    await expect(dlBtn).toBeEnabled();
   });
 
   test("form validation prevents submission with invalid scoring sum", async ({

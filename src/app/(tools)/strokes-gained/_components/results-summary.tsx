@@ -99,7 +99,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
 
       {/* Strength & Weakness callouts (need at least 2 active categories) */}
       {strength && weakness && activeEntries.length >= 2 && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-md bg-green-50 px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wide text-green-700">
               Biggest Strength

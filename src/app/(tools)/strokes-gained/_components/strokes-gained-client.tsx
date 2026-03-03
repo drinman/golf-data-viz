@@ -50,11 +50,15 @@ export default function StrokesGainedClient({
   );
   const [saveError, setSaveError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const formStartedRef = useRef(false);
 
   function handleFormSubmit(input: RoundInput) {
+    setIsCalculating(true);
+
     const benchmark = getBracketForHandicap(input.handicapIndex);
     const sgResult = calculateStrokesGained(input, benchmark);
     const radar = toRadarChartData(sgResult);
@@ -73,6 +77,11 @@ export default function StrokesGainedClient({
     // Update URL with shareable param (no navigation)
     const encoded = encodeRound(input);
     window.history.replaceState(null, "", `?d=${encoded}`);
+
+    // Keep loading state visible for at least one paint + 300ms
+    requestAnimationFrame(() => {
+      setTimeout(() => setIsCalculating(false), 300);
+    });
 
     // Save to DB in background — surface errors to user
     saveRound(input)
@@ -98,13 +107,22 @@ export default function StrokesGainedClient({
   }
 
   const handleDownloadPng = useCallback(async () => {
-    if (!shareCardRef.current) return;
-    trackEvent("download_png_clicked", {
-      has_share_param: window.location.search.includes("d="),
-    });
-    const blob = await captureElementAsPng(shareCardRef.current);
-    downloadBlob(blob, "strokes-gained.png");
-  }, []);
+    if (!shareCardRef.current || downloading) return;
+    setDownloading(true);
+    const start = Date.now();
+    try {
+      trackEvent("download_png_clicked", {
+        has_share_param: window.location.search.includes("d="),
+      });
+      const blob = await captureElementAsPng(shareCardRef.current);
+      downloadBlob(blob, "strokes-gained.png");
+    } finally {
+      // Ensure loading state is visible for at least 300ms
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(0, 300 - elapsed);
+      setTimeout(() => setDownloading(false), remaining);
+    }
+  }, [downloading]);
 
   const handleCopyLink = useCallback(async () => {
     trackEvent("copy_link_clicked", {
@@ -137,6 +155,7 @@ export default function StrokesGainedClient({
         <RoundInputForm
           onSubmit={handleFormSubmit}
           initialValues={initialInput}
+          isCalculating={isCalculating}
         />
       </div>
 
@@ -180,9 +199,10 @@ export default function StrokesGainedClient({
               type="button"
               data-testid="download-png"
               onClick={handleDownloadPng}
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
+              disabled={downloading}
+              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Download PNG
+              {downloading ? "Preparing..." : "Download PNG"}
             </button>
             <button
               type="button"
