@@ -33,8 +33,18 @@ export async function generateMetadata({
       title: "Strokes Gained Benchmarker",
       description:
         "See where you gain and lose strokes vs your handicap peers.",
-      alternates: {
-        canonical: "/strokes-gained",
+      alternates: { canonical: "/strokes-gained" },
+      openGraph: {
+        title: "Strokes Gained Benchmarker",
+        description:
+          "See where you gain and lose strokes vs your handicap peers.",
+        url: "/strokes-gained",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Strokes Gained Benchmarker",
+        description:
+          "See where you gain and lose strokes vs your handicap peers.",
       },
     };
   }

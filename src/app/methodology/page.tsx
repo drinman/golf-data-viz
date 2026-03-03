@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "Methodology",
   description:
     "How the Strokes Gained Benchmarker works — formulas, data sources, and limitations.",
+  alternates: { canonical: "/methodology" },
 };
 
 /** Sanity-check fixture rounds for the calibration table. */

@@ -24,13 +24,9 @@ export const metadata: Metadata = {
     template: "%s | Golf Data Viz",
   },
   description: "Golf performance analysis for mid-handicap golfers.",
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     siteName: "Golf Data Viz",
-    url: "/",
     title: "Golf Data Viz",
     description: "Golf performance analysis for mid-handicap golfers.",
     images: [

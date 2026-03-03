@@ -76,6 +76,50 @@ test("404 page shows branded not-found message", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("homepage metadata: OG defaults from layout", async ({ page }) => {
+  await page.goto("/");
+  const ogTitle = await page
+    .locator('meta[property="og:title"]')
+    .getAttribute("content");
+  expect(ogTitle).toBe("Golf Data Viz");
+  const twitterCard = await page
+    .locator('meta[name="twitter:card"]')
+    .getAttribute("content");
+  expect(twitterCard).toBe("summary_large_image");
+});
+
+test("/strokes-gained (no params) metadata: page-specific OG", async ({
+  page,
+}) => {
+  await page.goto("/strokes-gained");
+  const ogTitle = await page
+    .locator('meta[property="og:title"]')
+    .getAttribute("content");
+  expect(ogTitle).toBe("Strokes Gained Benchmarker");
+  const ogUrl = await page
+    .locator('meta[property="og:url"]')
+    .getAttribute("content");
+  expect(ogUrl).toContain("/strokes-gained");
+  const twitterCard = await page
+    .locator('meta[name="twitter:card"]')
+    .getAttribute("content");
+  expect(twitterCard).toBe("summary_large_image");
+  const canonical = await page
+    .locator('link[rel="canonical"]')
+    .getAttribute("href");
+  expect(canonical).toContain("/strokes-gained");
+});
+
+test("/methodology metadata: canonical points to /methodology", async ({
+  page,
+}) => {
+  await page.goto("/methodology");
+  const canonical = await page
+    .locator('link[rel="canonical"]')
+    .getAttribute("href");
+  expect(canonical).toContain("/methodology");
+});
+
 test("robots.txt is publicly available", async ({ request }) => {
   const res = await request.get("/robots.txt");
   expect(res.status()).toBe(200);
