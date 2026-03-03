@@ -16,6 +16,15 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "playwright-report/**",
   ]),
+  // Error boundaries must use logError() instead of raw console calls.
+  // Covers all standard Next.js error boundary paths; update globs if
+  // non-standard boundary filenames are introduced.
+  {
+    files: ["src/app/**/error.tsx", "src/app/**/global-error.tsx"],
+    rules: {
+      "no-console": "error",
+    },
+  },
 ]);
 
 export default eslintConfig;
