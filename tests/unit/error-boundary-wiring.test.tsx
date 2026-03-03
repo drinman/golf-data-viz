@@ -28,8 +28,15 @@ describe("Error boundary wiring", () => {
   });
 
   it("GlobalError calls logError with the error", async () => {
-    // Suppress DOM nesting warning (<html> inside RTL's <div> container)
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    // Only suppress the DOM nesting warning (<html> inside RTL's <div> container).
+    // Other console.error calls pass through so real errors are not hidden.
+    const original = console.error.bind(console);
+    vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
+      const msg = typeof args[0] === "string" ? args[0] : "";
+      if (msg.includes("cannot be a child of")) return;
+      if (msg.includes("validateDOMNesting")) return;
+      original(...args);
+    });
 
     const error = Object.assign(new Error("app error"), { digest: "g1" });
     const reset = vi.fn();
