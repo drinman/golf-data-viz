@@ -1,18 +1,16 @@
-"use client";
+import { notFound } from "next/navigation";
+import { TestErrorThrower } from "./thrower";
 
 /**
- * Test-only page that throws during render to exercise the error boundary.
+ * Test-only page that exercises the error boundary.
  * Used by E2E tests — not linked from any UI.
  *
- * Production: renders an inert message (no throw, no monitoring noise).
- * Dev/test: throws on client hydration, triggering the nearest error boundary.
+ * Production: returns 404 (zero public surface).
+ * Dev/test: renders a client component that throws, triggering the error boundary.
  */
 export default function TestErrorPage() {
   if (process.env.NODE_ENV === "production") {
-    return <p>Test route — no error in production.</p>;
+    notFound();
   }
-  if (typeof window !== "undefined") {
-    throw new Error("Test error for E2E");
-  }
-  return null;
+  return <TestErrorThrower />;
 }
