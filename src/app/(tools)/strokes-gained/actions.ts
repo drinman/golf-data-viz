@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { SupabaseConfigError } from "@/lib/supabase/errors";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 export type SaveRoundResult =
   | { success: true }
@@ -16,6 +18,16 @@ export async function saveRound(
   input: RoundInput
 ): Promise<SaveRoundResult> {
   try {
+    // Rate limiting: sliding window per IP
+    const hdrs = await headers();
+    const ip = hdrs.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+    if (!checkRateLimit(ip)) {
+      return {
+        success: false,
+        error: "Too many requests. Please try again shortly.",
+      };
+    }
+
     // Server-side validation: reject tampered payloads before touching DB
     const parsed = roundInputSchema.safeParse(input);
     if (!parsed.success) {
@@ -43,7 +55,7 @@ export async function saveRound(
 
     if (error) {
       console.error("[saveRound] Supabase error:", error.message);
-      return { success: false, error: error.message };
+      return { success: false, error: "Round could not be saved" };
     }
 
     return { success: true };
@@ -55,7 +67,7 @@ export async function saveRound(
     console.error("[saveRound] Unexpected error:", err);
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: "An unexpected error occurred",
     };
   }
 }

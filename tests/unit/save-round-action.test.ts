@@ -4,14 +4,24 @@ import { makeRound } from "../fixtures/factories";
 
 // --- Mock Supabase ---
 
-const { mockInsert, mockGetUser, mockCreateClient } = vi.hoisted(() => ({
-  mockInsert: vi.fn(),
-  mockGetUser: vi.fn(),
-  mockCreateClient: vi.fn(),
-}));
+const { mockInsert, mockGetUser, mockCreateClient, mockCheckRateLimit } =
+  vi.hoisted(() => ({
+    mockInsert: vi.fn(),
+    mockGetUser: vi.fn(),
+    mockCreateClient: vi.fn(),
+    mockCheckRateLimit: vi.fn(),
+  }));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: mockCreateClient,
+}));
+
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: mockCheckRateLimit,
+}));
+
+vi.mock("next/headers", () => ({
+  headers: vi.fn(async () => new Map([["x-forwarded-for", "1.2.3.4"]])),
 }));
 
 import { saveRound } from "@/app/(tools)/strokes-gained/actions";
@@ -22,6 +32,8 @@ import { SupabaseConfigError } from "@/lib/supabase/errors";
 describe("saveRound server action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: rate limit allows
+    mockCheckRateLimit.mockReturnValue(true);
     // Default: createClient resolves normally
     mockCreateClient.mockResolvedValue({
       from: vi.fn(() => ({
@@ -50,7 +62,7 @@ describe("saveRound server action", () => {
     const result = await saveRound(makeRound());
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toBe("check constraint violated");
+      expect(result.error).toBe("Round could not be saved");
     }
   });
 
@@ -60,7 +72,7 @@ describe("saveRound server action", () => {
     const result = await saveRound(makeRound());
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toBe("Network failure");
+      expect(result.error).toBe("An unexpected error occurred");
     }
   });
 
@@ -158,6 +170,18 @@ describe("saveRound server action", () => {
     const insertedRow = mockInsert.mock.calls[0][0];
     expect(insertedRow.fairways_hit).toBeNull();
     expect(insertedRow.greens_in_regulation).toBeNull();
+  });
+
+  it("rejects when rate limited", async () => {
+    mockCheckRateLimit.mockReturnValue(false);
+    const result = await saveRound(makeRound());
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe(
+        "Too many requests. Please try again shortly."
+      );
+    }
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 
   it("inserts parsed.data (coerced/sanitized), not raw input", async () => {
