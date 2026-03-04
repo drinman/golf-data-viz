@@ -57,6 +57,7 @@ jobs:
         run: npx playwright test --project=functional
         env:
           CI: true
+          PLAYWRIGHT_USE_PROD_SERVER: true
       - name: Visual regression tests
         run: npx playwright test --project=visual
         env:
