@@ -3,7 +3,9 @@ export type AnalyticsEvent =
   | "form_started"
   | "calculation_completed"
   | "download_png_clicked"
-  | "copy_link_clicked";
+  | "copy_link_clicked"
+  | "shared_round_viewed"
+  | "round_save_failed";
 
 export type AnalyticsEventProps = {
   landing_cta_clicked: Record<string, never>;
@@ -15,6 +17,8 @@ export type AnalyticsEventProps = {
   };
   download_png_clicked: { has_share_param: boolean };
   copy_link_clicked: { has_share_param: boolean };
+  shared_round_viewed: { referrer: string; utm_source: string };
+  round_save_failed: { error_type: "config" | "runtime" | "network" };
 };
 
 /**

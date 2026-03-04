@@ -60,11 +60,34 @@ export default function StrokesGainedClient({
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const formStartedRef = useRef(false);
+  const sharedRoundViewedRef = useRef(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
   const saveRequestIdRef = useRef(0);
+
+  // Fire shared_round_viewed when viewing a shared link
+  useEffect(() => {
+    if (initialInput && !sharedRoundViewedRef.current) {
+      sharedRoundViewedRef.current = true;
+      const referrer =
+        typeof document !== "undefined" && document.referrer
+          ? (() => {
+              try {
+                return new URL(document.referrer).hostname;
+              } catch {
+                return "";
+              }
+            })()
+          : "";
+      const utmSource =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("utm_source") ?? ""
+          : "";
+      trackEvent("shared_round_viewed", { referrer, utm_source: utmSource });
+    }
+  }, [initialInput]);
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -121,6 +144,7 @@ export default function StrokesGainedClient({
             3000
           );
         } else if (res.error === "save_unavailable") {
+          trackEvent("round_save_failed", { error_type: "config" });
           setSaveError({
             type: "config",
             message:
@@ -128,6 +152,7 @@ export default function StrokesGainedClient({
           });
         } else {
           console.error("[StrokesGained] Save failed:", res.error);
+          trackEvent("round_save_failed", { error_type: "runtime" });
           setSaveError({
             type: "runtime",
             message:
@@ -138,6 +163,7 @@ export default function StrokesGainedClient({
       .catch((err) => {
         if (requestId !== saveRequestIdRef.current) return;
         console.error("[StrokesGained] Save transport error:", err);
+        trackEvent("round_save_failed", { error_type: "network" });
         setSaveError({
           type: "runtime",
           message:

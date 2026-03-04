@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+import { GA4PageView } from "@/lib/analytics/ga4-pageview";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -72,6 +73,7 @@ export default function RootLayout({
         <SiteHeader />
         {children}
         <Analytics />
+        <GA4PageView />
         {ga4Id && (
           <>
             <Script
