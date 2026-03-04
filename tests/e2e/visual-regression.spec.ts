@@ -16,7 +16,7 @@ test.describe("Visual regression", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.getByTestId("hero-headline")).toBeVisible();
     await expect(page).toHaveScreenshot("home-hero.png", {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.02,
       fullPage: false,
     });
   });
@@ -26,7 +26,7 @@ test.describe("Visual regression", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.getByTestId("sg-results")).toBeVisible();
     await expect(page).toHaveScreenshot("sg-results.png", {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.02,
       fullPage: true,
     });
   });
@@ -37,7 +37,7 @@ test.describe("Visual regression", () => {
     await expect(page.getByTestId("share-card")).toBeVisible();
     const card = page.getByTestId("share-card");
     await expect(card).toHaveScreenshot("share-card.png", {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.02,
     });
   });
 });

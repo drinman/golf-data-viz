@@ -14,6 +14,8 @@ export default defineConfig({
     {
       name: "visual",
       testMatch: "visual-regression.spec.ts",
+      // Platform-agnostic snapshot names — locked Chromium args normalize rendering
+      snapshotPathTemplate: "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{ext}",
       use: {
         browserName: "chromium",
         viewport: { width: 1280, height: 800 },
