@@ -82,7 +82,7 @@ export function RadarChart({ data, bracketLabel }: RadarChartProps) {
         gridLevels={5}
         gridShape="circular"
         gridLabelOffset={16}
-        colors={["#22c55e"]}
+        colors={["#166534"]}
         fillOpacity={0.25}
         blendMode="normal"
         motionConfig="gentle"
@@ -103,7 +103,7 @@ export function RadarChart({ data, bracketLabel }: RadarChartProps) {
             symbolSize: 12,
             symbolShape: "circle",
             data: [
-              { id: "player", label: "You", color: "#22c55e" },
+              { id: "player", label: "You", color: "#166534" },
               {
                 id: "peerBaseline",
                 label: bracketLabel ? `${bracketLabel} Avg` : "Peer Avg",

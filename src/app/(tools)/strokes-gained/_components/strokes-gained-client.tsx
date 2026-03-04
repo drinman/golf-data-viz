@@ -135,15 +135,15 @@ export default function StrokesGainedClient({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900">
+      <h1 className="font-display text-3xl tracking-tight text-neutral-950">
         Strokes Gained Benchmarker
       </h1>
-      <p className="mt-2 text-gray-600">
+      <p className="mt-2 text-neutral-600">
         See where you gain and lose strokes vs your handicap peers.
       </p>
 
       <div
-        className="mt-8"
+        className="mt-8 rounded-xl border border-card-border bg-card p-6 shadow-sm"
         data-testid="form-wrapper"
         onFocusCapture={() => {
           if (!formStartedRef.current) {
@@ -182,7 +182,7 @@ export default function StrokesGainedClient({
           data-testid="sg-results"
           className="mt-12 space-y-8"
         >
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="font-display text-2xl tracking-tight text-neutral-950">
             Your Strokes Gained Breakdown
           </h2>
           <div style={{ height: 400 }}>
@@ -200,7 +200,7 @@ export default function StrokesGainedClient({
               data-testid="download-png"
               onClick={handleDownloadPng}
               disabled={downloading}
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {downloading ? "Preparing..." : "Download PNG"}
             </button>
@@ -208,7 +208,7 @@ export default function StrokesGainedClient({
               type="button"
               data-testid="copy-link"
               onClick={handleCopyLink}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50"
             >
               {copied ? "Copied!" : "Copy Link"}
             </button>

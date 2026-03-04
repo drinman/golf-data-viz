@@ -154,7 +154,7 @@ export default function MethodologyPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900">Methodology</h1>
+      <h1 className="font-display text-3xl tracking-tight text-neutral-950">Methodology</h1>
 
       {/* Section 1: Not True SG */}
       <section className="mt-8">
@@ -168,59 +168,59 @@ export default function MethodologyPage() {
 
       {/* Section 2: SG Formulas */}
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
           SG Category Formulas
         </h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-300 text-left">
-                <th className="pb-2 pr-4 font-medium text-gray-700">
+              <tr className="border-b border-neutral-200 text-left">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Category
                 </th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Formula
                 </th>
-                <th className="pb-2 font-medium text-gray-700">Weight</th>
+                <th className="pb-2 font-medium text-neutral-600">Weight</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-neutral-100">
               <tr>
-                <td className="py-2 pr-4 font-medium text-gray-800">
+                <td className="py-2 pr-4 font-medium text-neutral-800">
                   Off the Tee
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-gray-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
                   (FIR% - peerFIR%) x 6.0 + (peerPenalties - penalties) x 0.8
                 </td>
-                <td className="py-2 text-gray-600">6.0, 0.8</td>
+                <td className="py-2 font-mono text-neutral-600">6.0, 0.8</td>
               </tr>
               <tr>
-                <td className="py-2 pr-4 font-medium text-gray-800">
+                <td className="py-2 pr-4 font-medium text-neutral-800">
                   Approach
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-gray-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
                   (GIR/18 - peerGIR%) x 8.0
                 </td>
-                <td className="py-2 text-gray-600">8.0</td>
+                <td className="py-2 font-mono text-neutral-600">8.0</td>
               </tr>
               <tr>
-                <td className="py-2 pr-4 font-medium text-gray-800">
+                <td className="py-2 pr-4 font-medium text-neutral-800">
                   Around the Green
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-gray-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
                   (scrambleRate - peerScramble%) x 5.0
                 </td>
-                <td className="py-2 text-gray-600">5.0</td>
+                <td className="py-2 font-mono text-neutral-600">5.0</td>
               </tr>
               <tr>
-                <td className="py-2 pr-4 font-medium text-gray-800">
+                <td className="py-2 pr-4 font-medium text-neutral-800">
                   Putting
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-gray-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
                   (peerPutts/18 - playerPutts/18) x 4.0 + clamp(threePuttBonus,
                   -0.5, 0.5)
                 </td>
-                <td className="py-2 text-gray-600">4.0</td>
+                <td className="py-2 font-mono text-neutral-600">4.0</td>
               </tr>
             </tbody>
           </table>
@@ -229,25 +229,25 @@ export default function MethodologyPage() {
 
       {/* Section 3: Metric-Level Citations (dynamic from JSON) */}
       <section className="mt-10" data-testid="citations-section">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Data Sources &amp; Citations
         </h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm" data-testid="citations-table">
             <thead>
-              <tr className="border-b border-gray-300 text-left">
-                <th className="pb-2 pr-4 font-medium text-gray-700">Metric</th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">Source</th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">
+              <tr className="border-b border-neutral-200 text-left">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">Metric</th>
+                <th className="pb-2 pr-4 font-medium text-neutral-600">Source</th>
+                <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Accessed
                 </th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Coverage
                 </th>
-                <th className="pb-2 font-medium text-gray-700">Status</th>
+                <th className="pb-2 font-medium text-neutral-600">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-neutral-100">
               {CITATION_METRIC_KEYS.map((key) => {
                 const entries = meta.citations[key as CitationMetricKey];
                 const status = getCitationStatus(entries);
@@ -257,17 +257,17 @@ export default function MethodologyPage() {
 
                 return (
                   <tr key={key} data-testid={`citation-row-${key}`}>
-                    <td className="py-2 pr-4 text-gray-800">{key}</td>
-                    <td className="py-2 pr-4 text-gray-600">
+                    <td className="py-2 pr-4 text-neutral-800">{key}</td>
+                    <td className="py-2 pr-4 text-neutral-600">
                       {entries.length === 0 ? (
-                        <span className="italic text-gray-400">None</span>
+                        <span className="italic text-neutral-400">None</span>
                       ) : (
                         entries.map((c, i) => (
                           <span key={i} className={i > 0 ? "mt-1 block" : ""}>
                             {c.url ? (
                               <a
                                 href={c.url}
-                                className="text-blue-600 underline"
+                                className="text-brand-800 underline"
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
@@ -280,27 +280,27 @@ export default function MethodologyPage() {
                         ))
                       )}
                     </td>
-                    <td className="py-2 pr-4 text-gray-600">
+                    <td className="py-2 pr-4 text-neutral-600">
                       {entries.length > 0
                         ? entries.reduce((latest, c) =>
                             c.accessedDate > latest ? c.accessedDate : latest,
                           entries[0].accessedDate)
                         : "\u2014"}
                     </td>
-                    <td className="py-2 pr-4 text-gray-600">
+                    <td className="py-2 pr-4 text-neutral-600">
                       {bracketCount > 0
                         ? `${bracketCount}/7 brackets`
                         : "\u2014"}
                     </td>
                     <td className="py-2" data-testid={`citation-status-${key}`}>
                       {status === "sourced" && (
-                        <span className="text-green-600">Sourced</span>
+                        <span className="text-data-positive">Sourced</span>
                       )}
                       {status === "partial" && (
-                        <span className="text-amber-600">Partial</span>
+                        <span className="text-amber-700">Partial</span>
                       )}
                       {status === "pending" && (
-                        <span className="text-gray-400">Pending</span>
+                        <span className="text-neutral-400">Pending</span>
                       )}
                     </td>
                   </tr>
@@ -313,10 +313,10 @@ export default function MethodologyPage() {
 
       {/* Section 4: Assumptions & Limitations */}
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Assumptions &amp; Limitations
         </h2>
-        <ul className="mt-4 list-disc space-y-2 pl-6 text-sm text-gray-700">
+        <ul className="mt-4 list-disc space-y-2 pl-6 text-sm text-neutral-600">
           <li>
             <strong>Proxy model</strong> — not true SG Putting (requires putt
             starting distances)
@@ -338,10 +338,10 @@ export default function MethodologyPage() {
 
       {/* Section 5: Calibration */}
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Calibration Sanity Check
         </h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-neutral-600">
           Weights are heuristic, pending calibration against a validation
           dataset. The table below shows computed SG totals for representative
           fixture rounds to verify directional correctness.
@@ -349,30 +349,30 @@ export default function MethodologyPage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-300 text-left">
-                <th className="pb-2 pr-4 font-medium text-gray-700">
+              <tr className="border-b border-neutral-200 text-left">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Scenario
                 </th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">HCP</th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">Score</th>
-                <th className="pb-2 pr-4 font-medium text-gray-700">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">HCP</th>
+                <th className="pb-2 pr-4 font-medium text-neutral-600">Score</th>
+                <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Expected Direction
                 </th>
-                <th className="pb-2 font-medium text-gray-700">
+                <th className="pb-2 font-medium text-neutral-600">
                   Actual SG Total
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-neutral-100">
               {calibrationRows.map((row) => (
                 <tr key={row.label}>
-                  <td className="py-2 pr-4 text-gray-800">{row.label}</td>
-                  <td className="py-2 pr-4 text-gray-600">{row.hcp}</td>
-                  <td className="py-2 pr-4 text-gray-600">{row.score}</td>
-                  <td className="py-2 pr-4 text-gray-600">{row.expected}</td>
+                  <td className="py-2 pr-4 text-neutral-800">{row.label}</td>
+                  <td className="py-2 pr-4 text-neutral-600">{row.hcp}</td>
+                  <td className="py-2 pr-4 text-neutral-600">{row.score}</td>
+                  <td className="py-2 pr-4 text-neutral-600">{row.expected}</td>
                   <td
                     className={`py-2 font-semibold ${
-                      row.actual >= 0 ? "text-green-600" : "text-red-600"
+                      row.actual >= 0 ? "text-data-positive" : "text-data-negative"
                     }`}
                   >
                     {row.actual >= 0 ? "+" : ""}
@@ -387,8 +387,8 @@ export default function MethodologyPage() {
 
       {/* Section 6: Changelog (dynamic from JSON) */}
       <section className="mt-10" data-testid="changelog-section">
-        <h2 className="text-xl font-semibold text-gray-900">Changelog</h2>
-        <ul className="mt-4 list-disc space-y-1 pl-6 text-sm text-gray-700">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">Changelog</h2>
+        <ul className="mt-4 list-disc space-y-1 pl-6 text-sm text-neutral-600">
           {meta.changelog.map((entry) => (
             <li key={entry.version}>
               <strong>
@@ -401,8 +401,8 @@ export default function MethodologyPage() {
       </section>
 
       {/* Reddit-ready footer */}
-      <footer className="mt-12 border-t border-gray-200 pt-6">
-        <p className="text-xs italic text-gray-400">
+      <footer className="mt-12 border-t border-neutral-200 pt-6">
+        <p className="text-xs italic text-neutral-400">
           Benchmarks v{meta.version} (updated {meta.updatedAt}), based on
           USGA/Arccos/Shot Scope/Stagner. This is an estimated SG proxy, not
           true shot-level Strokes Gained. Full methodology linked.

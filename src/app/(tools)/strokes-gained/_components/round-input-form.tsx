@@ -26,7 +26,7 @@ function FormField({
   return (
     <div className="space-y-1">
       <label className="block space-y-1">
-        <span className="block text-sm font-medium text-gray-700">{label}</span>
+        <span className="block text-sm font-medium text-neutral-800">{label}</span>
         {children}
       </label>
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -35,7 +35,7 @@ function FormField({
 }
 
 const inputClass =
-  "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500";
+  "block w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
 
 export function RoundInputForm({ onSubmit, initialValues, isCalculating }: RoundInputFormProps) {
   const [showOptional, setShowOptional] = useState(false);
@@ -102,7 +102,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
     >
       {/* Section 1: Handicap + Bracket */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Your Handicap</h2>
+        <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />Your Handicap</h2>
         <div className="flex items-end gap-4">
           <div className="flex-1">
             <FormField
@@ -120,7 +120,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
           </div>
           {bracketLabel && (
             <div className="pb-2">
-              <span className="inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+              <span className="inline-block rounded-md bg-brand-900 px-3 py-1 font-mono text-xs font-medium tracking-wide text-cream-50">
                 {bracketLabel} bracket
               </span>
             </div>
@@ -130,7 +130,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
 
       {/* Section 2: Course Info */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Course Info</h2>
+        <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />Course Info</h2>
         <FormField label="Course Name" error={errors.course?.message}>
           <input
             type="text"
@@ -167,7 +167,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
 
       {/* Section 3: Core Stats */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Round Stats</h2>
+        <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />Round Stats</h2>
         <FormField label="Score" error={errors.score?.message}>
           <input
             type="number"
@@ -235,13 +235,13 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
       {/* Section 4: Scoring Distribution */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />
             Scoring Breakdown
           </h2>
           <span
             className={`text-sm font-medium ${
               scoringSum === 18 ? "text-green-600" : "text-amber-700"
-            }`}
+            } font-mono`}
           >
             {scoringSum}/18 holes
           </span>
@@ -303,12 +303,12 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
         <button
           type="button"
           onClick={() => setShowOptional(!showOptional)}
-          className="text-sm font-medium text-green-700 hover:text-green-800"
+          className="text-sm font-medium text-brand-800 transition-colors hover:text-brand-700"
         >
           {showOptional ? "Hide" : "Show"} More Stats
         </button>
         {showOptional && (
-          <div className="space-y-4 rounded-md border border-gray-200 p-4">
+          <div className="space-y-4 rounded-lg border-2 border-cream-200 p-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 label="Up & Down Attempts"
@@ -373,7 +373,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
       <button
         type="submit"
         disabled={isCalculating}
-        className="w-full rounded-md bg-green-700 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-brand-800 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isCalculating ? "Calculating..." : "See My Strokes Gained"}
       </button>

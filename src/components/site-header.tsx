@@ -1,35 +1,49 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { Logo } from "@/components/logo";
 
 export function SiteHeader() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <header
       data-testid="site-header"
-      className="border-b border-gray-200 bg-white"
+      className={`sticky top-0 z-50 border-b transition-all duration-200 ${
+        scrolled
+          ? "border-cream-200 bg-white/90 shadow-sm backdrop-blur-md"
+          : "border-cream-200 bg-cream-50/80 backdrop-blur-sm"
+      }`}
     >
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
         <Link
           href="/"
-          className="flex items-center gap-2 text-lg font-bold text-gray-900"
+          className="flex items-center gap-2 text-neutral-950"
         >
-          <Image
-            src="/favicon.ico"
-            width={28}
-            height={28}
-            alt="Golf Data Viz logo"
-          />
-          Golf Data Viz
+          <Logo size={28} variant="mark" />
+          <span className="font-display text-lg tracking-tight">
+            Golf Data Viz
+          </span>
         </Link>
         <nav className="flex gap-4">
           <Link
             href="/strokes-gained"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
           >
             SG Benchmarker
           </Link>
           <Link
             href="/methodology"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
           >
             Methodology
           </Link>

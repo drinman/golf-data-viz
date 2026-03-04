@@ -1,66 +1,73 @@
+import { PenLine, BarChart3, Share2 } from "lucide-react";
+import { ContourBg } from "@/components/contour-bg";
 import { LandingCta } from "./_components/landing-cta";
 
 export default function Home() {
   return (
-    <main className="mx-auto max-w-2xl px-4 py-16 sm:py-24">
+    <main>
       {/* Hero */}
-      <section className="text-center">
-        <h1
-          data-testid="hero-headline"
-          className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"
-        >
-          Know where your strokes go
-        </h1>
-        <p className="mt-4 text-lg text-gray-600">
-          Enter your round stats, see where you gain and lose strokes compared to
-          golfers at your handicap level — not Tour pros.
-        </p>
-        <div className="mt-8">
-          <LandingCta />
+      <section className="relative overflow-hidden px-4 py-24 sm:py-32">
+        <ContourBg className="text-brand-900" />
+        <div className="relative mx-auto max-w-4xl">
+          <h1
+            data-testid="hero-headline"
+            className="animate-fade-up font-display text-5xl tracking-tight text-neutral-950 sm:text-6xl"
+          >
+            Know where your strokes go
+          </h1>
+          <p className="animate-fade-up delay-1 mt-6 max-w-xl text-lg text-neutral-600">
+            Enter your round stats, see where you gain and lose strokes compared
+            to golfers at your handicap level — not Tour pros.
+          </p>
+          <div className="animate-fade-up delay-2 mt-10">
+            <LandingCta />
+          </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section data-testid="how-it-works" className="mt-20">
-        <h2 className="text-center text-2xl font-bold text-gray-900">
-          How it works
-        </h2>
-        <div className="mt-10 grid gap-8 sm:grid-cols-3">
-          <div data-testid="step-1" className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-700">
-              1
+      <section data-testid="how-it-works" className="border-t border-cream-200 px-4 py-20 sm:py-24">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="animate-fade-up delay-3 font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
+            How it works
+          </h2>
+          <div className="mt-12 grid gap-10 sm:grid-cols-3">
+            <div data-testid="step-1" className="animate-fade-up delay-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100 text-sm font-semibold text-accent-500">
+                <PenLine className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-neutral-950">
+                Enter your stats
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                Score, fairways, greens, putts, and scoring breakdown from your
+                round.
+              </p>
             </div>
-            <h3 className="mt-4 text-base font-semibold text-gray-900">
-              Enter your stats
-            </h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Score, fairways, greens, putts, and scoring breakdown from your
-              round.
-            </p>
-          </div>
-          <div data-testid="step-2" className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-700">
-              2
+            <div data-testid="step-2" className="animate-fade-up delay-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100 text-sm font-semibold text-accent-500">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-neutral-950">
+                See your breakdown
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                Get a strokes gained analysis across four categories benchmarked
+                against your handicap peers.
+              </p>
             </div>
-            <h3 className="mt-4 text-base font-semibold text-gray-900">
-              See your breakdown
-            </h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Get a strokes gained analysis across four categories benchmarked
-              against your handicap peers.
-            </p>
-          </div>
-          <div data-testid="step-3" className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-700">
-              3
+            <div data-testid="step-3" className="animate-fade-up delay-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100 text-sm font-semibold text-accent-500">
+                <Share2 className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-neutral-950">
+                Share with your group
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                Download a shareable card or copy a link to show your buddies
+                where you stack up.
+              </p>
             </div>
-            <h3 className="mt-4 text-base font-semibold text-gray-900">
-              Share with your group
-            </h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Download a shareable card or copy a link to show your buddies
-              where you stack up.
-            </p>
           </div>
         </div>
       </section>
