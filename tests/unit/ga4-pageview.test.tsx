@@ -18,6 +18,7 @@ describe("GA4PageView component", () => {
   let mockGtag: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     mockGtag = vi.fn();
     (window as unknown as Record<string, unknown>).gtag = mockGtag;
     mockUsePathname.mockReturnValue("/strokes-gained");
@@ -25,6 +26,7 @@ describe("GA4PageView component", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     delete (window as unknown as Record<string, unknown>).gtag;
   });
 
@@ -76,9 +78,50 @@ describe("GA4PageView component", () => {
     );
   });
 
-  it("no-ops gracefully when window.gtag is undefined", () => {
+  it("no-ops gracefully when window.gtag is undefined and times out", () => {
     delete (window as unknown as Record<string, unknown>).gtag;
 
     expect(() => render(<GA4PageView />)).not.toThrow();
+
+    // Advance past the 5s timeout — should not throw
+    vi.advanceTimersByTime(6000);
+  });
+
+  it("fires page_view after gtag loads late (delayed script scenario)", () => {
+    // Start with no gtag — simulates afterInteractive script not yet loaded
+    delete (window as unknown as Record<string, unknown>).gtag;
+
+    render(<GA4PageView />);
+
+    // No call yet — gtag doesn't exist
+    expect(mockGtag).not.toHaveBeenCalled();
+
+    // Simulate gtag becoming available after 300ms (script loaded)
+    vi.advanceTimersByTime(200);
+    expect(mockGtag).not.toHaveBeenCalled();
+
+    (window as unknown as Record<string, unknown>).gtag = mockGtag;
+    vi.advanceTimersByTime(100);
+
+    expect(mockGtag).toHaveBeenCalledTimes(1);
+    expect(mockGtag).toHaveBeenCalledWith("event", "page_view", {
+      page_location: expect.stringContaining("/strokes-gained"),
+      page_path: "/strokes-gained",
+    });
+  });
+
+  it("stops polling after timeout when gtag never appears", () => {
+    delete (window as unknown as Record<string, unknown>).gtag;
+
+    render(<GA4PageView />);
+
+    // Advance past the 5s max wait
+    vi.advanceTimersByTime(6000);
+
+    // Now add gtag — should NOT fire since polling has stopped
+    (window as unknown as Record<string, unknown>).gtag = mockGtag;
+    vi.advanceTimersByTime(200);
+
+    expect(mockGtag).not.toHaveBeenCalled();
   });
 });
