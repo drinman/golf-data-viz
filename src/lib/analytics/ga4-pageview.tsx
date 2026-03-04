@@ -40,14 +40,16 @@ export function GA4PageView() {
       // No GA4 configured — skip entirely
       if (!process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID) return;
 
-      // Previous poll timed out — gtag is blocked, don't poll again
-      if (gtagUnavailableRef.current) return;
-
-      // gtag already available — fire immediately
+      // gtag already available — fire immediately (also clears timed-out flag
+      // for slow-network cases where gtag loads after the initial timeout)
       if (typeof window.gtag === "function") {
+        gtagUnavailableRef.current = false;
         firePageView(pathname);
         return;
       }
+
+      // Previous poll timed out — gtag is likely blocked, don't poll again
+      if (gtagUnavailableRef.current) return;
 
       // gtag not ready yet — poll until it appears or timeout
       const start = Date.now();

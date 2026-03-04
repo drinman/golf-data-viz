@@ -145,6 +145,29 @@ describe("GA4PageView component", () => {
     expect(mockGtag).not.toHaveBeenCalled();
   });
 
+  it("fires page_view on next route change when gtag appears after initial timeout (slow network)", () => {
+    delete (window as unknown as Record<string, unknown>).gtag;
+
+    const { rerender } = render(<GA4PageView />);
+
+    // First route: poll times out after 5s — gtag still missing
+    vi.advanceTimersByTime(6000);
+    expect(mockGtag).not.toHaveBeenCalled();
+
+    // gtag finally loads (slow network, not blocked)
+    (window as unknown as Record<string, unknown>).gtag = mockGtag;
+
+    // Navigate to a new page — should detect gtag and fire immediately
+    mockUsePathname.mockReturnValue("/methodology");
+    rerender(<GA4PageView />);
+
+    expect(mockGtag).toHaveBeenCalledTimes(1);
+    expect(mockGtag).toHaveBeenCalledWith("event", "page_view", {
+      page_location: expect.stringContaining("/methodology"),
+      page_path: "/methodology",
+    });
+  });
+
   it("skips polling entirely when GA4 measurement ID is not configured", () => {
     vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "");
     delete (window as unknown as Record<string, unknown>).gtag;
