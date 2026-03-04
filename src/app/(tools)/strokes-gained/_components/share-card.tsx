@@ -61,10 +61,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         <div className="bg-brand-900 px-8 pb-5 pt-6">
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1 pr-4">
-              <h2
-                className="truncate text-xl font-bold text-white"
-                style={{ fontFamily: "DM Serif Display, serif" }}
-              >
+              <h2 className="truncate font-display text-xl font-bold text-white">
                 {courseName}
               </h2>
               <p className="mt-1 text-sm text-brand-100">
@@ -86,10 +83,9 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 }`}
               >
                 <span
-                  className={`text-lg font-bold ${
+                  className={`font-mono text-lg font-bold ${
                     result.total >= 0 ? "text-green-400" : "text-red-300"
                   }`}
-                  style={{ fontFamily: "JetBrains Mono, monospace" }}
                 >
                   {formatSG(result.total)}
                 </span>
@@ -125,10 +121,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     }`}
                   />
                 )}
-                <span
-                  className="flex-1 px-4 py-2 text-sm font-medium text-neutral-800"
-                  style={{ fontFamily: "DM Sans, sans-serif" }}
-                >
+                <span className="flex-1 px-4 py-2 text-sm font-medium text-neutral-800">
                   {label}
                 </span>
                 {skipped ? (
@@ -137,10 +130,9 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                   </span>
                 ) : (
                   <span
-                    className={`px-4 py-2 text-sm font-semibold ${
+                    className={`font-mono px-4 py-2 text-sm font-semibold ${
                       value >= 0 ? "text-data-positive" : "text-data-negative"
                     }`}
-                    style={{ fontFamily: "JetBrains Mono, monospace" }}
                   >
                     {formatSG(value)}
                   </span>
