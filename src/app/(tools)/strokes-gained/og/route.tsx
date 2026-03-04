@@ -10,6 +10,11 @@ export const runtime = "edge";
 
 const SIZE = { width: 1200, height: 630 };
 
+// ─── Color tokens (Satori requires inline hex — see globals.css :root for source of truth) ───
+// brand-900: #0f3d22  │  cream-50: #fefcf3  │  gold-500: #b8860b
+// data-positive: #16a34a  │  data-negative: #dc2626
+// neutral-800: #292524  │  neutral-400: #a8a29e
+
 // Module-scope: loaded once, cached for all requests.
 // Wrapped in try/catch so vitest (which can't fetch file:// URLs) falls back gracefully.
 function loadFont(relativePath: string): Promise<ArrayBuffer> {

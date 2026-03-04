@@ -34,6 +34,15 @@ function FormField({
   );
 }
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950">
+      <span className="h-4 w-0.5 rounded-full bg-brand-800" />
+      {children}
+    </h2>
+  );
+}
+
 const inputClass =
   "block w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
 
@@ -102,7 +111,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
     >
       {/* Section 1: Handicap + Bracket */}
       <div className="space-y-4">
-        <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />Your Handicap</h2>
+        <SectionHeading>Your Handicap</SectionHeading>
         <div className="flex items-end gap-4">
           <div className="flex-1">
             <FormField
@@ -130,7 +139,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
 
       {/* Section 2: Course Info */}
       <div className="space-y-4">
-        <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />Course Info</h2>
+        <SectionHeading>Course Info</SectionHeading>
         <FormField label="Course Name" error={errors.course?.message}>
           <input
             type="text"
@@ -167,7 +176,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
 
       {/* Section 3: Core Stats */}
       <div className="space-y-4">
-        <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />Round Stats</h2>
+        <SectionHeading>Round Stats</SectionHeading>
         <FormField label="Score" error={errors.score?.message}>
           <input
             type="number"
@@ -235,9 +244,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
       {/* Section 4: Scoring Distribution */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950"><span className="h-4 w-0.5 rounded-full bg-brand-800" />
-            Scoring Breakdown
-          </h2>
+          <SectionHeading>Scoring Breakdown</SectionHeading>
           <span
             className={`text-sm font-medium ${
               scoringSum === 18 ? "text-green-600" : "text-amber-700"

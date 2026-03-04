@@ -13,7 +13,7 @@ test.use({
 test.describe("Visual regression", () => {
   test("home hero matches snapshot", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+
     await expect(page.getByTestId("hero-headline")).toBeVisible();
     await expect(page).toHaveScreenshot("home-hero.png", {
       maxDiffPixelRatio: 0.02,
@@ -23,7 +23,7 @@ test.describe("Visual regression", () => {
 
   test("strokes-gained results match snapshot", async ({ page }) => {
     await page.goto(`/strokes-gained?d=${ENCODED}`);
-    await page.waitForLoadState("networkidle");
+
     await expect(page.getByTestId("sg-results")).toBeVisible();
     await expect(page).toHaveScreenshot("sg-results.png", {
       maxDiffPixelRatio: 0.02,
@@ -33,7 +33,7 @@ test.describe("Visual regression", () => {
 
   test("share card matches snapshot", async ({ page }) => {
     await page.goto(`/strokes-gained/share-card-preview?d=${ENCODED}`);
-    await page.waitForLoadState("networkidle");
+
     await expect(page.getByTestId("share-card")).toBeVisible();
     const card = page.getByTestId("share-card");
     await expect(card).toHaveScreenshot("share-card.png", {
