@@ -4,29 +4,33 @@ import { makeRound } from "../fixtures/factories";
 
 // --- Mock Supabase ---
 
-const { mockInsert, mockGetUser } = vi.hoisted(() => ({
+const { mockInsert, mockGetUser, mockCreateClient } = vi.hoisted(() => ({
   mockInsert: vi.fn(),
   mockGetUser: vi.fn(),
+  mockCreateClient: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn().mockResolvedValue({
-    from: vi.fn(() => ({
-      insert: mockInsert,
-    })),
-    auth: {
-      getUser: mockGetUser,
-    },
-  }),
+  createClient: mockCreateClient,
 }));
 
 import { saveRound } from "@/app/(tools)/strokes-gained/actions";
+import { SupabaseConfigError } from "@/lib/supabase/errors";
 
 // --- Tests ---
 
 describe("saveRound server action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: createClient resolves normally
+    mockCreateClient.mockResolvedValue({
+      from: vi.fn(() => ({
+        insert: mockInsert,
+      })),
+      auth: {
+        getUser: mockGetUser,
+      },
+    });
     // Default: anonymous user (no session)
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
     // Default: successful insert
@@ -58,6 +62,16 @@ describe("saveRound server action", () => {
     if (!result.success) {
       expect(result.error).toBe("Network failure");
     }
+  });
+
+  it("returns save_unavailable when createClient throws SupabaseConfigError", async () => {
+    mockCreateClient.mockRejectedValue(
+      new SupabaseConfigError("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    );
+
+    const result = await saveRound(makeRound());
+    expect(result).toEqual({ success: false, error: "save_unavailable" });
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 
   it("passes mapped snake_case data to supabase insert", async () => {

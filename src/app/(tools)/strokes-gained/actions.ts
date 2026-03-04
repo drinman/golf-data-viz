@@ -4,6 +4,7 @@ import type { RoundInput } from "@/lib/golf/types";
 import { toRoundInsert } from "@/lib/golf/round-mapper";
 import { roundInputSchema } from "@/lib/golf/schemas";
 import { createClient } from "@/lib/supabase/server";
+import { SupabaseConfigError } from "@/lib/supabase/errors";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 
@@ -47,6 +48,10 @@ export async function saveRound(
 
     return { success: true };
   } catch (err) {
+    if (err instanceof SupabaseConfigError) {
+      console.error("[saveRound] Supabase config error:", err.message);
+      return { success: false, error: "save_unavailable" };
+    }
     console.error("[saveRound] Unexpected error:", err);
     return {
       success: false,
