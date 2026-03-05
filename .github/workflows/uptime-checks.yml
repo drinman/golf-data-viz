@@ -39,5 +39,5 @@ jobs:
           set -euo pipefail
           BASE="${BASE_URL:-https://golfdataviz.com}"
           MESSAGE="Uptime checks failed for ${BASE} in ${GITHUB_REPOSITORY}. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          PAYLOAD=$(printf '{"text":"%s"}' "${MESSAGE}")
+          PAYLOAD=$(jq -n --arg text "${MESSAGE}" '{text: $text}')
           curl -fsS -X POST -H "Content-type: application/json" --data "${PAYLOAD}" "${SLACK_WEBHOOK_URL}"

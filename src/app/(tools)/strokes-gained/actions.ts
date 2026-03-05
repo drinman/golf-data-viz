@@ -99,9 +99,9 @@ export async function saveRound(
       console.error("[saveRound] Supabase config error:", err.message);
       captureMonitoringException(err, {
         source: "saveRound",
-        code: "DB_ERROR",
+        code: "SAVE_DISABLED",
       });
-      return fail("DB_ERROR", DB_ERROR_MESSAGE);
+      return fail("SAVE_DISABLED", SAVE_DISABLED_MESSAGE);
     }
     console.error("[saveRound] Unexpected error:", err);
     captureMonitoringException(err, {

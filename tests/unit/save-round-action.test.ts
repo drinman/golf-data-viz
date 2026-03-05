@@ -112,6 +112,26 @@ describe("saveRound server action", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
+  it("returns VALIDATION when scoring breakdown does not sum to 18 holes", async () => {
+    const invalidRound = makeRound({
+      eagles: 1,
+      birdies: 1,
+      pars: 6,
+      bogeys: 7,
+      doubleBogeys: 1,
+      triplePlus: 1,
+    });
+
+    const result = await saveRound(invalidRound);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.code).toBe("VALIDATION");
+      expect(result.message).toMatch(/18|hole|sum/i);
+    }
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
   it("returns RATE_LIMITED when request exceeds limit", async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, reason: "minute" });
 
@@ -160,7 +180,7 @@ describe("saveRound server action", () => {
     expect(mockCaptureMonitoringException).not.toHaveBeenCalled();
   });
 
-  it("returns DB_ERROR when admin client config is missing", async () => {
+  it("returns SAVE_DISABLED when admin client config is missing", async () => {
     mockCreateAdminClient.mockImplementation(() => {
       throw new SupabaseConfigError("Missing config");
     });
@@ -169,14 +189,14 @@ describe("saveRound server action", () => {
 
     expect(result).toEqual({
       success: false,
-      code: "DB_ERROR",
-      message: "Round could not be saved.",
+      code: "SAVE_DISABLED",
+      message: "Cloud save unavailable — your results are still shown below.",
     });
     expect(mockCaptureMonitoringException).toHaveBeenCalledWith(
       expect.any(SupabaseConfigError),
       expect.objectContaining({
         source: "saveRound",
-        code: "DB_ERROR",
+        code: "SAVE_DISABLED",
       })
     );
   });
