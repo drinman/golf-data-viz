@@ -344,6 +344,24 @@ describe("Schema constraints (local Supabase)", () => {
       if (data?.id) insertedIds.push(data.id);
     });
 
+    it("sets trust_scored_at from DB time for non-pending trust rows", async () => {
+      const { data, error } = await admin
+        .from("rounds")
+        .insert(
+          validRound({
+            trust_status: "trusted",
+            trust_reasons: ["seeded_in_test"],
+          })
+        )
+        .select("id, trust_status, trust_scored_at")
+        .single();
+
+      expect(error).toBeNull();
+      expect(data?.trust_status).toBe("trusted");
+      expect(data?.trust_scored_at).not.toBeNull();
+      if (data?.id) insertedIds.push(data.id);
+    });
+
     it("rejects invalid trust_status values", async () => {
       const { error } = await admin
         .from("rounds")

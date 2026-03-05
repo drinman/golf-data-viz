@@ -90,7 +90,6 @@ export async function saveRound(
         user_id: null,
         trust_status: trust.status,
         trust_reasons: trust.reasons,
-        trust_scored_at: new Date().toISOString(),
       });
 
     if (error) {

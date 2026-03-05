@@ -232,7 +232,8 @@ describe("saveRound server action", () => {
     const insertedRow = mockInsert.mock.calls[0][0];
     expect(insertedRow.trust_status).toBe("trusted");
     expect(insertedRow.trust_reasons).toEqual([]);
-    expect(insertedRow.trust_scored_at).toEqual(expect.any(String));
+    // trust_scored_at is stamped by the database (trigger/default), not app clock.
+    expect(insertedRow.trust_scored_at).toBeUndefined();
   });
 
   it("writes quarantined trust metadata when trust rules flag anomalies", async () => {

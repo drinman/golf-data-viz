@@ -188,12 +188,14 @@ describe("assessRoundTrust", () => {
   });
 
   it("quarantines when rating/slope inputs are invalid for differential checks", () => {
-    const result = assessRoundTrust(
-      ({
-        ...makeRound(),
-        courseRating: 0,
-      } as unknown) as Parameters<typeof assessRoundTrust>[0]
-    );
+    const result = assessRoundTrust(makeRound({ courseRating: 0 }));
+
+    expect(result.status).toBe("quarantined");
+    expect(result.reasons).toContain("invalid_rating_or_slope");
+  });
+
+  it("quarantines when slopeRating is zero", () => {
+    const result = assessRoundTrust(makeRound({ slopeRating: 0 }));
 
     expect(result.status).toBe("quarantined");
     expect(result.reasons).toContain("invalid_rating_or_slope");
