@@ -89,6 +89,35 @@ describe("saveRound server action", () => {
     });
   });
 
+  it("retries without trust metadata when production schema is behind app code", async () => {
+    mockInsert
+      .mockResolvedValueOnce({
+        error: {
+          message:
+            "Could not find the 'trust_reasons' column of 'rounds' in the schema cache",
+          code: "PGRST204",
+        },
+      })
+      .mockResolvedValueOnce({ error: null });
+
+    const result = await saveRound(makeRound());
+
+    expect(result).toEqual({ success: true });
+    expect(mockInsert).toHaveBeenCalledTimes(2);
+    expect(mockInsert.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        trust_status: "trusted",
+        trust_reasons: [],
+      })
+    );
+    expect(mockInsert.mock.calls[1][0]).toEqual(
+      expect.not.objectContaining({
+        trust_status: expect.anything(),
+        trust_reasons: expect.anything(),
+      })
+    );
+  });
+
   it("returns UNEXPECTED when insert throws", async () => {
     mockInsert.mockRejectedValue(new Error("Network failure"));
 

@@ -31,12 +31,24 @@ const DB_ERROR_MESSAGE = "Round could not be saved.";
 const UNEXPECTED_MESSAGE = "An unexpected error occurred.";
 const RATE_LIMIT_MONITOR_SAMPLE_RATE = 0.1;
 
+type SupabaseInsertError = {
+  code?: string | null;
+  message?: string | null;
+};
+
 function fail(code: SaveRoundErrorCode, message: string): SaveRoundResult {
   return { success: false, code, message };
 }
 
 function shouldSampleRateLimitedEvent(): boolean {
   return Math.random() < RATE_LIMIT_MONITOR_SAMPLE_RATE;
+}
+
+function isMissingTrustSchemaError(error: SupabaseInsertError | null): boolean {
+  return (
+    error?.code === "PGRST204" &&
+    /trust_(status|reasons|scored_at)/.test(error.message ?? "")
+  );
 }
 
 export async function saveRound(
@@ -83,15 +95,26 @@ export async function saveRound(
 
     const supabase = createAdminClient();
     const row = toRoundInsert(validatedInput, sg);
+    const baseInsert = {
+      ...row,
+      user_id: null,
+    };
+    const insertWithTrust = {
+      ...baseInsert,
+      trust_status: trust.status,
+      trust_reasons: trust.reasons,
+    };
 
-    const { error } = await supabase
-      .from("rounds")
-      .insert({
-        ...row,
-        user_id: null,
-        trust_status: trust.status,
-        trust_reasons: trust.reasons,
-      });
+    let { error } = await supabase.from("rounds").insert(insertWithTrust);
+
+    // Temporary backward-compatibility for production while the trust-field migration
+    // is being applied. Once the schema catches up, the first insert path succeeds.
+    if (isMissingTrustSchemaError(error)) {
+      console.warn(
+        "[saveRound] Retrying insert without trust metadata because the DB schema is behind app code"
+      );
+      ({ error } = await supabase.from("rounds").insert(baseInsert));
+    }
 
     if (error) {
       console.error("[saveRound] Supabase error:", error.message);
