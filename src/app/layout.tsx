@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { GA4PageView } from "@/lib/analytics/ga4-pageview";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -72,6 +73,7 @@ export default function RootLayout({
       >
         <SiteHeader />
         {children}
+        <SiteFooter />
         <Analytics />
         <GA4PageView />
         {ga4Id && (

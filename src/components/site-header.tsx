@@ -34,7 +34,7 @@ export function SiteHeader() {
             Golf Data Viz
           </span>
         </Link>
-        <nav className="flex gap-4">
+        <nav aria-label="Main" className="flex gap-4">
           <Link
             href="/strokes-gained"
             className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"

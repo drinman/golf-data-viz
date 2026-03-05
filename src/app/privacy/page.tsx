@@ -1,0 +1,175 @@
+import type { Metadata } from "next";
+
+const EFFECTIVE_DATE = "March 4, 2026";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How Golf Data Viz handles your data — what we collect, how it's stored, and your rights.",
+  alternates: { canonical: "/privacy" },
+};
+
+export default function PrivacyPage() {
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="font-display text-3xl tracking-tight text-neutral-950">
+        Privacy Policy
+      </h1>
+      <p className="mt-2 text-sm text-neutral-500">
+        Effective {EFFECTIVE_DATE}
+      </p>
+
+      <p className="mt-6 text-sm text-neutral-600">
+        Golf Data Viz is built by a golfer, for golfers. We collect only what we
+        need to show you where you gain and lose strokes — nothing more.
+      </p>
+
+      {/* What we collect */}
+      <section
+        className="mt-10 border-t border-cream-200 pt-8"
+        data-testid="privacy-collect"
+      >
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          What We Collect
+        </h2>
+        <p className="mt-3 text-sm text-neutral-600">
+          When you enter a round, we store only the stats you provide:
+        </p>
+        <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
+          <li>Score, course rating, and slope rating</li>
+          <li>Fairways hit, greens in regulation, and total putts</li>
+          <li>Penalty strokes and scoring distribution (birdies, pars, bogeys, etc.)</li>
+          <li>Course name and handicap bracket</li>
+        </ul>
+      </section>
+
+      {/* What we do NOT collect */}
+      <section
+        className="mt-10 border-t border-cream-200 pt-8"
+        data-testid="privacy-not-collect"
+      >
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          What We Don&apos;t Collect
+        </h2>
+        <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
+          <li>
+            <strong>No account required</strong> — you can use the SG
+            Benchmarker without signing up
+          </li>
+          <li>
+            <strong>No personally identifying information</strong> — we
+            don&apos;t ask for your name, email, or location
+          </li>
+          <li>
+            <strong>No GPS or shot-level data</strong> — we work from aggregate
+            round stats only
+          </li>
+        </ul>
+      </section>
+
+      {/* How data is stored */}
+      <section
+        className="mt-10 border-t border-cream-200 pt-8"
+        data-testid="privacy-storage"
+      >
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          How Data Is Stored
+        </h2>
+        <p className="mt-3 text-sm text-neutral-600">
+          Round data is stored in a{" "}
+          <a
+            href="https://supabase.com"
+            className="text-brand-800 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Supabase
+          </a>
+          -hosted PostgreSQL database with row-level security enabled. Each
+          user&apos;s data is isolated at the database level — no user can access
+          another user&apos;s rounds.
+        </p>
+      </section>
+
+      {/* Sharing */}
+      <section
+        className="mt-10 border-t border-cream-200 pt-8"
+        data-testid="privacy-sharing"
+      >
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          Sharing
+        </h2>
+        <p className="mt-3 text-sm text-neutral-600">
+          Shareable links are <strong>opt-in</strong>. When you generate a share
+          link, it encodes only the round stats needed to render the chart — no
+          personal information is included. We do not sell, rent, or share your
+          data with third parties.
+        </p>
+      </section>
+
+      {/* Analytics */}
+      <section
+        className="mt-10 border-t border-cream-200 pt-8"
+        data-testid="privacy-analytics"
+      >
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          Analytics &amp; Error Tracking
+        </h2>
+        <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
+          <li>
+            <strong>Vercel Analytics</strong> — anonymous page-view and
+            performance metrics
+          </li>
+          <li>
+            <strong>Google Analytics 4</strong> — optional, used only for
+            aggregate traffic patterns (no personal data)
+          </li>
+          <li>
+            <strong>Sentry</strong> — error tracking to fix bugs; captures stack
+            traces, not user data
+          </li>
+        </ul>
+        <p className="mt-3 text-sm text-neutral-600">
+          None of these services receive your round stats or golf data.
+        </p>
+      </section>
+
+      {/* Contact */}
+      <section
+        className="mt-10 border-t border-cream-200 pt-8"
+        data-testid="privacy-contact"
+      >
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          Questions?
+        </h2>
+        <p className="mt-3 text-sm text-neutral-600">
+          If you have questions about how we handle data, open an issue on{" "}
+          <a
+            href="https://github.com/drinman/golf-data-viz"
+            className="text-brand-800 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>{" "}
+          or reach out on{" "}
+          <a
+            href="https://reddit.com/r/golf"
+            className="text-brand-800 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            r/golf
+          </a>
+          .
+        </p>
+      </section>
+
+      <div className="mt-12 border-t border-neutral-200 pt-6">
+        <p className="text-xs italic text-neutral-400">
+          This policy applies to golfdataviz.com. Last updated {EFFECTIVE_DATE}.
+        </p>
+      </div>
+    </main>
+  );
+}
