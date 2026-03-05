@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   calculateStrokesGained,
   toRadarChartData,
+  estimateGIR,
 } from "@/lib/golf/strokes-gained";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import type { StrokesGainedResult } from "@/lib/golf/types";
@@ -321,23 +322,25 @@ describe("calculateStrokesGained", () => {
 });
 
 describe("missing fairwaysHit and greensInRegulation", () => {
-  it("approach is skipped when GIR is missing", () => {
+  it("approach is estimated (not skipped) when GIR is missing", () => {
     const round = makeRound();
     delete round.greensInRegulation;
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(result.skippedCategories).toContain("approach");
-    expect(result.categories["approach"]).toBe(0);
+    expect(result.skippedCategories).not.toContain("approach");
+    expect(result.estimatedCategories).toContain("approach");
+    expect(result.categories["approach"]).not.toBe(0);
   });
 
-  it("ATG is skipped when GIR is missing and no up-and-down data", () => {
+  it("ATG is estimated (not skipped) when GIR is missing and no up-and-down data", () => {
     const round = makeRound();
     delete round.greensInRegulation;
     delete round.upAndDownAttempts;
     delete round.upAndDownConverted;
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(result.skippedCategories).toContain("around-the-green");
+    expect(result.skippedCategories).not.toContain("around-the-green");
+    expect(result.estimatedCategories).toContain("around-the-green");
   });
 
   it("ATG is NOT skipped when GIR is missing but up-and-down data exists", () => {
@@ -352,7 +355,7 @@ describe("missing fairwaysHit and greensInRegulation", () => {
     expect(Number.isFinite(result.categories["around-the-green"])).toBe(true);
   });
 
-  it("ATG is skipped when upAndDownAttempts = 0 and GIR is missing", () => {
+  it("ATG is estimated when upAndDownAttempts = 0 and GIR is missing", () => {
     const round = makeRound({
       upAndDownAttempts: 0,
       upAndDownConverted: 0,
@@ -360,7 +363,8 @@ describe("missing fairwaysHit and greensInRegulation", () => {
     delete round.greensInRegulation;
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(result.skippedCategories).toContain("around-the-green");
+    expect(result.skippedCategories).not.toContain("around-the-green");
+    expect(result.estimatedCategories).toContain("around-the-green");
   });
 
   it("OTT still calculates penalty component when fairwaysHit is missing", () => {
@@ -382,17 +386,19 @@ describe("missing fairwaysHit and greensInRegulation", () => {
     expect(Number.isFinite(result.categories["putting"])).toBe(true);
   });
 
-  it("total only sums non-skipped categories", () => {
+  it("total equals sum of all 4 categories when GIR is estimated", () => {
     const round = makeRound();
     delete round.greensInRegulation;
     delete round.upAndDownAttempts;
     delete round.upAndDownConverted;
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(result.total).toBeCloseTo(
-      result.categories["off-the-tee"] + result.categories["putting"],
-      10
-    );
+    const categorySum =
+      result.categories["off-the-tee"] +
+      result.categories["approach"] +
+      result.categories["around-the-green"] +
+      result.categories["putting"];
+    expect(result.total).toBeCloseTo(categorySum, 10);
   });
 
   it("handles both fairwaysHit and GIR missing simultaneously", () => {
@@ -404,8 +410,8 @@ describe("missing fairwaysHit and greensInRegulation", () => {
     const benchmark = getBracketForHandicap(14.3);
     const result = calculateStrokesGained(round, benchmark);
     expect(Number.isFinite(result.total)).toBe(true);
-    expect(result.skippedCategories).toContain("approach");
-    expect(result.skippedCategories).toContain("around-the-green");
+    expect(result.estimatedCategories).toContain("approach");
+    expect(result.estimatedCategories).toContain("around-the-green");
     expect(result.skippedCategories).not.toContain("off-the-tee");
     expect(result.skippedCategories).not.toContain("putting");
   });
@@ -448,6 +454,7 @@ describe("toRadarChartData", () => {
       },
       benchmarkBracket: "10-15",
       skippedCategories: [],
+      estimatedCategories: [],
     };
     const chartHigh = toRadarChartData(extremePositive);
     for (const datum of chartHigh) {
@@ -466,6 +473,7 @@ describe("toRadarChartData", () => {
       },
       benchmarkBracket: "10-15",
       skippedCategories: [],
+      estimatedCategories: [],
     };
     const chartLow = toRadarChartData(extremeNegative);
     for (const datum of chartLow) {
@@ -501,7 +509,7 @@ describe("toRadarChartData", () => {
     }
   });
 
-  it("marks skipped categories at baseline 50 with skipped flag", () => {
+  it("shows real estimated values for categories with estimated GIR (no skipped flag)", () => {
     const round = makeRound();
     delete round.greensInRegulation;
     delete round.upAndDownAttempts;
@@ -510,16 +518,130 @@ describe("toRadarChartData", () => {
     const result = calculateStrokesGained(round, benchmark);
     const chartData = toRadarChartData(result);
 
+    // With estimation, no categories are skipped — all get real values
     const approach = chartData.find((d) => d.category === "Approach");
     const atg = chartData.find((d) => d.category === "Around the Green");
-    expect(approach?.player).toBe(50);
-    expect(approach?.skipped).toBe(true);
-    expect(atg?.player).toBe(50);
-    expect(atg?.skipped).toBe(true);
+    expect(approach?.skipped).toBeUndefined();
+    expect(atg?.skipped).toBeUndefined();
+    expect(approach?.player).not.toBe(50); // real estimated value, not baseline
 
     const ott = chartData.find((d) => d.category === "Off the Tee");
     const putting = chartData.find((d) => d.category === "Putting");
     expect(ott?.skipped).toBeUndefined();
     expect(putting?.skipped).toBeUndefined();
+  });
+});
+
+describe("GIR estimation", () => {
+  // estimateGIR function
+  it("estimateGIR returns reasonable value for typical 14-hcp round", () => {
+    const round = makeRound({
+      eagles: 0,
+      birdies: 1,
+      pars: 7,
+    });
+    // 0 + 1 + 7*0.65 = 5.55 → rounds to 6
+    expect(estimateGIR(round)).toBe(6);
+  });
+
+  it("estimateGIR caps at 18", () => {
+    const round = makeRound({
+      eagles: 5,
+      birdies: 10,
+      pars: 3,
+    });
+    // 5 + 10 + 3*0.65 = 16.95 → 17, still under 18
+    expect(estimateGIR(round)).toBeLessThanOrEqual(18);
+  });
+
+  it("estimateGIR returns 0 when scoring is all triple+", () => {
+    const round = makeRound({
+      eagles: 0,
+      birdies: 0,
+      pars: 0,
+      bogeys: 0,
+      doubleBogeys: 0,
+      triplePlus: 18,
+    });
+    expect(estimateGIR(round)).toBe(0);
+  });
+
+  it("estimateGIR handles 0 pars correctly", () => {
+    const round = makeRound({
+      eagles: 0,
+      birdies: 2,
+      pars: 0,
+    });
+    expect(estimateGIR(round)).toBe(2);
+  });
+
+  // Integration with calculateStrokesGained
+  it("approach is NOT in skippedCategories when GIR is estimated", () => {
+    const round = makeRound();
+    delete round.greensInRegulation;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.skippedCategories).not.toContain("approach");
+    expect(result.estimatedCategories).toContain("approach");
+  });
+
+  it("around-the-green is NOT in skippedCategories when GIR is estimated (no up-and-down data)", () => {
+    const round = makeRound();
+    delete round.greensInRegulation;
+    delete round.upAndDownAttempts;
+    delete round.upAndDownConverted;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.skippedCategories).not.toContain("around-the-green");
+    expect(result.estimatedCategories).toContain("around-the-green");
+  });
+
+  it("around-the-green is NOT in estimatedCategories when real up-and-down data provided (even if GIR missing)", () => {
+    const round = makeRound({
+      upAndDownAttempts: 8,
+      upAndDownConverted: 4,
+    });
+    delete round.greensInRegulation;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.estimatedCategories).not.toContain("around-the-green");
+    expect(result.estimatedCategories).toContain("approach");
+  });
+
+  it("estimatedCategories includes 'approach' when GIR was missing", () => {
+    const round = makeRound();
+    delete round.greensInRegulation;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.estimatedCategories).toContain("approach");
+  });
+
+  it("estimatedCategories is empty when all fields provided", () => {
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(makeRound(), benchmark);
+    expect(result.estimatedCategories).toEqual([]);
+  });
+
+  it("total equals sum of all 4 categories when GIR is estimated", () => {
+    const round = makeRound();
+    delete round.greensInRegulation;
+    delete round.upAndDownAttempts;
+    delete round.upAndDownConverted;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    const categorySum =
+      result.categories["off-the-tee"] +
+      result.categories["approach"] +
+      result.categories["around-the-green"] +
+      result.categories["putting"];
+    expect(result.total).toBeCloseTo(categorySum, 10);
+  });
+
+  it("skippedCategories is empty when GIR is estimated (backward compat)", () => {
+    const round = makeRound();
+    delete round.greensInRegulation;
+    const benchmark = getBracketForHandicap(14.3);
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.skippedCategories).toEqual([]);
   });
 });

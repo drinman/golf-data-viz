@@ -62,6 +62,8 @@ export interface StrokesGainedResult {
   benchmarkBracket: HandicapBracket;
   /** Categories that could not be calculated due to missing input data. Value is 0, excluded from total. */
   skippedCategories: StrokesGainedCategory[];
+  /** Categories whose values were derived from estimated (not user-provided) data */
+  estimatedCategories: StrokesGainedCategory[];
 }
 
 /** Benchmark data for a single handicap bracket */

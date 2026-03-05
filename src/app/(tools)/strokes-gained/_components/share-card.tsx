@@ -43,11 +43,13 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
       BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
 
     const skippedSet = new Set(result.skippedCategories);
+    const estimatedSet = new Set(result.estimatedCategories);
     const entries = CATEGORY_ORDER.map((key) => ({
       key,
       label: CATEGORY_LABELS[key],
       value: result.categories[key],
       skipped: skippedSet.has(key),
+      estimated: estimatedSet.has(key),
     }));
 
     return (
@@ -69,7 +71,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </p>
               {benchmarkMeta && (
                 <p className="mt-0.5 text-xs italic text-brand-100/70">
-                  Estimated SG Proxy{benchmarkMeta.provisional ? " (provisional)" : ""} &middot; Benchmarks v{benchmarkMeta.version}
+                  Peer-compared SG{benchmarkMeta.provisional ? " · Beta" : ""} &middot; Benchmarks v{benchmarkMeta.version}
                 </p>
               )}
             </div>
@@ -110,7 +112,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
           {/* Category rows */}
           <div className="mt-4 space-y-1.5">
-            {entries.map(({ key, label, value, skipped }, i) => (
+            {entries.map(({ key, label, value, skipped, estimated }, i) => (
               <div
                 key={key}
                 className={`flex items-center justify-between overflow-hidden rounded-md ${
@@ -133,12 +135,19 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     Not Tracked
                   </span>
                 ) : (
-                  <span
-                    className={`font-mono px-4 py-2 text-sm font-semibold ${
-                      value >= 0 ? "text-data-positive" : "text-data-negative"
-                    }`}
-                  >
-                    {formatSG(value)}
+                  <span className="flex items-center gap-1.5 px-4 py-2">
+                    {estimated && (
+                      <span className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] font-medium text-neutral-500">
+                        Est.
+                      </span>
+                    )}
+                    <span
+                      className={`font-mono text-sm font-semibold ${
+                        value >= 0 ? "text-data-positive" : "text-data-negative"
+                      }`}
+                    >
+                      {formatSG(value)}
+                    </span>
                   </span>
                 )}
               </div>

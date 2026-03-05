@@ -404,7 +404,7 @@ export default function MethodologyPage() {
       <footer className="mt-12 border-t border-neutral-200 pt-6">
         <p className="text-xs italic text-neutral-400">
           Benchmarks v{meta.version} (updated {meta.updatedAt}), based on
-          USGA/Arccos/Shot Scope/Stagner. This is an estimated SG proxy, not
+          USGA/Arccos/Shot Scope/Stagner. This is a peer-compared SG proxy, not
           true shot-level Strokes Gained. Full methodology linked.
         </p>
       </footer>

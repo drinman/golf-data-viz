@@ -36,6 +36,7 @@ export function makeSGResult(
     },
     benchmarkBracket: "10-15",
     skippedCategories: [],
+    estimatedCategories: [],
     ...overrides,
   };
 }

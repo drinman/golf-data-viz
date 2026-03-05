@@ -6,7 +6,8 @@ export type AnalyticsEvent =
   | "copy_link_clicked"
   | "shared_round_viewed"
   | "round_saved"
-  | "round_save_failed";
+  | "round_save_failed"
+  | "gir_estimated";
 
 export type AnalyticsEventProps = {
   landing_cta_clicked: Record<string, never>;
@@ -16,6 +17,7 @@ export type AnalyticsEventProps = {
   copy_link_clicked: { has_share_param: boolean };
   shared_round_viewed: { referrer: string; utm_source: string };
   round_saved: Record<string, never>;
+  gir_estimated: Record<string, never>;
   round_save_failed: {
     error_type: "config" | "runtime" | "network" | "rate_limited";
   };

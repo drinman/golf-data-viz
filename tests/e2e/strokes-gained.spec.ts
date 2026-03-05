@@ -225,10 +225,10 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     const sgResults = page.locator('[data-testid="sg-results"]');
 
-    // Trust label with provisional flag and proxy language
+    // Trust label with new "Peer-compared SG" language + Beta pill
     // Scoped to visible results summary (share card has a duplicate off-screen)
     const trustLabel = sgResults
-      .getByText(/Estimated SG Proxy \(provisional\).*Benchmarks v/)
+      .getByText(/Peer-compared SG.*Benchmarks v/)
       .first();
     await expect(trustLabel).toBeVisible();
     await expect(
@@ -268,7 +268,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByText(/proxy model/i).first()).toBeVisible();
   });
 
-  test("partial round (blank FIR/GIR) shows Not Tracked and survives share/reload", async ({
+  test("partial round (blank FIR/GIR) shows Est. badges and survives share/reload", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -276,13 +276,15 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     const sgResults = page.locator('[data-testid="sg-results"]');
 
-    // Skipped categories should show "Not Tracked"
-    const notTrackedLabels = sgResults.getByText("Not Tracked");
-    await expect(notTrackedLabels.first()).toBeVisible();
+    // Estimated categories should show "Est." badge instead of "Not Tracked"
+    const estBadges = sgResults.getByText("Est.");
+    await expect(estBadges.first()).toBeVisible();
 
-    // Active categories (OTT, Putting) should still show SG values
+    // All four categories should show SG values
     const results = sgResults.locator("ul");
     await expect(results.getByText("Off the Tee")).toBeVisible();
+    await expect(results.getByText("Approach")).toBeVisible();
+    await expect(results.getByText("Around the Green")).toBeVisible();
     await expect(results.getByText("Putting")).toBeVisible();
 
     // Get the share URL and navigate to it fresh
@@ -294,9 +296,9 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByText("Your Strokes Gained Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
-    // "Not Tracked" should still render after reload
+    // "Est." badges should still render after reload
     const reloadedResults = page.locator('[data-testid="sg-results"]');
-    await expect(reloadedResults.getByText("Not Tracked").first()).toBeVisible();
+    await expect(reloadedResults.getByText("Est.").first()).toBeVisible();
   });
 
   test("unchecked save consent computes results without save banners", async ({
