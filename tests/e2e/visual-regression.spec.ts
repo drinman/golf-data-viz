@@ -31,6 +31,20 @@ test.describe("Visual regression", () => {
     });
   });
 
+  test("course info row aligns on desktop", async ({ page }) => {
+    await page.goto("/strokes-gained");
+
+    await page.fill('[name="date"]', "2026-03-05");
+    await page.fill('[name="courseRating"]', "72.0");
+    await page.fill('[name="slopeRating"]', "130");
+
+    const courseInfoRow = page.getByTestId("course-info-row");
+    await expect(courseInfoRow).toBeVisible();
+    await expect(courseInfoRow).toHaveScreenshot("sg-course-info-row.png", {
+      maxDiffPixelRatio: 0.02,
+    });
+  });
+
   test("share card matches snapshot", async ({ page }) => {
     await page.goto(`/strokes-gained/share-card-preview?d=${ENCODED}`);
 

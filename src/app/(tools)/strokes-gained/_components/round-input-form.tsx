@@ -29,8 +29,8 @@ function FormField({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1">
-      <label className="block space-y-1">
+    <div className="flex h-full flex-col gap-1">
+      <label className="flex flex-1 flex-col gap-1">
         <span className="block text-sm font-medium text-neutral-800">{label}</span>
         <p
           className={`min-h-5 text-xs ${
@@ -40,7 +40,7 @@ function FormField({
         >
           {hint ?? "\u00A0"}
         </p>
-        {children}
+        <div className="mt-auto">{children}</div>
       </label>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
@@ -167,7 +167,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
             {...register("course")}
           />
         </FormField>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" data-testid="course-info-row">
           <FormField label="Date" error={errors.date?.message}>
             <input type="date" className={inputClass} {...register("date")} />
           </FormField>
