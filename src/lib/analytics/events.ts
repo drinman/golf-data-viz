@@ -11,11 +11,7 @@ export type AnalyticsEvent =
 export type AnalyticsEventProps = {
   landing_cta_clicked: Record<string, never>;
   form_started: Record<string, never>;
-  calculation_completed: {
-    benchmark_bracket: string;
-    total_sg: number;
-    score: number;
-  };
+  calculation_completed: Record<string, never>;
   download_png_clicked: { has_share_param: boolean };
   copy_link_clicked: { has_share_param: boolean };
   shared_round_viewed: { referrer: string; utm_source: string };

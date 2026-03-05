@@ -89,7 +89,17 @@ vi.mock("@/components/charts/radar-chart", () => ({
 vi.mock(
   "@/app/(tools)/strokes-gained/_components/round-input-form",
   () => ({
-    RoundInputForm: () => <button data-testid="mock-submit">Submit</button>,
+    RoundInputForm: ({
+      onSubmit,
+    }: {
+      onSubmit: (data: unknown, options?: { saveToCloud: boolean }) => void;
+      initialValues?: unknown;
+      isCalculating?: boolean;
+    }) => (
+      <button data-testid="mock-submit" type="button" onClick={() => onSubmit({}, { saveToCloud: false })}>
+        Submit
+      </button>
+    ),
   })
 );
 

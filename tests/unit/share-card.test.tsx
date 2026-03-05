@@ -137,4 +137,27 @@ describe("ShareCard", () => {
 
     expect(screen.getByText(/Estimated SG Proxy/)).toBeTruthy();
   });
+
+  it("shows context legend and strokes-gained watermark URL", () => {
+    const result = makeSGResult();
+    const chartData = makeChartData();
+
+    render(
+      <ShareCard
+        result={result}
+        chartData={chartData}
+        courseName="Test"
+        score={85}
+      />
+    );
+
+    expect(
+      screen.getByText(
+        "+ = better than peers · − = room to grow · Dashed line = peer average"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Golf Data Viz · golfdataviz\.com\/strokes-gained/)
+    ).toBeTruthy();
+  });
 });

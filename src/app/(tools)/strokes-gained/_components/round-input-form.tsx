@@ -3,23 +3,28 @@
 
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { roundInputSchema, type RoundInputFormData } from "@/lib/golf/schemas";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import type { RoundInput } from "@/lib/golf/types";
 
 interface RoundInputFormProps {
-  onSubmit: (data: RoundInput) => void;
+  onSubmit: (
+    data: RoundInput,
+    options?: { saveToCloud: boolean }
+  ) => void;
   initialValues?: Partial<RoundInput> | null;
   isCalculating?: boolean;
 }
 
 function FormField({
   label,
+  hint,
   error,
   children,
 }: {
   label: string;
+  hint?: string;
   error?: string;
   children: React.ReactNode;
 }) {
@@ -27,6 +32,7 @@ function FormField({
     <div className="space-y-1">
       <label className="block space-y-1">
         <span className="block text-sm font-medium text-neutral-800">{label}</span>
+        {hint && <p className="text-xs text-neutral-400">{hint}</p>}
         {children}
       </label>
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -48,6 +54,11 @@ const inputClass =
 
 export function RoundInputForm({ onSubmit, initialValues, isCalculating }: RoundInputFormProps) {
   const [showOptional, setShowOptional] = useState(false);
+  const [saveToCloud, setSaveToCloud] = useState(false);
+
+  useEffect(() => {
+    setSaveToCloud(false);
+  }, [initialValues]);
 
   const {
     register,
@@ -100,7 +111,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
     (Number(triples) || 0);
 
   function handleFormSubmit(data: RoundInputFormData) {
-    onSubmit(data as RoundInput);
+    onSubmit(data, { saveToCloud });
   }
 
   return (
@@ -116,6 +127,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
           <div className="flex-1">
             <FormField
               label="Handicap Index"
+              hint="Your official USGA index (GHIN, TheGrint, etc.)"
               error={errors.handicapIndex?.message}
             >
               <input
@@ -152,7 +164,11 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
           <FormField label="Date" error={errors.date?.message}>
             <input type="date" className={inputClass} {...register("date")} />
           </FormField>
-          <FormField label="Course Rating" error={errors.courseRating?.message}>
+          <FormField
+            label="Course Rating"
+            hint="Found on your scorecard — not the same as par"
+            error={errors.courseRating?.message}
+          >
             <input
               type="number"
               inputMode="decimal"
@@ -162,7 +178,11 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
               {...register("courseRating")}
             />
           </FormField>
-          <FormField label="Slope Rating" error={errors.slopeRating?.message}>
+          <FormField
+            label="Slope Rating"
+            hint="Also on your scorecard — higher means harder for bogey golfers"
+            error={errors.slopeRating?.message}
+          >
             <input
               type="number"
               inputMode="numeric"
@@ -187,7 +207,11 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
           />
         </FormField>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Fairways Hit (optional)" error={errors.fairwaysHit?.message}>
+          <FormField
+            label="Fairways Hit (optional)"
+            hint="Tee shots that landed in the fairway (par 4s and 5s)"
+            error={errors.fairwaysHit?.message}
+          >
             <input
               type="number"
               inputMode="numeric"
@@ -197,6 +221,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
           </FormField>
           <FormField
             label="Fairway Attempts"
+            hint="Par 4s + par 5s — most courses have 14"
             error={errors.fairwayAttempts?.message}
           >
             <input
@@ -210,6 +235,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
         <div className="grid grid-cols-2 gap-4">
           <FormField
             label="Greens in Regulation (optional)"
+            hint="Greens hit in par minus 2 shots"
             error={errors.greensInRegulation?.message}
           >
             <input
@@ -219,7 +245,11 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
               {...register("greensInRegulation")}
             />
           </FormField>
-          <FormField label="Total Putts" error={errors.totalPutts?.message}>
+          <FormField
+            label="Total Putts"
+            hint="Total putts for all 18 holes"
+            error={errors.totalPutts?.message}
+          >
             <input
               type="number"
               inputMode="numeric"
@@ -230,6 +260,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
         </div>
         <FormField
           label="Penalty Strokes"
+          hint="OB, water, lost ball — total penalty strokes"
           error={errors.penaltyStrokes?.message}
         >
           <input
@@ -253,6 +284,9 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
             {scoringSum}/18 holes
           </span>
         </div>
+        <p className="text-xs text-neutral-400">
+          How many of each score type? Must add up to 18
+        </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <FormField label="Eagles" error={errors.eagles?.message}>
             <input
@@ -319,6 +353,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 label="Up & Down Attempts"
+                hint="Times you missed the green and tried to get up-and-down"
                 error={errors.upAndDownAttempts?.message}
               >
                 <input
@@ -330,6 +365,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
               </FormField>
               <FormField
                 label="Up & Downs Made"
+                hint="Successful up-and-downs (got down in 2 from off the green)"
                 error={errors.upAndDownConverted?.message}
               >
                 <input
@@ -364,7 +400,11 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
                 />
               </FormField>
             </div>
-            <FormField label="Three-Putts" error={errors.threePutts?.message}>
+            <FormField
+              label="Three-Putts"
+              hint="Holes where you took 3 or more putts"
+              error={errors.threePutts?.message}
+            >
               <input
                 type="number"
                 inputMode="numeric"
@@ -375,6 +415,16 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
           </div>
         )}
       </div>
+
+      <label className="flex items-start gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-700">
+        <input
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 rounded border-cream-300 text-brand-800 focus:ring-brand-800/30"
+          checked={saveToCloud}
+          onChange={(event) => setSaveToCloud(event.target.checked)}
+        />
+        <span>Save this round anonymously to improve future benchmarks.</span>
+      </label>
 
       {/* Submit */}
       <button

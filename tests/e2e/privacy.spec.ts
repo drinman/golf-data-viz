@@ -18,6 +18,21 @@ test.describe("Privacy policy page", () => {
     await expect(page.getByTestId("privacy-contact")).toBeVisible();
   });
 
+  test("sharing and analytics disclosures match launch wording", async ({
+    page,
+  }) => {
+    await expect(
+      page.getByText(
+        "Sharing is opt-in. If you share a results link, it contains encoded round stats needed to recreate the chart."
+      )
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "We do not send round stat fields (score, fairways, GIR, putts, penalties, category counts) to analytics platforms."
+      )
+    ).toBeVisible();
+  });
+
   test("page has effective date", async ({ page }) => {
     await expect(page.getByText("Effective")).toBeVisible();
   });

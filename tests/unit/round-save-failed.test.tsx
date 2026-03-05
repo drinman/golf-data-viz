@@ -97,7 +97,7 @@ vi.mock(
     RoundInputForm: ({
       onSubmit,
     }: {
-      onSubmit: (data: unknown) => void;
+      onSubmit: (data: unknown, options?: { saveToCloud: boolean }) => void;
       initialValues?: unknown;
       isCalculating?: boolean;
     }) => (
@@ -105,25 +105,28 @@ vi.mock(
         data-testid="mock-submit"
         type="button"
         onClick={() =>
-          onSubmit({
-            handicapIndex: 12,
-            course: "Test Course",
-            date: "2025-06-01",
-            courseRating: 72,
-            slopeRating: 130,
-            score: 87,
-            fairwaysHit: 6,
-            fairwayAttempts: 14,
-            greensInRegulation: 5,
-            totalPutts: 33,
-            penaltyStrokes: 1,
-            eagles: 0,
-            birdies: 1,
-            pars: 6,
-            bogeys: 7,
-            doubleBogeys: 3,
-            triplePlus: 1,
-          })
+          onSubmit(
+            {
+              handicapIndex: 12,
+              course: "Test Course",
+              date: "2025-06-01",
+              courseRating: 72,
+              slopeRating: 130,
+              score: 87,
+              fairwaysHit: 6,
+              fairwayAttempts: 14,
+              greensInRegulation: 5,
+              totalPutts: 33,
+              penaltyStrokes: 1,
+              eagles: 0,
+              birdies: 1,
+              pars: 6,
+              bogeys: 7,
+              doubleBogeys: 3,
+              triplePlus: 1,
+            },
+            { saveToCloud: true }
+          )
         }
       >
         Submit

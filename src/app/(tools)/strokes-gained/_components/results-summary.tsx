@@ -16,6 +16,13 @@ const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
   putting: "Putting",
 };
 
+const CATEGORY_DESCRIPTIONS: Record<StrokesGainedCategory, string> = {
+  "off-the-tee": "Driving accuracy and penalty avoidance vs your peers",
+  approach: "Hitting greens in regulation vs your peers",
+  "around-the-green": "Scrambling and up-and-down success vs your peers",
+  putting: "Putting efficiency and three-putt avoidance vs your peers",
+};
+
 const CATEGORY_ORDER: StrokesGainedCategory[] = [
   "off-the-tee",
   "approach",
@@ -39,6 +46,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const entries = CATEGORY_ORDER.map((key) => ({
     key,
     label: CATEGORY_LABELS[key],
+    description: CATEGORY_DESCRIPTIONS[key],
     value: result.categories[key],
     skipped: skippedSet.has(key),
   }));
@@ -81,7 +89,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
 
       {/* Per-category breakdown */}
       <ul className="space-y-3">
-        {entries.map(({ key, label, value, skipped }) => (
+        {entries.map(({ key, label, description, value, skipped }) => (
           <li
             key={key}
             className="flex items-center justify-between overflow-hidden rounded-lg border border-card-border"
@@ -96,6 +104,9 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
             )}
             <span className="flex-1 px-4 py-3 text-sm font-medium text-neutral-800">
               {label}
+              <span className="mt-0.5 block text-xs font-normal text-neutral-400">
+                {description}
+              </span>
             </span>
             {skipped ? (
               <span className="px-4 py-3 text-sm italic text-neutral-400">Not Tracked</span>
@@ -125,6 +136,9 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
             <p className="mt-1 text-sm font-semibold text-neutral-950">
               {strength.label}
             </p>
+            <p className="text-xs text-neutral-500">
+              {CATEGORY_DESCRIPTIONS[strength.key]}
+            </p>
             <p className="font-mono text-sm tabular-nums text-data-positive">{formatSG(strength.value)}</p>
           </div>
           <div className="rounded-lg bg-red-50 px-4 py-3">
@@ -136,6 +150,9 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
             </div>
             <p className="mt-1 text-sm font-semibold text-neutral-950">
               {weakness.label}
+            </p>
+            <p className="text-xs text-neutral-500">
+              {CATEGORY_DESCRIPTIONS[weakness.key]}
             </p>
             <p className="font-mono text-sm tabular-nums text-data-negative">{formatSG(weakness.value)}</p>
           </div>

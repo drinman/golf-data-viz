@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
           >
             <div style={{ width: 120, height: 1, backgroundColor: "#b8860b", opacity: 0.6 }} />
             <div style={{ fontSize: 18, color: "#b8860b", marginTop: 16 }}>
-              golfdataviz.com
+              golfdataviz.com/strokes-gained
             </div>
           </div>
         </div>
@@ -293,6 +293,16 @@ export async function GET(request: NextRequest) {
               </div>
             ))}
           </div>
+          <div
+            style={{
+              fontSize: 14,
+              color: "#a8a29e",
+              textAlign: "center",
+              marginTop: 12,
+            }}
+          >
+            + = better than peers · − = room to grow · Dashed line = peer average
+          </div>
 
           {/* Gold watermark */}
           <div
@@ -304,7 +314,7 @@ export async function GET(request: NextRequest) {
             }}
           >
             <div style={{ fontSize: 16, color: "#b8860b" }}>
-              Golf Data Viz · golfdataviz.com
+              Golf Data Viz · golfdataviz.com/strokes-gained
             </div>
           </div>
         </div>

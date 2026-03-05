@@ -68,6 +68,28 @@ async function fillRound(page: import("@playwright/test").Page) {
 }
 
 test.describe("Strokes Gained Benchmarker", () => {
+  test("form shows trust hints and save consent defaults to unchecked", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+
+    await expect(
+      page.getByText("Your official USGA index (GHIN, TheGrint, etc.)")
+    ).toBeVisible();
+    await expect(
+      page.getByText("Found on your scorecard — not the same as par")
+    ).toBeVisible();
+    await expect(
+      page.getByText("How many of each score type? Must add up to 18")
+    ).toBeVisible();
+
+    const saveConsent = page.getByLabel(
+      "Save this round anonymously to improve future benchmarks."
+    );
+    await expect(saveConsent).toBeVisible();
+    await expect(saveConsent).not.toBeChecked();
+  });
+
   test("full happy path: submit round and see radar chart", async ({
     page,
   }) => {
@@ -212,6 +234,23 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(
       sgResults.getByText(/encoded \(reversible\) form/i)
     ).toBeVisible();
+    await expect(
+      sgResults
+        .getByText("Driving accuracy and penalty avoidance vs your peers")
+        .first()
+    ).toBeVisible();
+
+    const readSummary = sgResults.getByText("How to read these results");
+    await readSummary.click();
+    await expect(
+      sgResults.getByText("Outside the dashed ring = better than peers. Inside = worse.")
+    ).toBeVisible();
+    await expect(
+      sgResults.getByText("Positive (+) = you gained strokes. Negative (−) = you lost strokes.")
+    ).toBeVisible();
+    await expect(
+      sgResults.getByText("Focus on your weakest category — that's where practice helps most.")
+    ).toBeVisible();
 
     // Benchmarks link navigates to methodology page (first = visible summary)
     const benchmarksLink = sgResults
@@ -258,6 +297,16 @@ test.describe("Strokes Gained Benchmarker", () => {
     // "Not Tracked" should still render after reload
     const reloadedResults = page.locator('[data-testid="sg-results"]');
     await expect(reloadedResults.getByText("Not Tracked").first()).toBeVisible();
+  });
+
+  test("unchecked save consent computes results without save banners", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitRound(page);
+
+    await expect(page.getByTestId("save-success")).not.toBeVisible();
+    await expect(page.getByTestId("save-error")).not.toBeVisible();
   });
 
   test("submit button shows Calculating... while processing", async ({

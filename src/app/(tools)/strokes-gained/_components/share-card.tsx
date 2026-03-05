@@ -103,6 +103,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           <div style={{ height: 300 }}>
             <RadarChart data={chartData} bracketLabel={bracketLabel} />
           </div>
+          <p className="mt-2 text-center text-xs text-neutral-400">
+            + = better than peers · − = room to grow · Dashed line = peer
+            average
+          </p>
 
           {/* Category rows */}
           <div className="mt-4 space-y-1.5">
@@ -150,7 +154,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               <circle cx="16" cy="16" r="1.8" fill="currentColor" />
             </svg>
             <p className="text-xs text-accent-500">
-              Golf Data Viz &middot; golfdataviz.com
+              Golf Data Viz &middot; golfdataviz.com/strokes-gained
             </p>
           </div>
         </div>

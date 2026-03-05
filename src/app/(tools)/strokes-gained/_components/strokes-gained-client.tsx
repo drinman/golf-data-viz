@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { trackEvent } from "@/lib/analytics/client";
 import type {
@@ -98,7 +99,10 @@ export default function StrokesGainedClient({
     };
   }, []);
 
-  function handleFormSubmit(input: RoundInput) {
+  function handleFormSubmit(
+    input: RoundInput,
+    options?: { saveToCloud: boolean }
+  ) {
     setIsCalculating(true);
 
     const benchmark = getBracketForHandicap(input.handicapIndex);
@@ -115,11 +119,7 @@ export default function StrokesGainedClient({
     if (saveSuccessTimerRef.current)
       clearTimeout(saveSuccessTimerRef.current);
 
-    trackEvent("calculation_completed", {
-      benchmark_bracket: sgResult.benchmarkBracket,
-      total_sg: sgResult.total,
-      score: input.score,
-    });
+    trackEvent("calculation_completed");
 
     // Update URL with shareable param (no navigation)
     const encoded = encodeRound(input);
@@ -133,49 +133,52 @@ export default function StrokesGainedClient({
     // Request scoping: only apply the result from the latest submit
     const requestId = ++saveRequestIdRef.current;
 
-    // Save to DB in background — surface errors to user
-    saveRound(input)
-      .then((res) => {
-        if (requestId !== saveRequestIdRef.current) return;
-        if (res.success) {
-          trackEvent("round_saved");
-          setSaveSuccess(true);
-          saveSuccessTimerRef.current = setTimeout(
-            () => setSaveSuccess(false),
-            3000
-          );
-        } else if (res.code === "SAVE_DISABLED") {
-          trackEvent("round_save_failed", { error_type: "config" });
-          setSaveError({
-            type: "config",
-            message:
-              "Cloud save unavailable — your results are still shown below.",
-          });
-        } else if (res.code === "RATE_LIMITED") {
-          trackEvent("round_save_failed", { error_type: "rate_limited" });
-          setSaveError({
-            type: "rate_limited",
-            message: res.message,
-          });
-        } else {
-          console.error("[StrokesGained] Save failed:", res.code, res.message);
-          trackEvent("round_save_failed", { error_type: "runtime" });
+    if (options?.saveToCloud === true) {
+      // Save to DB in background — surface errors to user
+      saveRound(input)
+        .then((res) => {
+          if (requestId !== saveRequestIdRef.current) return;
+          if (res.success) {
+            trackEvent("round_saved");
+            setSaveSuccess(true);
+            saveSuccessTimerRef.current = setTimeout(
+              () => setSaveSuccess(false),
+              3000
+            );
+          } else if (res.code === "SAVE_DISABLED") {
+            trackEvent("round_save_failed", { error_type: "config" });
+            setSaveError({
+              type: "config",
+              message:
+                "Cloud save unavailable — your results are still shown below.",
+            });
+          } else if (res.code === "RATE_LIMITED") {
+            trackEvent("round_save_failed", { error_type: "rate_limited" });
+            setSaveError({
+              type: "rate_limited",
+              message: res.message,
+            });
+          } else {
+            console.error("[StrokesGained] Save failed:", res.code, res.message);
+            trackEvent("round_save_failed", { error_type: "runtime" });
+            setSaveError({
+              type: "runtime",
+              message:
+                "Round could not be saved. Your results are still shown below.",
+            });
+          }
+        })
+        .catch((err) => {
+          if (requestId !== saveRequestIdRef.current) return;
+          console.error("[StrokesGained] Save transport error:", err);
+          trackEvent("round_save_failed", { error_type: "network" });
           setSaveError({
             type: "runtime",
-            message: "Round could not be saved. Your results are still shown below.",
+            message:
+              "Round could not be saved. Your results are still shown below.",
           });
-        }
-      })
-      .catch((err) => {
-        if (requestId !== saveRequestIdRef.current) return;
-        console.error("[StrokesGained] Save transport error:", err);
-        trackEvent("round_save_failed", { error_type: "network" });
-        setSaveError({
-          type: "runtime",
-          message:
-            "Round could not be saved. Your results are still shown below.",
         });
-      });
+    }
 
     // Smooth scroll to results
     setTimeout(() => {
@@ -251,6 +254,14 @@ export default function StrokesGainedClient({
       <p className="mt-2 text-neutral-600">
         See where you gain and lose strokes vs your handicap peers.
       </p>
+      <p className="mt-1 max-w-lg text-sm text-neutral-500">
+        Most strokes gained tools compare you to Tour pros — but that doesn&apos;t
+        help you decide where to practice. We benchmark against golfers at your
+        handicap level so you see what actually sets you apart.{" "}
+        <Link href="/methodology" className="underline hover:text-neutral-700">
+          See full methodology &rarr;
+        </Link>
+      </p>
 
       <div
         className="mt-8 rounded-xl border border-card-border bg-card p-6 shadow-sm"
@@ -325,6 +336,16 @@ export default function StrokesGainedClient({
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
             Your Strokes Gained Breakdown
           </h2>
+          <details className="mt-2 text-sm text-neutral-500">
+            <summary className="cursor-pointer font-medium text-neutral-600">
+              How to read these results
+            </summary>
+            <div className="mt-2 space-y-1 border-l-2 border-cream-200 pl-4">
+              <p>Outside the dashed ring = better than peers. Inside = worse.</p>
+              <p>Positive (+) = you gained strokes. Negative (−) = you lost strokes.</p>
+              <p>Focus on your weakest category — that&apos;s where practice helps most.</p>
+            </div>
+          </details>
           <div style={{ height: 400 }}>
             <RadarChart
               data={chartData}

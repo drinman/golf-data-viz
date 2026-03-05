@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PenLine, BarChart3, Share2 } from "lucide-react";
 import { ContourBg } from "@/components/contour-bg";
 import { LandingCta } from "./_components/landing-cta";
@@ -68,6 +69,41 @@ export default function Home() {
                 where you stack up.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        data-testid="what-is-sg"
+        className="border-t border-cream-200 px-4 py-20 sm:py-24"
+      >
+        <div className="mx-auto max-w-4xl">
+          <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
+            What is Strokes Gained?
+          </h2>
+          <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-neutral-600 sm:text-base">
+            <p>
+              Strokes Gained shows where your score separated from your peers by
+              category, not just raw totals.
+            </p>
+            <p>
+              Losing strokes to Tour players is expected. Comparing you to your
+              handicap peers is what makes practice decisions useful.
+            </p>
+            <p>
+              Off the Tee covers driving/penalties, Approach covers GIR
+              performance, Around the Green covers scrambling, and Putting
+              covers putt efficiency.
+            </p>
+            <p>
+              We publish our exact formulas, data sources, and limitations.{" "}
+              <Link
+                href="/methodology"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
+              >
+                See the full methodology &rarr;
+              </Link>
+            </p>
           </div>
         </div>
       </section>

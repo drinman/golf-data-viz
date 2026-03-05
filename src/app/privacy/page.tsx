@@ -100,10 +100,9 @@ export default function PrivacyPage() {
           Sharing
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
-          Shareable links are <strong>opt-in</strong>. When you generate a share
-          link, it encodes only the round stats needed to render the chart — no
-          personal information is included. We do not sell, rent, or share your
-          data with third parties.
+          Sharing is <strong>opt-in</strong>. If you share a results link, it
+          contains encoded round stats needed to recreate the chart. We do not
+          sell, rent, or share your data with third parties.
         </p>
       </section>
 
@@ -117,21 +116,17 @@ export default function PrivacyPage() {
         </h2>
         <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
           <li>
-            <strong>Vercel Analytics</strong> — anonymous page-view and
-            performance metrics
+            We use Vercel Analytics and optional GA4 for aggregate usage
+            signals.
           </li>
           <li>
-            <strong>Google Analytics 4</strong> — optional, used only for
-            aggregate traffic patterns (no personal data)
+            We do not send round stat fields (score, fairways, GIR, putts,
+            penalties, category counts) to analytics platforms.
           </li>
           <li>
-            <strong>Sentry</strong> — error tracking to fix bugs; captures stack
-            traces, not user data
+            Sentry is used for error diagnostics.
           </li>
         </ul>
-        <p className="mt-3 text-sm text-neutral-600">
-          None of these services receive your round stats or golf data.
-        </p>
       </section>
 
       {/* Contact */}

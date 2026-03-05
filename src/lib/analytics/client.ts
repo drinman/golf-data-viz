@@ -29,7 +29,14 @@ export function trackEvent(
 ): void {
   // Vercel Analytics
   try {
-    track(event, props as Record<string, string | number | boolean | undefined>);
+    if (props === undefined) {
+      track(event);
+    } else {
+      track(
+        event,
+        props as Record<string, string | number | boolean | undefined>
+      );
+    }
   } catch {
     // Vercel SDK unavailable or errored — swallow
   }
