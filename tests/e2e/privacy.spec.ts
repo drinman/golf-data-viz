@@ -31,6 +31,11 @@ test.describe("Privacy policy page", () => {
         "We do not send round stat fields (score, fairways, GIR, putts, penalties, category counts) to analytics platforms."
       )
     ).toBeVisible();
+    await expect(
+      page.getByText(
+        /Cloudflare Turnstile may process technical browser, device, and network signals/
+      )
+    ).toBeVisible();
   });
 
   test("page has effective date", async ({ page }) => {

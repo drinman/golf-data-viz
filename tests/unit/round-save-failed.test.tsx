@@ -4,8 +4,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-const { mockTrackEvent } = vi.hoisted(() => ({
+const {
+  mockTrackEvent,
+  mockSaveRound,
+  mockTurnstileExecute,
+} = vi.hoisted(() => ({
   mockTrackEvent: vi.fn(),
+  mockSaveRound: vi.fn(() => Promise.resolve({ success: true })),
+  mockTurnstileExecute: vi.fn(() => Promise.resolve("turnstile-token")),
 }));
 
 vi.mock("@/lib/analytics/client", () => ({
@@ -75,10 +81,6 @@ vi.mock("@/lib/golf/share-codec", () => ({
   encodeRound: vi.fn(() => "encoded-test-data"),
 }));
 
-const { mockSaveRound } = vi.hoisted(() => ({
-  mockSaveRound: vi.fn(() => Promise.resolve({ success: true })),
-}));
-
 vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
   saveRound: mockSaveRound,
 }));
@@ -92,48 +94,80 @@ vi.mock("@/components/charts/radar-chart", () => ({
   RadarChart: () => <div data-testid="mock-radar-chart" />,
 }));
 
+vi.mock("@/components/security/turnstile-widget", async () => {
+  const React = await import("react");
+
+  return {
+    TurnstileWidget: React.forwardRef(function MockTurnstileWidget(
+      _props,
+      ref
+    ) {
+      React.useImperativeHandle(
+        ref,
+        () => ({
+          execute: mockTurnstileExecute,
+          reset: vi.fn(),
+        }),
+        []
+      );
+
+      return <div data-testid="mock-turnstile-widget" />;
+    }),
+  };
+});
+
 vi.mock(
   "@/app/(tools)/strokes-gained/_components/round-input-form",
-  () => ({
+  async () => {
+    const React = await import("react");
+
+    return {
     RoundInputForm: ({
       onSubmit,
+      onSavePreferenceChange,
     }: {
       onSubmit: (data: unknown, options?: { saveToCloud: boolean }) => void;
-      initialValues?: unknown;
-      isCalculating?: boolean;
-    }) => (
-      <button
-        data-testid="mock-submit"
-        type="button"
-        onClick={() =>
-          onSubmit(
-            {
-              handicapIndex: 12,
-              course: "Test Course",
-              date: "2025-06-01",
-              courseRating: 72,
-              slopeRating: 130,
-              score: 87,
-              fairwaysHit: 6,
-              fairwayAttempts: 14,
-              greensInRegulation: 5,
-              totalPutts: 33,
-              penaltyStrokes: 1,
-              eagles: 0,
-              birdies: 1,
-              pars: 6,
-              bogeys: 7,
-              doubleBogeys: 3,
-              triplePlus: 1,
-            },
-            { saveToCloud: true }
-          )
-        }
-      >
-        Submit
-      </button>
-    ),
-  })
+      onSavePreferenceChange?: (saveToCloud: boolean) => void;
+    }) => {
+      React.useEffect(() => {
+        onSavePreferenceChange?.(true);
+      }, [onSavePreferenceChange]);
+
+      return (
+        <button
+          data-testid="mock-submit"
+          type="button"
+          onClick={() =>
+            onSubmit(
+              {
+                handicapIndex: 12,
+                course: "Test Course",
+                date: "2025-06-01",
+                courseRating: 72,
+                slopeRating: 130,
+                score: 87,
+                fairwaysHit: 6,
+                fairwayAttempts: 14,
+                greensInRegulation: 5,
+                totalPutts: 33,
+                penaltyStrokes: 1,
+                eagles: 0,
+                birdies: 1,
+                pars: 6,
+                bogeys: 7,
+                doubleBogeys: 3,
+                triplePlus: 1,
+              },
+              { saveToCloud: true }
+            )
+          }
+        >
+          Submit
+        </button>
+      );
+    },
+    };
+  }
 );
 
 import StrokesGainedClient from "@/app/(tools)/strokes-gained/_components/strokes-gained-client";
@@ -142,6 +176,8 @@ describe("round_save_failed analytics event", () => {
   beforeEach(() => {
     mockTrackEvent.mockClear();
     mockSaveRound.mockClear();
+    mockTurnstileExecute.mockClear();
+    mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -158,7 +194,7 @@ describe("round_save_failed analytics event", () => {
       message: "Cloud save unavailable — your results are still shown below.",
     });
 
-    render(<StrokesGainedClient />);
+    render(<StrokesGainedClient turnstileSiteKey="site-key" />);
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
@@ -175,7 +211,7 @@ describe("round_save_failed analytics event", () => {
       message: "Round could not be saved.",
     });
 
-    render(<StrokesGainedClient />);
+    render(<StrokesGainedClient turnstileSiteKey="site-key" />);
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
@@ -185,10 +221,10 @@ describe("round_save_failed analytics event", () => {
     });
   });
 
-  it('fires with error_type "network" on .catch() transport error', async () => {
+  it('fires with error_type "network" on save transport errors', async () => {
     mockSaveRound.mockRejectedValue(new Error("fetch failed"));
 
-    render(<StrokesGainedClient />);
+    render(<StrokesGainedClient turnstileSiteKey="site-key" />);
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
@@ -205,12 +241,25 @@ describe("round_save_failed analytics event", () => {
       message: "Too many requests. Please try again shortly.",
     });
 
-    render(<StrokesGainedClient />);
+    render(<StrokesGainedClient turnstileSiteKey="site-key" />);
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
       expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", {
         error_type: "rate_limited",
+      });
+    });
+  });
+
+  it('fires with error_type "verification" when verification fails before save', async () => {
+    mockTurnstileExecute.mockRejectedValue(new Error("timeout"));
+
+    render(<StrokesGainedClient turnstileSiteKey="site-key" />);
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", {
+        error_type: "verification",
       });
     });
   });

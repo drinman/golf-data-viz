@@ -12,5 +12,8 @@ test("response includes Content-Security-Policy header", async ({
   expect(csp).toContain("frame-ancestors 'none'");
   expect(csp).toContain("https://*.ingest.sentry.io");
   expect(csp).toContain("default-src 'self'");
+  expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+  expect(csp).toContain("https://challenges.cloudflare.com");
+  expect(csp).toContain("frame-src 'self' https://challenges.cloudflare.com");
   expect(csp).not.toContain("default-src 'self' blob:");
 });

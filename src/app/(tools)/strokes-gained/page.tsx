@@ -100,11 +100,13 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
   const payload = typeof params.d === "string" ? params.d : undefined;
   const initialInput = payload ? decodeRound(payload) : null;
   const saveEnabled = getRoundSaveAvailability().enabled;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null;
 
   return (
     <StrokesGainedClient
       initialInput={initialInput}
       saveEnabled={saveEnabled}
+      turnstileSiteKey={turnstileSiteKey}
     />
   );
 }
