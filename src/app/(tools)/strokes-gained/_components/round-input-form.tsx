@@ -32,14 +32,9 @@ function FormField({
     <div className="flex h-full flex-col gap-1">
       <label className="flex flex-1 flex-col gap-1">
         <span className="block text-sm font-medium text-neutral-800">{label}</span>
-        <p
-          className={`min-h-5 text-xs ${
-            hint ? "text-neutral-400" : "text-transparent"
-          }`}
-          aria-hidden={!hint}
-        >
-          {hint ?? "\u00A0"}
-        </p>
+        {hint && (
+          <p className="text-xs text-neutral-400">{hint}</p>
+        )}
         <div className="mt-auto">{children}</div>
       </label>
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -124,7 +119,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-8"
+      className="space-y-10"
       noValidate
     >
       {/* Section 1: Handicap + Bracket */}
@@ -281,19 +276,21 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
 
       {/* Section 4: Scoring Distribution */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <SectionHeading>Scoring Breakdown</SectionHeading>
-          <span
-            className={`text-sm font-medium ${
-              scoringSum === 18 ? "text-green-600" : "text-amber-700"
-            } font-mono`}
-          >
-            {scoringSum}/18 holes
-          </span>
+        <div>
+          <div className="flex items-center justify-between">
+            <SectionHeading>Scoring Breakdown</SectionHeading>
+            <span
+              className={`text-sm font-medium ${
+                scoringSum === 18 ? "text-green-600" : "text-amber-700"
+              } font-mono`}
+            >
+              {scoringSum}/18 holes
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-neutral-400">
+            How many of each score type? Must add up to 18
+          </p>
         </div>
-        <p className="text-xs text-neutral-400">
-          How many of each score type? Must add up to 18
-        </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <FormField label="Eagles" error={errors.eagles?.message}>
             <input
