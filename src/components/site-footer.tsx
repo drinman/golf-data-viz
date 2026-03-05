@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+const COPYRIGHT_YEAR = 2026;
+
 export function SiteFooter() {
   return (
     <footer
@@ -8,7 +10,7 @@ export function SiteFooter() {
     >
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
         <p className="text-xs text-neutral-400">
-          &copy; {new Date().getFullYear()} Golf Data Viz
+          &copy; {COPYRIGHT_YEAR} Golf Data Viz
         </p>
         <nav className="flex gap-4">
           <Link

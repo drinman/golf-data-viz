@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+const EFFECTIVE_DATE = "March 4, 2026";
+
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
@@ -14,7 +16,7 @@ export default function PrivacyPage() {
         Privacy Policy
       </h1>
       <p className="mt-2 text-sm text-neutral-500">
-        Effective March 4, 2026
+        Effective {EFFECTIVE_DATE}
       </p>
 
       <p className="mt-6 text-sm text-neutral-600">
@@ -163,12 +165,11 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-neutral-200 pt-6">
+      <div className="mt-12 border-t border-neutral-200 pt-6">
         <p className="text-xs italic text-neutral-400">
-          This policy applies to golfdataviz.com. Last updated March 4, 2026.
+          This policy applies to golfdataviz.com. Last updated {EFFECTIVE_DATE}.
         </p>
-      </footer>
+      </div>
     </main>
   );
 }
