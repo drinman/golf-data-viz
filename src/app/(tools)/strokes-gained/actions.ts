@@ -27,9 +27,14 @@ const SAVE_DISABLED_MESSAGE =
 const RATE_LIMITED_MESSAGE = "Too many requests. Please try again shortly.";
 const DB_ERROR_MESSAGE = "Round could not be saved.";
 const UNEXPECTED_MESSAGE = "An unexpected error occurred.";
+const RATE_LIMIT_MONITOR_SAMPLE_RATE = 0.1;
 
 function fail(code: SaveRoundErrorCode, message: string): SaveRoundResult {
   return { success: false, code, message };
+}
+
+function shouldSampleRateLimitedEvent(): boolean {
+  return Math.random() < RATE_LIMIT_MONITOR_SAMPLE_RATE;
 }
 
 export async function saveRound(
@@ -40,11 +45,21 @@ export async function saveRound(
       return fail("SAVE_DISABLED", SAVE_DISABLED_MESSAGE);
     }
 
-    // Rate limiting: sliding window per IP
+    // Rate limiting: fixed window per IP
     const hdrs = await headers();
     const ip = extractClientIp(hdrs);
     const rateLimitDecision = await checkRateLimit(ip);
     if (!rateLimitDecision.allowed) {
+      console.warn("[saveRound] Rate limited request", {
+        reason: rateLimitDecision.reason ?? "minute",
+      });
+      if (shouldSampleRateLimitedEvent()) {
+        captureMonitoringException(new Error("Save round rate limited"), {
+          source: "saveRound",
+          code: "RATE_LIMITED",
+          reason: rateLimitDecision.reason ?? "minute",
+        });
+      }
       return fail("RATE_LIMITED", RATE_LIMITED_MESSAGE);
     }
 

@@ -2,13 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { RoundInput } from "@/lib/golf/types";
 import { makeRound } from "../fixtures/factories";
 
-const { mockInsert, mockCreateAdminClient, mockCheckRateLimit } = vi.hoisted(
-  () => ({
-    mockInsert: vi.fn(),
-    mockCreateAdminClient: vi.fn(),
-    mockCheckRateLimit: vi.fn(),
-  })
-);
+const {
+  mockInsert,
+  mockCreateAdminClient,
+  mockCheckRateLimit,
+  mockCaptureMonitoringException,
+} = vi.hoisted(() => ({
+  mockInsert: vi.fn(),
+  mockCreateAdminClient: vi.fn(),
+  mockCheckRateLimit: vi.fn(),
+  mockCaptureMonitoringException: vi.fn(),
+}));
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: mockCreateAdminClient,
@@ -19,16 +23,22 @@ vi.mock("@/lib/rate-limit", () => ({
   extractClientIp: vi.fn(() => "1.2.3.4"),
 }));
 
+vi.mock("@/lib/monitoring/sentry", () => ({
+  captureMonitoringException: mockCaptureMonitoringException,
+}));
+
 vi.mock("next/headers", () => ({
   headers: vi.fn(async () => new Map([["x-forwarded-for", "1.2.3.4"]])),
 }));
 
+import { SupabaseConfigError } from "@/lib/supabase/errors";
 import { saveRound } from "@/app/(tools)/strokes-gained/actions";
 
 describe("saveRound server action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("ENABLE_ROUND_SAVE", "true");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     mockCheckRateLimit.mockResolvedValue({ allowed: true });
     mockCreateAdminClient.mockReturnValue({
       from: vi.fn(() => ({
@@ -40,6 +50,7 @@ describe("saveRound server action", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   it("fails closed when ENABLE_ROUND_SAVE is not set to true", async () => {
@@ -112,6 +123,62 @@ describe("saveRound server action", () => {
       message: "Too many requests. Please try again shortly.",
     });
     expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("captures sampled monitoring event when rate limited", async () => {
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, reason: "minute" });
+    vi.spyOn(Math, "random").mockReturnValue(0.05);
+
+    const result = await saveRound(makeRound());
+
+    expect(result).toEqual({
+      success: false,
+      code: "RATE_LIMITED",
+      message: "Too many requests. Please try again shortly.",
+    });
+    expect(mockCaptureMonitoringException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        source: "saveRound",
+        code: "RATE_LIMITED",
+        reason: "minute",
+      })
+    );
+  });
+
+  it("does not capture monitoring event when rate-limited sample is skipped", async () => {
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, reason: "hour" });
+    vi.spyOn(Math, "random").mockReturnValue(0.99);
+
+    const result = await saveRound(makeRound());
+
+    expect(result).toEqual({
+      success: false,
+      code: "RATE_LIMITED",
+      message: "Too many requests. Please try again shortly.",
+    });
+    expect(mockCaptureMonitoringException).not.toHaveBeenCalled();
+  });
+
+  it("returns DB_ERROR when admin client config is missing", async () => {
+    mockCreateAdminClient.mockImplementation(() => {
+      throw new SupabaseConfigError("Missing config");
+    });
+
+    const result = await saveRound(makeRound());
+
+    expect(result).toEqual({
+      success: false,
+      code: "DB_ERROR",
+      message: "Round could not be saved.",
+    });
+    expect(mockCaptureMonitoringException).toHaveBeenCalledWith(
+      expect.any(SupabaseConfigError),
+      expect.objectContaining({
+        source: "saveRound",
+        code: "DB_ERROR",
+      })
+    );
   });
 
   it("writes mapped snake_case payload through admin client", async () => {
