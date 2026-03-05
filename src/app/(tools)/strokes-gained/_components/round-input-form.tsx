@@ -15,6 +15,7 @@ interface RoundInputFormProps {
   ) => void;
   initialValues?: Partial<RoundInput> | null;
   isCalculating?: boolean;
+  saveEnabled?: boolean;
 }
 
 function FormField({
@@ -54,13 +55,18 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 const inputClass =
   "block w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
 
-export function RoundInputForm({ onSubmit, initialValues, isCalculating }: RoundInputFormProps) {
+export function RoundInputForm({
+  onSubmit,
+  initialValues,
+  isCalculating,
+  saveEnabled = true,
+}: RoundInputFormProps) {
   const [showOptional, setShowOptional] = useState(false);
   const [saveToCloud, setSaveToCloud] = useState(false);
 
   useEffect(() => {
     setSaveToCloud(false);
-  }, [initialValues]);
+  }, [initialValues, saveEnabled]);
 
   const {
     register,
@@ -154,18 +160,20 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
       {/* Section 2: Course Info */}
       <div className="space-y-4">
         <SectionHeading>Course Info</SectionHeading>
-        <FormField label="Course Name" error={errors.course?.message}>
-          <input
-            type="text"
-            className={inputClass}
-            placeholder="e.g., Pebble Beach"
-            {...register("course")}
-          />
-        </FormField>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" data-testid="course-info-row">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto]">
+          <FormField label="Course Name" error={errors.course?.message}>
+            <input
+              type="text"
+              className={inputClass}
+              placeholder="e.g., Pebble Beach"
+              {...register("course")}
+            />
+          </FormField>
           <FormField label="Date" error={errors.date?.message}>
             <input type="date" className={inputClass} {...register("date")} />
           </FormField>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" data-testid="course-info-row">
           <FormField
             label="Course Rating"
             hint="Found on your scorecard — not the same as par"
@@ -420,15 +428,17 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
         )}
       </div>
 
-      <label className="flex items-start gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-700">
-        <input
-          type="checkbox"
-          className="mt-0.5 h-4 w-4 rounded border-cream-300 text-brand-800 focus:ring-brand-800/30"
-          checked={saveToCloud}
-          onChange={(event) => setSaveToCloud(event.target.checked)}
-        />
-        <span>Save this round anonymously to improve future benchmarks.</span>
-      </label>
+      {saveEnabled && (
+        <label className="flex items-start gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-700">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 rounded border-cream-300 text-brand-800 focus:ring-brand-800/30"
+            checked={saveToCloud}
+            onChange={(event) => setSaveToCloud(event.target.checked)}
+          />
+          <span>Save this round anonymously to improve future benchmarks.</span>
+        </label>
+      )}
 
       {/* Submit */}
       <button
