@@ -49,7 +49,7 @@ export default function StrokesGainedClient({
     initialInput ?? null
   );
   const [saveError, setSaveError] = useState<{
-    type: "config" | "runtime";
+    type: "config" | "runtime" | "rate_limited";
     message: string;
   } | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -154,7 +154,7 @@ export default function StrokesGainedClient({
         } else if (res.code === "RATE_LIMITED") {
           trackEvent("round_save_failed", { error_type: "rate_limited" });
           setSaveError({
-            type: "runtime",
+            type: "rate_limited",
             message: res.message,
           });
         } else {

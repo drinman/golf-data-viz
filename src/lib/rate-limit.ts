@@ -4,6 +4,7 @@ const MINUTE_WINDOW_SECONDS = 60;
 const HOUR_WINDOW_SECONDS = 60 * 60;
 const MAX_REQUESTS_PER_MINUTE = 5;
 const MAX_REQUESTS_PER_HOUR = 30;
+const KV_FETCH_TIMEOUT_MS = 3000;
 
 type RateLimitReason = "minute" | "hour";
 
@@ -55,13 +56,15 @@ class VercelKvRateLimitStore implements RateLimitStore {
     const endpoint = `${this.restUrl.replace(/\/$/, "")}/pipeline`;
     const response = await fetch(endpoint, {
       method: "POST",
+      signal: AbortSignal.timeout(KV_FETCH_TIMEOUT_MS),
       headers: {
         Authorization: `Bearer ${this.restToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify([
+        // Fixed window: set TTL once on first write, then increment.
+        ["SET", key, 0, "EX", ttlSeconds, "NX"],
         ["INCR", key],
-        ["EXPIRE", key, ttlSeconds],
       ]),
     });
 
@@ -70,7 +73,7 @@ class VercelKvRateLimitStore implements RateLimitStore {
     }
 
     const payload = (await response.json()) as Array<{ result: unknown }>;
-    const value = Number(payload?.[0]?.result);
+    const value = Number(payload?.[1]?.result);
     if (!Number.isFinite(value)) {
       throw new Error("KV pipeline returned non-numeric counter");
     }
@@ -114,7 +117,10 @@ export function extractClientIp(headers: HeaderReader): string {
 }
 
 export function hashRateLimitKey(ip: string): string {
-  const salt = process.env.RATE_LIMIT_SALT ?? "";
+  const salt = process.env.RATE_LIMIT_SALT?.trim();
+  if (!salt) {
+    throw new Error("RATE_LIMIT_SALT is required");
+  }
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
 
@@ -122,11 +128,11 @@ export async function checkRateLimit(
   ip: string,
   store: RateLimitStore = getDefaultStore()
 ): Promise<RateLimitDecision> {
-  const key = hashRateLimitKey(ip || "unknown");
-  const minuteKey = `save_round:minute:${key}`;
-  const hourKey = `save_round:hour:${key}`;
-
   try {
+    const key = hashRateLimitKey(ip || "unknown");
+    const minuteKey = `save_round:minute:${key}`;
+    const hourKey = `save_round:hour:${key}`;
+
     const [minuteCount, hourCount] = await Promise.all([
       store.increment(minuteKey, MINUTE_WINDOW_SECONDS),
       store.increment(hourKey, HOUR_WINDOW_SECONDS),

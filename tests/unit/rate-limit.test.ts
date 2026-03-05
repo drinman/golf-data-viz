@@ -1,15 +1,22 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   checkRateLimit,
   extractClientIp,
   hashRateLimitKey,
   InMemoryRateLimitStore,
+  _resetRateLimitStore,
 } from "@/lib/rate-limit";
 
 describe("rate limiter", () => {
   beforeEach(() => {
     vi.useRealTimers();
     vi.unstubAllEnvs();
+    vi.stubEnv("RATE_LIMIT_SALT", "test-salt");
+    _resetRateLimitStore();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("extracts client IP using the expected header precedence", () => {
@@ -43,10 +50,17 @@ describe("rate limiter", () => {
   });
 
   it("hashes IP keys with the RATE_LIMIT_SALT", () => {
-    vi.stubEnv("RATE_LIMIT_SALT", "test-salt");
     const hashed = hashRateLimitKey("1.2.3.4");
     expect(hashed).not.toBe("1.2.3.4");
     expect(hashed).toHaveLength(64);
+  });
+
+  it("fails closed when RATE_LIMIT_SALT is missing", async () => {
+    vi.stubEnv("RATE_LIMIT_SALT", "");
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const decision = await checkRateLimit("1.2.3.4", new InMemoryRateLimitStore());
+    expect(decision).toEqual({ allowed: false, reason: "minute" });
+    expect(errorSpy).toHaveBeenCalled();
   });
 
   it("blocks the 6th request within a minute", async () => {
@@ -101,5 +115,34 @@ describe("rate limiter", () => {
       reason: "minute",
     });
     expect(await checkRateLimit("2.2.2.2", store)).toEqual({ allowed: true });
+  });
+
+  it("uses fixed-window KV pipeline commands with request timeout", async () => {
+    vi.stubEnv("KV_REST_API_URL", "https://example.upstash.io");
+    vi.stubEnv("KV_REST_API_TOKEN", "test-token");
+    _resetRateLimitStore();
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{ result: "OK" }, { result: 1 }],
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await checkRateLimit("1.2.3.4");
+
+    expect(result).toEqual({ allowed: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const [firstUrl, firstInit] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(firstUrl).toBe("https://example.upstash.io/pipeline");
+    expect(firstInit.signal).toBeInstanceOf(AbortSignal);
+
+    const commands = JSON.parse(String(firstInit.body)) as unknown[][];
+    expect(commands).toHaveLength(2);
+    expect(commands[0][0]).toBe("SET");
+    expect(commands[0][2]).toBe(0);
+    expect(commands[0][3]).toBe("EX");
+    expect(commands[0][5]).toBe("NX");
+    expect(commands[1][0]).toBe("INCR");
   });
 });

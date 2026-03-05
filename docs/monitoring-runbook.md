@@ -4,7 +4,8 @@
 
 1. Set `SENTRY_DSN` in Vercel production environment variables.
 2. Optional: set `NEXT_PUBLIC_SENTRY_DSN` to capture browser/runtime errors directly.
-3. Deploy once to activate `instrumentation.ts`, `sentry.server.config.ts`, and `sentry.edge.config.ts`.
+3. Optional: set `NEXT_PUBLIC_SENTRY_RELEASE` for client-side release tagging.
+4. Deploy once to activate `instrumentation.ts`, `sentry.server.config.ts`, and `sentry.edge.config.ts`.
 
 ## Required Alert Rules
 
@@ -27,6 +28,7 @@ The scheduled GitHub Action `.github/workflows/uptime-checks.yml` probes:
 3. `/strokes-gained/og?d=<sample>`
 
 Set repo variable `PRODUCTION_BASE_URL` to override the default `https://golfdataviz.com`.
+Set repo secret `UPTIME_ALERT_SLACK_WEBHOOK` to receive failure alerts.
 
 ## Launch-Day Verification
 

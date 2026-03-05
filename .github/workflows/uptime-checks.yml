@@ -29,3 +29,15 @@ jobs:
 
           echo "Checking ${BASE}/strokes-gained/og"
           curl -fsS --max-time 20 "${BASE}/strokes-gained/og?d=${PAYLOAD}" >/dev/null
+
+      - name: Notify Slack on failure
+        if: ${{ failure() && secrets.UPTIME_ALERT_SLACK_WEBHOOK != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.UPTIME_ALERT_SLACK_WEBHOOK }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${BASE_URL:-https://golfdataviz.com}"
+          MESSAGE="Uptime checks failed for ${BASE} in ${GITHUB_REPOSITORY}. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          PAYLOAD=$(printf '{"text":"%s"}' "${MESSAGE}")
+          curl -fsS -X POST -H "Content-type: application/json" --data "${PAYLOAD}" "${SLACK_WEBHOOK_URL}"
