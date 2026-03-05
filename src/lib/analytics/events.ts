@@ -19,7 +19,12 @@ export type AnalyticsEventProps = {
   round_saved: Record<string, never>;
   gir_estimated: Record<string, never>;
   round_save_failed: {
-    error_type: "config" | "runtime" | "network" | "rate_limited";
+    error_type:
+      | "config"
+      | "runtime"
+      | "network"
+      | "rate_limited"
+      | "verification";
   };
 };
 

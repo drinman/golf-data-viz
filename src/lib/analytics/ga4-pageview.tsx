@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-const MAX_WAIT_MS = 5000;
-const POLL_MS = 100;
+const MAX_RETRIES = 5;
+const RETRY_MS = 100;
 
 function firePageView(pathname: string) {
   const pageLocation = window.location.origin + pathname;
@@ -25,7 +25,6 @@ function firePageView(pathname: string) {
 export function GA4PageView() {
   const pathname = usePathname();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const gtagUnavailableRef = useRef(false);
 
   useEffect(() => {
     // Clean up any pending poll from a previous pathname change
@@ -40,30 +39,26 @@ export function GA4PageView() {
       // No GA4 configured — skip entirely
       if (!process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID) return;
 
-      // gtag already available — fire immediately (also clears timed-out flag
-      // for slow-network cases where gtag loads after the initial timeout)
-      if (typeof window.gtag === "function") {
-        gtagUnavailableRef.current = false;
-        firePageView(pathname);
+      const tryFire = () => {
+        if (typeof window.gtag === "function") {
+          firePageView(pathname);
+          return true;
+        }
+        return false;
+      };
+
+      if (tryFire()) {
         return;
       }
 
-      // Previous poll timed out — gtag is likely blocked, don't poll again
-      if (gtagUnavailableRef.current) return;
-
-      // gtag not ready yet — poll until it appears or timeout
-      const start = Date.now();
+      let attempts = 0;
       intervalRef.current = setInterval(() => {
-        if (typeof window.gtag === "function") {
+        attempts += 1;
+        if (tryFire() || attempts >= MAX_RETRIES) {
           clearInterval(intervalRef.current!);
           intervalRef.current = null;
-          firePageView(pathname);
-        } else if (Date.now() - start >= MAX_WAIT_MS) {
-          clearInterval(intervalRef.current!);
-          intervalRef.current = null;
-          gtagUnavailableRef.current = true;
         }
-      }, POLL_MS);
+      }, RETRY_MS);
     } catch {
       // gtag errored — swallow
     }

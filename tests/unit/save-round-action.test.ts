@@ -7,11 +7,13 @@ const {
   mockCreateAdminClient,
   mockCheckRateLimit,
   mockCaptureMonitoringException,
+  mockVerifyTurnstileToken,
 } = vi.hoisted(() => ({
   mockInsert: vi.fn(),
   mockCreateAdminClient: vi.fn(),
   mockCheckRateLimit: vi.fn(),
   mockCaptureMonitoringException: vi.fn(),
+  mockVerifyTurnstileToken: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
@@ -27,12 +29,25 @@ vi.mock("@/lib/monitoring/sentry", () => ({
   captureMonitoringException: mockCaptureMonitoringException,
 }));
 
+vi.mock("@/lib/security/turnstile", () => ({
+  verifyTurnstileToken: mockVerifyTurnstileToken,
+}));
+
 vi.mock("next/headers", () => ({
-  headers: vi.fn(async () => new Map([["x-forwarded-for", "1.2.3.4"]])),
+  headers: vi.fn(
+    async () => new Map([
+      ["x-forwarded-for", "1.2.3.4"],
+      ["host", "golfdataviz.com"],
+    ])
+  ),
 }));
 
 import { SupabaseConfigError } from "@/lib/supabase/errors";
 import { saveRound } from "@/app/(tools)/strokes-gained/actions";
+
+const verification = {
+  turnstileToken: "turnstile-token",
+};
 
 describe("saveRound server action", () => {
   beforeEach(() => {
@@ -40,8 +55,19 @@ describe("saveRound server action", () => {
     vi.stubEnv("ENABLE_ROUND_SAVE", "true");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "turnstile-site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "turnstile-secret-key");
     vi.spyOn(console, "warn").mockImplementation(() => {});
     mockCheckRateLimit.mockResolvedValue({ allowed: true });
+    mockVerifyTurnstileToken.mockResolvedValue({
+      ok: true,
+      result: {
+        success: true,
+        errorCodes: [],
+        action: "save_round",
+        hostname: "golfdataviz.com",
+      },
+    });
     mockCreateAdminClient.mockReturnValue({
       from: vi.fn(() => ({
         insert: mockInsert,
@@ -58,7 +84,7 @@ describe("saveRound server action", () => {
   it("fails closed when ENABLE_ROUND_SAVE is not set to true", async () => {
     vi.stubEnv("ENABLE_ROUND_SAVE", "false");
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -70,7 +96,7 @@ describe("saveRound server action", () => {
   });
 
   it("returns success on successful admin insert", async () => {
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
     expect(result).toEqual({ success: true });
     expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
   });
@@ -80,7 +106,7 @@ describe("saveRound server action", () => {
       error: { message: "check constraint violated", code: "23514" },
     });
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -100,7 +126,7 @@ describe("saveRound server action", () => {
       })
       .mockResolvedValueOnce({ error: null });
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({ success: true });
     expect(mockInsert).toHaveBeenCalledTimes(2);
@@ -121,7 +147,7 @@ describe("saveRound server action", () => {
   it("returns UNEXPECTED when insert throws", async () => {
     mockInsert.mockRejectedValue(new Error("Network failure"));
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -133,7 +159,7 @@ describe("saveRound server action", () => {
   it("returns VALIDATION when server-side schema validation fails", async () => {
     const invalidRound = makeRound({ score: 999 });
 
-    const result = await saveRound(invalidRound);
+    const result = await saveRound(invalidRound, verification);
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -153,7 +179,7 @@ describe("saveRound server action", () => {
       triplePlus: 1,
     });
 
-    const result = await saveRound(invalidRound);
+    const result = await saveRound(invalidRound, verification);
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -166,7 +192,7 @@ describe("saveRound server action", () => {
   it("returns RATE_LIMITED when request exceeds limit", async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, reason: "minute" });
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -180,7 +206,7 @@ describe("saveRound server action", () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, reason: "minute" });
     vi.spyOn(Math, "random").mockReturnValue(0.05);
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -201,7 +227,7 @@ describe("saveRound server action", () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, reason: "hour" });
     vi.spyOn(Math, "random").mockReturnValue(0.99);
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -216,7 +242,7 @@ describe("saveRound server action", () => {
       throw new SupabaseConfigError("Missing config");
     });
 
-    const result = await saveRound(makeRound());
+    const result = await saveRound(makeRound(), verification);
 
     expect(result).toEqual({
       success: false,
@@ -233,7 +259,7 @@ describe("saveRound server action", () => {
   });
 
   it("writes mapped snake_case payload through admin client", async () => {
-    await saveRound(makeRound({ course: "Pebble Beach", date: "2026-01-15" }));
+    await saveRound(makeRound({ course: "Pebble Beach", date: "2026-01-15" }), verification);
 
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -250,7 +276,7 @@ describe("saveRound server action", () => {
     delete round.fairwaysHit;
     delete round.greensInRegulation;
 
-    await saveRound(round);
+    await saveRound(round, verification);
 
     const insertedRow = mockInsert.mock.calls[0][0];
     expect(insertedRow.fairways_hit).toBeNull();
@@ -258,7 +284,7 @@ describe("saveRound server action", () => {
   });
 
   it("writes trusted trust metadata for a typical round", async () => {
-    await saveRound(makeRound());
+    await saveRound(makeRound(), verification);
 
     const insertedRow = mockInsert.mock.calls[0][0];
     expect(insertedRow.trust_status).toBe("trusted");
@@ -279,7 +305,7 @@ describe("saveRound server action", () => {
       triplePlus: 1,
     });
 
-    await saveRound(anomalousRound);
+    await saveRound(anomalousRound, verification);
 
     const insertedRow = mockInsert.mock.calls[0][0];
     expect(insertedRow.trust_status).toBe("quarantined");
@@ -309,7 +335,7 @@ describe("saveRound server action", () => {
       threePutts: "" as unknown as number,
     } as RoundInput;
 
-    await saveRound(rawInput);
+    await saveRound(rawInput, verification);
 
     const insertedRow = mockInsert.mock.calls[0][0];
     expect(typeof insertedRow.score).toBe("number");
@@ -317,5 +343,40 @@ describe("saveRound server action", () => {
     expect(typeof insertedRow.handicap_index).toBe("number");
     expect(insertedRow.handicap_index).toBe(14.3);
     expect(insertedRow.three_putts).toBeNull();
+  });
+
+  it("returns VERIFICATION_REQUIRED when the Turnstile token is missing", async () => {
+    const result = await saveRound(makeRound(), { turnstileToken: null });
+
+    expect(result).toEqual({
+      success: false,
+      code: "VERIFICATION_REQUIRED",
+      message: "Complete the bot check to save anonymously.",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockVerifyTurnstileToken).not.toHaveBeenCalled();
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("returns VERIFICATION_FAILED when Turnstile verification rejects the request", async () => {
+    mockVerifyTurnstileToken.mockResolvedValueOnce({
+      ok: false,
+      reason: "verification_failed",
+      result: {
+        success: false,
+        errorCodes: ["timeout-or-duplicate"],
+        action: "save_round",
+        hostname: "golfdataviz.com",
+      },
+    });
+
+    const result = await saveRound(makeRound(), verification);
+
+    expect(result).toEqual({
+      success: false,
+      code: "VERIFICATION_FAILED",
+      message: "Bot check failed. Please try again.",
+    });
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 });

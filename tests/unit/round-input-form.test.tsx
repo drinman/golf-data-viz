@@ -2,6 +2,7 @@
 
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { RoundInputForm } from "@/app/(tools)/strokes-gained/_components/round-input-form";
 
 afterEach(cleanup);
@@ -23,5 +24,32 @@ describe("RoundInputForm save consent", () => {
     expect(
       screen.queryByLabelText("Save this round anonymously to improve future benchmarks.")
     ).toBeNull();
+  });
+
+  it("shows the Cloudflare disclosure only when anonymous save is checked", async () => {
+    const user = userEvent.setup();
+
+    render(<RoundInputForm onSubmit={onSubmit} saveEnabled />);
+
+    expect(
+      screen.queryByText(/Cloudflare Turnstile to distinguish humans from bots/i)
+    ).toBeNull();
+
+    await user.click(
+      screen.getByLabelText(
+        "Save this round anonymously to improve future benchmarks."
+      )
+    );
+
+    expect(
+      screen.getByText(/Cloudflare Turnstile to distinguish humans from bots/i)
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Privacy Policy" })
+    ).toHaveAttribute("href", "https://www.cloudflare.com/privacypolicy/");
+    expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute(
+      "href",
+      "https://www.cloudflare.com/website-terms/"
+    );
   });
 });

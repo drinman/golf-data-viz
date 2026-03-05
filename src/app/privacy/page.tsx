@@ -92,7 +92,16 @@ export default function PrivacyPage() {
           -hosted PostgreSQL database. The tool does not require accounts, so
           saved rounds are not tied to your name or email. Direct public writes
           are disabled, and saves go through a server-side validation path
-          before reaching the database.
+          before reaching the database. When you opt in to save, we also use{" "}
+          <a
+            href="https://www.cloudflare.com/products/turnstile/"
+            className="text-brand-800 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Cloudflare Turnstile
+          </a>{" "}
+          to distinguish humans from bots before an anonymous round is written.
         </p>
       </section>
 
@@ -130,6 +139,11 @@ export default function PrivacyPage() {
           </li>
           <li>
             Sentry is used for error diagnostics.
+          </li>
+          <li>
+            When you opt in to anonymous save, Cloudflare Turnstile may process
+            technical browser, device, and network signals to help prevent
+            automated abuse.
           </li>
         </ul>
       </section>

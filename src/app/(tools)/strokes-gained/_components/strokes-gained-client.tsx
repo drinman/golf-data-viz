@@ -20,16 +20,22 @@ import { RoundInputForm } from "./round-input-form";
 import { ResultsSummary } from "./results-summary";
 import { ShareCard } from "./share-card";
 import { RadarChart } from "@/components/charts/radar-chart";
+import {
+  TurnstileWidget,
+  type TurnstileWidgetHandle,
+} from "@/components/security/turnstile-widget";
 import { saveRound } from "../actions";
 
 interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
   saveEnabled?: boolean;
+  turnstileSiteKey?: string | null;
 }
 
 export default function StrokesGainedClient({
   initialInput,
   saveEnabled = true,
+  turnstileSiteKey = null,
 }: StrokesGainedClientProps) {
   const benchmarkMeta = getBenchmarkMeta();
 
@@ -52,10 +58,12 @@ export default function StrokesGainedClient({
     initialInput ?? null
   );
   const [saveError, setSaveError] = useState<{
-    type: "config" | "runtime" | "rate_limited";
+    type: "config" | "runtime" | "rate_limited" | "verification";
     message: string;
   } | null>(null);
-  const [savePending, setSavePending] = useState(false);
+  const [savePhase, setSavePhase] = useState<null | "verifying" | "saving">(
+    null
+  );
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -63,6 +71,7 @@ export default function StrokesGainedClient({
   const [downloading, setDownloading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const formStartedRef = useRef(false);
   const sharedRoundViewedRef = useRef(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -117,7 +126,7 @@ export default function StrokesGainedClient({
     setLastInput(input);
 
     // Clear stale feedback from previous submit
-    setSavePending(false);
+    setSavePhase(null);
     setSaveError(null);
     setSaveSuccess(false);
     if (saveSuccessTimerRef.current)
@@ -141,54 +150,107 @@ export default function StrokesGainedClient({
     const requestId = ++saveRequestIdRef.current;
 
     if (saveEnabled && options?.saveToCloud === true) {
-      setSavePending(true);
+      if (!turnstileSiteKey || !turnstileRef.current) {
+        trackEvent("round_save_failed", { error_type: "config" });
+        setSaveError({
+          type: "config",
+          message:
+            "Cloud save unavailable — your results are still shown below.",
+        });
+      } else {
+        setSavePhase("verifying");
 
-      // Save to DB in background — surface errors to user
-      saveRound(input)
-        .then((res) => {
+        void (async () => {
+          let token: string;
+
+          try {
+            token = await turnstileRef.current!.execute();
+          } catch (err) {
+            if (requestId !== saveRequestIdRef.current) return;
+            if (
+              typeof err === "object" &&
+              err !== null &&
+              "code" in err &&
+              err.code === "superseded"
+            ) {
+              return;
+            }
+            setSavePhase(null);
+            console.error("[StrokesGained] Verification failed:", err);
+            trackEvent("round_save_failed", { error_type: "verification" });
+            setSaveError({
+              type: "verification",
+              message: "Bot check failed. Your results are still shown below.",
+            });
+            return;
+          }
+
           if (requestId !== saveRequestIdRef.current) return;
-          setSavePending(false);
-          if (res.success) {
-            trackEvent("round_saved");
-            setSaveSuccess(true);
-            saveSuccessTimerRef.current = setTimeout(
-              () => setSaveSuccess(false),
-              3000
-            );
-          } else if (res.code === "SAVE_DISABLED") {
-            trackEvent("round_save_failed", { error_type: "config" });
-            setSaveError({
-              type: "config",
-              message:
-                "Cloud save unavailable — your results are still shown below.",
-            });
-          } else if (res.code === "RATE_LIMITED") {
-            trackEvent("round_save_failed", { error_type: "rate_limited" });
-            setSaveError({
-              type: "rate_limited",
-              message: res.message,
-            });
-          } else {
-            console.error("[StrokesGained] Save failed:", res.code, res.message);
-            trackEvent("round_save_failed", { error_type: "runtime" });
+
+          setSavePhase("saving");
+
+          try {
+            const res = await saveRound(input, { turnstileToken: token });
+            if (requestId !== saveRequestIdRef.current) return;
+
+            setSavePhase(null);
+            if (res.success) {
+              trackEvent("round_saved");
+              setSaveSuccess(true);
+              saveSuccessTimerRef.current = setTimeout(
+                () => setSaveSuccess(false),
+                3000
+              );
+            } else if (res.code === "SAVE_DISABLED") {
+              trackEvent("round_save_failed", { error_type: "config" });
+              setSaveError({
+                type: "config",
+                message:
+                  "Cloud save unavailable — your results are still shown below.",
+              });
+            } else if (res.code === "RATE_LIMITED") {
+              trackEvent("round_save_failed", { error_type: "rate_limited" });
+              setSaveError({
+                type: "rate_limited",
+                message: res.message,
+              });
+            } else if (
+              res.code === "VERIFICATION_REQUIRED" ||
+              res.code === "VERIFICATION_FAILED"
+            ) {
+              trackEvent("round_save_failed", {
+                error_type: "verification",
+              });
+              setSaveError({
+                type: "verification",
+                message: "Bot check failed. Your results are still shown below.",
+              });
+            } else {
+              console.error(
+                "[StrokesGained] Save failed:",
+                res.code,
+                res.message
+              );
+              trackEvent("round_save_failed", { error_type: "runtime" });
+              setSaveError({
+                type: "runtime",
+                message:
+                  "Round could not be saved. Your results are still shown below.",
+              });
+            }
+          } catch (err) {
+            if (requestId !== saveRequestIdRef.current) return;
+            setSavePhase(null);
+            console.error("[StrokesGained] Save transport failed:", err);
+            trackEvent("round_save_failed", { error_type: "network" });
             setSaveError({
               type: "runtime",
               message:
                 "Round could not be saved. Your results are still shown below.",
             });
           }
-        })
-        .catch((err) => {
-          if (requestId !== saveRequestIdRef.current) return;
-          setSavePending(false);
-          console.error("[StrokesGained] Save transport error:", err);
-          trackEvent("round_save_failed", { error_type: "network" });
-          setSaveError({
-            type: "runtime",
-            message:
-              "Round could not be saved. Your results are still shown below.",
-          });
-        });
+        })();
+      }
     }
 
     // Smooth scroll to results
@@ -297,13 +359,19 @@ export default function StrokesGainedClient({
         />
       </div>
 
-      {savePending && (
+      {saveEnabled && turnstileSiteKey && (
+        <TurnstileWidget ref={turnstileRef} siteKey={turnstileSiteKey} />
+      )}
+
+      {savePhase && (
         <div
           data-testid="save-pending"
           role="status"
           className="mt-6 rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
         >
-          Saving round...
+          {savePhase === "verifying"
+            ? "Verifying you're human..."
+            : "Saving round..."}
         </div>
       )}
 

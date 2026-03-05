@@ -429,15 +429,41 @@ export function RoundInputForm({
       </div>
 
       {saveEnabled && (
-        <label className="flex items-start gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-700">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4 rounded border-cream-300 text-brand-800 focus:ring-brand-800/30"
-            checked={saveToCloud}
-            onChange={(event) => setSaveToCloud(event.target.checked)}
-          />
-          <span>Save this round anonymously to improve future benchmarks.</span>
-        </label>
+        <div className="space-y-2">
+          <label className="flex items-start gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-700">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-cream-300 text-brand-800 focus:ring-brand-800/30"
+              checked={saveToCloud}
+              onChange={(event) => setSaveToCloud(event.target.checked)}
+            />
+            <span>Save this round anonymously to improve future benchmarks.</span>
+          </label>
+          {saveToCloud && (
+            <p className="text-xs text-neutral-500">
+              Anonymous saves use Cloudflare Turnstile to distinguish humans from
+              bots. By saving, you agree to Cloudflare&apos;s{" "}
+              <a
+                href="https://www.cloudflare.com/privacypolicy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-700"
+              >
+                Privacy Policy
+              </a>{" "}
+              and{" "}
+              <a
+                href="https://www.cloudflare.com/website-terms/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-700"
+              >
+                Terms
+              </a>
+              .
+            </p>
+          )}
+        </div>
       )}
 
       {/* Submit */}

@@ -20,6 +20,15 @@ describe("security headers", () => {
     expect(csp!.value).toContain("frame-ancestors 'none'");
     expect(csp!.value).toContain("https://*.ingest.sentry.io");
     expect(csp!.value).toContain("default-src 'self'");
+    expect(csp!.value).toContain(
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://va.vercel-scripts.com https://challenges.cloudflare.com"
+    );
+    expect(csp!.value).toContain(
+      "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://*.ingest.sentry.io https://challenges.cloudflare.com"
+    );
+    expect(csp!.value).toContain(
+      "frame-src 'self' https://challenges.cloudflare.com"
+    );
     expect(csp!.value).not.toContain("default-src 'self' blob:");
   });
 });

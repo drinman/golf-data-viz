@@ -32,6 +32,14 @@ export function getRoundSaveAvailability(): RoundSaveAvailability {
     reasons.push("missing_service_role_key");
   }
 
+  if (!hasValue(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)) {
+    reasons.push("missing_turnstile_site_key");
+  }
+
+  if (!hasValue(process.env.TURNSTILE_SECRET_KEY)) {
+    reasons.push("missing_turnstile_secret_key");
+  }
+
   if (process.env.NODE_ENV === "production") {
     if (!hasValidRateLimitSalt(process.env.RATE_LIMIT_SALT)) {
       reasons.push("missing_rate_limit_salt");

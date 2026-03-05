@@ -3,16 +3,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ComponentProps } from "react";
 
-const { mockTrackEvent } = vi.hoisted(() => ({
+const {
+  mockTrackEvent,
+  mockSaveRound,
+  mockTurnstileExecute,
+} = vi.hoisted(() => ({
   mockTrackEvent: vi.fn(),
+  mockSaveRound: vi.fn(() => Promise.resolve({ success: true })),
+  mockTurnstileExecute: vi.fn(() => Promise.resolve("turnstile-token")),
 }));
 
 vi.mock("@/lib/analytics/client", () => ({
   trackEvent: mockTrackEvent,
 }));
 
-// Mock golf domain modules used by StrokesGainedClient
 vi.mock("@/lib/golf/benchmarks", () => ({
   getBracketForHandicap: vi.fn(() => ({
     bracket: "10-15" as const,
@@ -76,36 +82,40 @@ vi.mock("@/lib/golf/share-codec", () => ({
   encodeRound: vi.fn(() => "encoded-test-data"),
 }));
 
-const { mockSaveRound } = vi.hoisted(() => ({
-  mockSaveRound: vi.fn(() => Promise.resolve({ success: true })),
-}));
-
 vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
   saveRound: mockSaveRound,
 }));
 
-// Mock html-to-image (not available in jsdom)
 vi.mock("@/lib/capture", () => ({
   captureElementAsPng: vi.fn(() => Promise.resolve(new Blob())),
   downloadBlob: vi.fn(),
 }));
 
-// Mock RadarChart (Nivo doesn't render in jsdom)
 vi.mock("@/components/charts/radar-chart", () => ({
   RadarChart: () => <div data-testid="mock-radar-chart" />,
 }));
 
-// Mock RoundInputForm: provides a simple submit trigger for testing
-const { mockOnSubmit } = vi.hoisted(() => ({
-  mockOnSubmit: {
-    current: null as
-      | ((
-          data: unknown,
-          options?: { saveToCloud: boolean }
-        ) => void)
-      | null,
-  },
-}));
+vi.mock("@/components/security/turnstile-widget", async () => {
+  const React = await import("react");
+
+  return {
+    TurnstileWidget: React.forwardRef(function MockTurnstileWidget(
+      _props,
+      ref
+    ) {
+      React.useImperativeHandle(
+        ref,
+        () => ({
+          execute: mockTurnstileExecute,
+          reset: vi.fn(),
+        }),
+        []
+      );
+
+      return <div data-testid="mock-turnstile-widget" />;
+    }),
+  };
+});
 
 vi.mock(
   "@/app/(tools)/strokes-gained/_components/round-input-form",
@@ -114,43 +124,38 @@ vi.mock(
       onSubmit,
     }: {
       onSubmit: (data: unknown, options?: { saveToCloud: boolean }) => void;
-      initialValues?: unknown;
-      isCalculating?: boolean;
-    }) => {
-      mockOnSubmit.current = onSubmit;
-      return (
-        <button
-          data-testid="mock-submit"
-          type="button"
-          onClick={() =>
-            onSubmit(
-              {
-                handicapIndex: 12,
-                course: "Test Course",
-                date: "2025-06-01",
-                courseRating: 72,
-                slopeRating: 130,
-                score: 87,
-                fairwaysHit: 6,
-                fairwayAttempts: 14,
-                greensInRegulation: 5,
-                totalPutts: 33,
-                penaltyStrokes: 1,
-                eagles: 0,
-                birdies: 1,
-                pars: 6,
-                bogeys: 7,
-                doubleBogeys: 3,
-                triplePlus: 1,
-              },
-              { saveToCloud: true }
-            )
-          }
-        >
-          Submit
-        </button>
-      );
-    },
+    }) => (
+      <button
+        data-testid="mock-submit"
+        type="button"
+        onClick={() =>
+          onSubmit(
+            {
+              handicapIndex: 12,
+              course: "Test Course",
+              date: "2025-06-01",
+              courseRating: 72,
+              slopeRating: 130,
+              score: 87,
+              fairwaysHit: 6,
+              fairwayAttempts: 14,
+              greensInRegulation: 5,
+              totalPutts: 33,
+              penaltyStrokes: 1,
+              eagles: 0,
+              birdies: 1,
+              pars: 6,
+              bogeys: 7,
+              doubleBogeys: 3,
+              triplePlus: 1,
+            },
+            { saveToCloud: true }
+          )
+        }
+      >
+        Submit
+      </button>
+    ),
   })
 );
 
@@ -179,6 +184,14 @@ const mockInput = {
   triplePlus: 1,
 };
 
+function renderClient(
+  props: Partial<ComponentProps<typeof StrokesGainedClient>> = {}
+) {
+  return render(
+    <StrokesGainedClient turnstileSiteKey="site-key" {...props} />
+  );
+}
+
 describe("StrokesGainedClient analytics instrumentation", () => {
   afterEach(() => {
     cleanup();
@@ -187,12 +200,14 @@ describe("StrokesGainedClient analytics instrumentation", () => {
   beforeEach(() => {
     mockTrackEvent.mockClear();
     mockSaveRound.mockClear();
+    mockTurnstileExecute.mockClear();
     mockSaveRound.mockResolvedValue({ success: true });
+    mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
   });
 
   it("fires form_started once on first focus into form area", () => {
-    render(<StrokesGainedClient />);
+    renderClient();
 
     const formWrapper = screen.getByTestId("form-wrapper");
     fireEvent.focusIn(formWrapper);
@@ -200,21 +215,19 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     expect(mockTrackEvent).toHaveBeenCalledWith("form_started");
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
 
-    // Second focus should NOT fire again
     fireEvent.focusIn(formWrapper);
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
   });
 
   it("does not fire form_started on initial render", () => {
-    render(<StrokesGainedClient />);
+    renderClient();
     expect(mockTrackEvent).not.toHaveBeenCalledWith("form_started");
   });
 
   it("fires download_png_clicked when download button is clicked", async () => {
-    render(<StrokesGainedClient initialInput={mockInput} />);
+    renderClient({ initialInput: mockInput });
 
-    const downloadBtn = screen.getByTestId("download-png");
-    await userEvent.click(downloadBtn);
+    await userEvent.click(screen.getByTestId("download-png"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
       has_share_param: expect.any(Boolean),
@@ -235,14 +248,14 @@ describe("StrokesGainedClient analytics instrumentation", () => {
       estimatedCategories: ["approach", "around-the-green"],
     });
 
-    render(<StrokesGainedClient />);
+    renderClient();
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith("gir_estimated");
   });
 
-  it("does NOT fire gir_estimated when estimatedCategories is empty", async () => {
-    render(<StrokesGainedClient />);
+  it("does not fire gir_estimated when estimatedCategories is empty", async () => {
+    renderClient();
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     expect(mockTrackEvent).not.toHaveBeenCalledWith("gir_estimated");
@@ -253,10 +266,9 @@ describe("StrokesGainedClient analytics instrumentation", () => {
       clipboard: { writeText: vi.fn(() => Promise.resolve()) },
     });
 
-    render(<StrokesGainedClient initialInput={mockInput} />);
+    renderClient({ initialInput: mockInput });
 
-    const copyBtn = screen.getByTestId("copy-link");
-    await userEvent.click(copyBtn);
+    await userEvent.click(screen.getByTestId("copy-link"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith("copy_link_clicked", {
       has_share_param: expect.any(Boolean),
@@ -271,8 +283,6 @@ describe("Copy Link error handling", () => {
 
   beforeEach(() => {
     mockTrackEvent.mockClear();
-    mockSaveRound.mockClear();
-    mockSaveRound.mockResolvedValue({ success: true });
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
   });
 
@@ -281,7 +291,7 @@ describe("Copy Link error handling", () => {
       clipboard: { writeText: vi.fn(() => Promise.resolve()) },
     });
 
-    render(<StrokesGainedClient initialInput={mockInput} />);
+    renderClient({ initialInput: mockInput });
     const copyBtn = screen.getByTestId("copy-link");
     await userEvent.click(copyBtn);
 
@@ -294,10 +304,9 @@ describe("Copy Link error handling", () => {
         writeText: vi.fn(() => Promise.reject(new Error("Not allowed"))),
       },
     });
-    // execCommand may not exist in jsdom — define it
     document.execCommand = vi.fn(() => true);
 
-    render(<StrokesGainedClient initialInput={mockInput} />);
+    renderClient({ initialInput: mockInput });
     const copyBtn = screen.getByTestId("copy-link");
     await userEvent.click(copyBtn);
 
@@ -312,7 +321,7 @@ describe("Copy Link error handling", () => {
     });
     document.execCommand = vi.fn(() => false);
 
-    render(<StrokesGainedClient initialInput={mockInput} />);
+    renderClient({ initialInput: mockInput });
     const copyBtn = screen.getByTestId("copy-link");
     await userEvent.click(copyBtn);
 
@@ -328,15 +337,16 @@ describe("Save feedback", () => {
   beforeEach(() => {
     mockTrackEvent.mockClear();
     mockSaveRound.mockClear();
+    mockTurnstileExecute.mockClear();
+    mockSaveRound.mockResolvedValue({ success: true });
+    mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   it("shows green 'Round saved' banner on success", async () => {
-    mockSaveRound.mockResolvedValue({ success: true });
+    renderClient();
 
-    render(<StrokesGainedClient />);
-
-    // Click the mock submit button to trigger handleFormSubmit → saveRound
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
@@ -345,22 +355,40 @@ describe("Save feedback", () => {
       );
     });
     expect(mockTrackEvent).toHaveBeenCalledWith("round_saved");
+    expect(mockSaveRound).toHaveBeenCalledWith(expect.any(Object), {
+      turnstileToken: "turnstile-token",
+    });
   });
 
-  it("shows a pending save state while the save request is in flight", async () => {
+  it("shows verifying first, then saving, while the background save is in flight", async () => {
+    let resolveTurnstile!: (token: string) => void;
     let resolveSave!: (value: { success: true }) => void;
-    mockSaveRound.mockReturnValue(
+
+    mockTurnstileExecute.mockReturnValueOnce(
+      new Promise<string>((resolve) => {
+        resolveTurnstile = resolve;
+      })
+    );
+    mockSaveRound.mockReturnValueOnce(
       new Promise<{ success: true }>((resolve) => {
         resolveSave = resolve;
       })
     );
 
-    render(<StrokesGainedClient />);
+    renderClient();
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     expect(screen.getByTestId("save-pending")).toHaveTextContent(
-      "Saving round..."
+      "Verifying you're human..."
     );
+
+    resolveTurnstile("turnstile-token");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-pending")).toHaveTextContent(
+        "Saving round..."
+      );
+    });
 
     resolveSave({ success: true });
 
@@ -377,7 +405,7 @@ describe("Save feedback", () => {
       message: "Cloud save unavailable — your results are still shown below.",
     });
 
-    render(<StrokesGainedClient />);
+    renderClient();
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
@@ -387,14 +415,32 @@ describe("Save feedback", () => {
     });
   });
 
-  it("shows amber error banner for other save errors", async () => {
+  it("shows a verification failure banner while preserving results", async () => {
+    mockSaveRound.mockResolvedValue({
+      success: false,
+      code: "VERIFICATION_FAILED",
+      message: "Bot check failed. Please try again.",
+    });
+
+    renderClient();
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-error")).toHaveTextContent(
+        /Bot check failed\. Your results are still shown below\./
+      );
+    });
+    expect(screen.getByTestId("sg-results")).toBeVisible();
+  });
+
+  it("shows amber error banner for runtime save errors", async () => {
     mockSaveRound.mockResolvedValue({
       success: false,
       code: "DB_ERROR",
       message: "Round could not be saved.",
     });
 
-    render(<StrokesGainedClient />);
+    renderClient();
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     await waitFor(() => {
@@ -405,51 +451,89 @@ describe("Save feedback", () => {
   });
 
   it("skips the background save call when save is disabled in the UI", async () => {
-    render(<StrokesGainedClient saveEnabled={false} />);
+    render(
+      <StrokesGainedClient
+        saveEnabled={false}
+        turnstileSiteKey="site-key"
+      />
+    );
+
     await userEvent.click(screen.getByTestId("mock-submit"));
 
+    expect(mockTurnstileExecute).not.toHaveBeenCalled();
     expect(mockSaveRound).not.toHaveBeenCalled();
     expect(screen.queryByTestId("save-pending")).toBeNull();
     expect(screen.queryByTestId("save-success")).toBeNull();
     expect(screen.queryByTestId("save-error")).toBeNull();
   });
 
-  it("only applies the latest save response (race condition guard)", async () => {
-    let resolveFirst!: (v: { success: boolean }) => void;
-    let resolveSecond!: (
-      v: { success: true } | { success: false; error: string }
+  it("only applies the latest save response when re-submitting during verification", async () => {
+    let resolveFirstToken!: (token: string) => void;
+
+    mockTurnstileExecute
+      .mockReturnValueOnce(
+        new Promise<string>((resolve) => {
+          resolveFirstToken = resolve;
+        })
+      )
+      .mockResolvedValueOnce("second-token");
+    mockSaveRound.mockResolvedValueOnce({ success: true });
+
+    renderClient();
+
+    await userEvent.click(screen.getByTestId("mock-submit"));
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(mockSaveRound).toHaveBeenCalledWith(expect.any(Object), {
+        turnstileToken: "second-token",
+      });
+    });
+
+    resolveFirstToken("first-token");
+    await Promise.resolve();
+
+    expect(mockSaveRound).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(screen.getByTestId("save-success")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("save-error")).not.toBeInTheDocument();
+  });
+
+  it("ignores stale save responses when re-submitting during saving", async () => {
+    let resolveFirstSave!: (
+      value: { success: false; code: "DB_ERROR"; message: string }
     ) => void;
 
-    const firstPromise = new Promise<{ success: boolean }>((r) => {
-      resolveFirst = r;
-    });
-    const secondPromise = new Promise<
-      { success: true } | { success: false; error: string }
-    >((r) => {
-      resolveSecond = r;
-    });
-
+    mockTurnstileExecute
+      .mockResolvedValueOnce("first-token")
+      .mockResolvedValueOnce("second-token");
     mockSaveRound
-      .mockReturnValueOnce(firstPromise)
-      .mockReturnValueOnce(secondPromise);
+      .mockReturnValueOnce(
+        new Promise<{ success: false; code: "DB_ERROR"; message: string }>(
+          (resolve) => {
+            resolveFirstSave = resolve;
+          }
+        )
+      )
+      .mockResolvedValueOnce({ success: true });
 
-    render(<StrokesGainedClient />);
+    renderClient();
 
-    // First submit
     await userEvent.click(screen.getByTestId("mock-submit"));
-    // Second submit (supersedes first)
     await userEvent.click(screen.getByTestId("mock-submit"));
 
-    // Resolve second (latest) first
-    resolveSecond({ success: true });
     await waitFor(() => {
       expect(screen.getByTestId("save-success")).toBeInTheDocument();
     });
 
-    // Resolve first (stale) — should be ignored since requestId doesn't match
-    resolveFirst({ success: false });
+    resolveFirstSave({
+      success: false,
+      code: "DB_ERROR",
+      message: "Round could not be saved.",
+    });
+    await Promise.resolve();
 
-    // Success banner should still be showing, no error
     expect(screen.getByTestId("save-success")).toBeInTheDocument();
     expect(screen.queryByTestId("save-error")).not.toBeInTheDocument();
   });

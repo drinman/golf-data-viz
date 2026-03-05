@@ -11,11 +11,14 @@ import { checkRateLimit, extractClientIp } from "@/lib/rate-limit";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
 import { assessRoundTrust } from "@/lib/golf/round-trust";
 import { getRoundSaveAvailability } from "@/lib/round-save";
+import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { headers } from "next/headers";
 
 export type SaveRoundErrorCode =
   | "RATE_LIMITED"
   | "SAVE_DISABLED"
+  | "VERIFICATION_REQUIRED"
+  | "VERIFICATION_FAILED"
   | "VALIDATION"
   | "DB_ERROR"
   | "UNEXPECTED";
@@ -27,6 +30,9 @@ export type SaveRoundResult =
 const SAVE_DISABLED_MESSAGE =
   "Cloud save unavailable — your results are still shown below.";
 const RATE_LIMITED_MESSAGE = "Too many requests. Please try again shortly.";
+const VERIFICATION_REQUIRED_MESSAGE =
+  "Complete the bot check to save anonymously.";
+const VERIFICATION_FAILED_MESSAGE = "Bot check failed. Please try again.";
 const DB_ERROR_MESSAGE = "Round could not be saved.";
 const UNEXPECTED_MESSAGE = "An unexpected error occurred.";
 const RATE_LIMIT_MONITOR_SAMPLE_RATE = 0.1;
@@ -52,16 +58,23 @@ function isMissingTrustSchemaError(error: SupabaseInsertError | null): boolean {
 }
 
 export async function saveRound(
-  input: RoundInput
+  input: RoundInput,
+  verification: { turnstileToken: string | null }
 ): Promise<SaveRoundResult> {
   try {
     if (!getRoundSaveAvailability().enabled) {
       return fail("SAVE_DISABLED", SAVE_DISABLED_MESSAGE);
     }
 
+    const token = verification.turnstileToken?.trim() ?? "";
+    if (!token) {
+      return fail("VERIFICATION_REQUIRED", VERIFICATION_REQUIRED_MESSAGE);
+    }
+
     // Rate limiting: fixed window per IP
     const hdrs = await headers();
     const ip = extractClientIp(hdrs);
+    const hostHeader = hdrs.get("host");
     const rateLimitDecision = await checkRateLimit(ip);
     if (!rateLimitDecision.allowed) {
       console.warn("[saveRound] Rate limited request", {
@@ -85,6 +98,20 @@ export async function saveRound(
         .join("; ");
       console.error("[saveRound] Validation failed:", message);
       return fail("VALIDATION", message);
+    }
+
+    const turnstileResult = await verifyTurnstileToken({
+      token,
+      remoteIp: ip,
+      expectedHostname: hostHeader,
+    });
+
+    if (!turnstileResult.ok) {
+      console.warn("[saveRound] Turnstile verification failed", {
+        reason: turnstileResult.reason,
+        errorCodes: turnstileResult.result.errorCodes,
+      });
+      return fail("VERIFICATION_FAILED", VERIFICATION_FAILED_MESSAGE);
     }
 
     // Recalculate SG server-side — never trust client-supplied values
