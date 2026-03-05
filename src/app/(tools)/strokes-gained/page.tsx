@@ -53,11 +53,16 @@ export async function generateMetadata({
   const result = calculateStrokesGained(input, benchmark);
 
   const skippedSet = new Set(result.skippedCategories);
+  const estimatedSet = new Set(result.estimatedCategories);
   const categoryHighlights = (
     Object.keys(CATEGORY_LABELS) as StrokesGainedCategory[]
   )
     .filter((key) => !skippedSet.has(key))
-    .map((key) => `${CATEGORY_LABELS[key]} ${formatSG(result.categories[key])}`)
+    .map((key) => {
+      const label = CATEGORY_LABELS[key];
+      const value = formatSG(result.categories[key]);
+      return estimatedSet.has(key) ? `${label} ${value} (est.)` : `${label} ${value}`;
+    })
     .join(", ");
 
   const title = `SG Breakdown: ${formatSG(result.total)} total — ${input.course}`;

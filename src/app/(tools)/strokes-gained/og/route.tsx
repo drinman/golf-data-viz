@@ -141,13 +141,15 @@ export async function GET(request: NextRequest) {
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
   const meta = getBenchmarkMeta();
-  const trustLabel = `Estimated SG Proxy${meta.provisional ? " (provisional)" : ""} · Benchmarks v${meta.version}`;
+  const trustLabel = `Peer-compared SG${meta.provisional ? " · Beta" : ""} · Benchmarks v${meta.version}`;
 
   const skippedSet = new Set(result.skippedCategories);
+  const estimatedSet = new Set(result.estimatedCategories);
   const entries = CATEGORY_ORDER.map((key) => ({
     label: CATEGORY_LABELS[key],
     value: result.categories[key],
     skipped: skippedSet.has(key),
+    estimated: estimatedSet.has(key),
   }));
 
   return new ImageResponse(
@@ -259,7 +261,7 @@ export async function GET(request: NextRequest) {
               gap: 12,
             }}
           >
-            {entries.map(({ label, value, skipped }, i) => (
+            {entries.map(({ label, value, skipped, estimated }, i) => (
               <div
                 key={label}
                 style={{
@@ -280,14 +282,21 @@ export async function GET(request: NextRequest) {
                     Not Tracked
                   </div>
                 ) : (
-                  <div
-                    style={{
-                      fontSize: 26,
-                      fontWeight: 600,
-                      color: value >= 0 ? "#16a34a" : "#dc2626",
-                    }}
-                  >
-                    {formatSG(value)}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {estimated && (
+                      <div style={{ fontSize: 14, fontWeight: 500, color: "#a8a29e", backgroundColor: "#f5f5f4", borderRadius: 4, padding: "2px 6px" }}>
+                        Est.
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        fontSize: 26,
+                        fontWeight: 600,
+                        color: value >= 0 ? "#16a34a" : "#dc2626",
+                      }}
+                    >
+                      {formatSG(value)}
+                    </div>
                   </div>
                 )}
               </div>

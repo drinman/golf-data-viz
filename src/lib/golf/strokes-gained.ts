@@ -19,6 +19,18 @@ import type {
   RadarChartDatum,
 } from "./types";
 
+/**
+ * Estimate GIR from scoring distribution when user doesn't track it.
+ * Eagles and birdies imply GIR; ~65% of pars imply GIR (accounts for
+ * par-3s where par doesn't require GIR, and scramble pars).
+ */
+export function estimateGIR(input: RoundInput): number {
+  return Math.min(
+    18,
+    Math.round(input.eagles + input.birdies + input.pars * 0.65)
+  );
+}
+
 /** Weight constants for SG category calculations (subject to calibration). */
 export const SG_WEIGHTS = {
   OTT_FIR_WEIGHT: 6.0,
@@ -73,7 +85,11 @@ function calcATG(input: RoundInput, benchmark: BracketBenchmark): number {
 
   // Estimate pars made on GIR (≈90% par rate on GIR for mid-HCP)
   const estimatedParsOnGIR = input.greensInRegulation * 0.9;
-  const scramblePars = Math.max(0, input.pars - estimatedParsOnGIR);
+  // Cap scramble pars to missed greens — can't scramble more than you missed
+  const scramblePars = Math.min(
+    missedGreens,
+    Math.max(0, input.pars - estimatedParsOnGIR)
+  );
   const playerScrambleRate = scramblePars / missedGreens;
   const peerScrambleRate = benchmark.upAndDownPercentage / 100;
 
@@ -106,29 +122,32 @@ export function calculateStrokesGained(
   input: RoundInput,
   benchmark: BracketBenchmark
 ): StrokesGainedResult {
-  const categories: Record<StrokesGainedCategory, number> = {
-    "off-the-tee": calcOTT(input, benchmark),
-    approach: calcApproach(input, benchmark),
-    "around-the-green": calcATG(input, benchmark),
-    putting: calcPutting(input, benchmark),
-  };
-
-  // Determine which categories are skipped due to missing data
+  const estimatedCategories: StrokesGainedCategory[] = [];
   const skippedCategories: StrokesGainedCategory[] = [];
 
-  // Approach requires GIR
+  // When GIR is missing, estimate it from scoring distribution
+  let effectiveInput = input;
   if (input.greensInRegulation == null) {
-    skippedCategories.push("approach");
+    const effectiveGIR = estimateGIR(input);
+    effectiveInput = { ...input, greensInRegulation: effectiveGIR };
+    estimatedCategories.push("approach");
+
+    // ATG only estimated if it uses the GIR path (Path 2), not if real up-and-down data exists (Path 1)
+    const hasUpAndDown =
+      input.upAndDownAttempts != null &&
+      input.upAndDownConverted != null &&
+      input.upAndDownAttempts > 0;
+    if (!hasUpAndDown) {
+      estimatedCategories.push("around-the-green");
+    }
   }
 
-  // ATG: Path 1 needs upAndDown data with attempts > 0; Path 2 needs GIR
-  const hasUpAndDown =
-    input.upAndDownAttempts != null &&
-    input.upAndDownConverted != null &&
-    input.upAndDownAttempts > 0;
-  if (!hasUpAndDown && input.greensInRegulation == null) {
-    skippedCategories.push("around-the-green");
-  }
+  const categories: Record<StrokesGainedCategory, number> = {
+    "off-the-tee": calcOTT(effectiveInput, benchmark),
+    approach: calcApproach(effectiveInput, benchmark),
+    "around-the-green": calcATG(effectiveInput, benchmark),
+    putting: calcPutting(effectiveInput, benchmark),
+  };
 
   const skippedSet = new Set(skippedCategories);
   const total = (
@@ -142,6 +161,7 @@ export function calculateStrokesGained(
     categories,
     benchmarkBracket: benchmark.bracket,
     skippedCategories,
+    estimatedCategories,
   };
 }
 

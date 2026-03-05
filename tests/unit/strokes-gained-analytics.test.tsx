@@ -62,6 +62,7 @@ vi.mock("@/lib/golf/strokes-gained", () => ({
     },
     benchmarkBracket: "10-15" as const,
     skippedCategories: [],
+    estimatedCategories: [],
   })),
   toRadarChartData: vi.fn(() => [
     { category: "Off the Tee", player: 40 },
@@ -153,7 +154,10 @@ vi.mock(
   })
 );
 
+import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import StrokesGainedClient from "@/app/(tools)/strokes-gained/_components/strokes-gained-client";
+
+const mockCalculateSG = vi.mocked(calculateStrokesGained);
 
 const mockInput = {
   handicapIndex: 12,
@@ -215,6 +219,33 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
       has_share_param: expect.any(Boolean),
     });
+  });
+
+  it("fires gir_estimated when estimatedCategories is non-empty", async () => {
+    mockCalculateSG.mockReturnValueOnce({
+      total: -1.5,
+      categories: {
+        "off-the-tee": -0.5,
+        approach: 0.2,
+        "around-the-green": -0.8,
+        putting: -0.4,
+      },
+      benchmarkBracket: "10-15",
+      skippedCategories: [],
+      estimatedCategories: ["approach", "around-the-green"],
+    });
+
+    render(<StrokesGainedClient />);
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("gir_estimated");
+  });
+
+  it("does NOT fire gir_estimated when estimatedCategories is empty", async () => {
+    render(<StrokesGainedClient />);
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    expect(mockTrackEvent).not.toHaveBeenCalledWith("gir_estimated");
   });
 
   it("fires copy_link_clicked when copy button is clicked", async () => {

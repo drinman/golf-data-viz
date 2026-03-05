@@ -42,6 +42,7 @@ interface ResultsSummaryProps {
 
 export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const skippedSet = new Set(result.skippedCategories);
+  const estimatedSet = new Set(result.estimatedCategories);
 
   const entries = CATEGORY_ORDER.map((key) => ({
     key,
@@ -49,10 +50,12 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
     description: CATEGORY_DESCRIPTIONS[key],
     value: result.categories[key],
     skipped: skippedSet.has(key),
+    estimated: estimatedSet.has(key),
   }));
 
-  const activeEntries = entries.filter((e) => !e.skipped);
-  const sorted = [...activeEntries].sort((a, b) => b.value - a.value);
+  // Only non-estimated, non-skipped categories participate in callouts
+  const calloutEntries = entries.filter((e) => !e.skipped && !e.estimated);
+  const sorted = [...calloutEntries].sort((a, b) => b.value - a.value);
   const strength = sorted[0];
   const weakness = sorted[sorted.length - 1];
 
@@ -80,7 +83,13 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
       {/* Benchmark bracket */}
       <p className="text-sm text-neutral-400">Compared to {bracketLabel}</p>
       <p className="text-xs italic text-neutral-400">
-        Estimated SG Proxy{benchmarkMeta.provisional ? " (provisional)" : ""} &middot;{" "}
+        Peer-compared SG{" "}
+        {benchmarkMeta.provisional && (
+          <span className="not-italic rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+            Beta
+          </span>
+        )}
+        {" "}&middot;{" "}
         <Link href="/methodology" className="underline hover:text-neutral-600">
           Benchmarks
         </Link>{" "}
@@ -89,7 +98,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
 
       {/* Per-category breakdown */}
       <ul className="space-y-3">
-        {entries.map(({ key, label, description, value, skipped }) => (
+        {entries.map(({ key, label, description, value, skipped, estimated }) => (
           <li
             key={key}
             className="flex items-center justify-between overflow-hidden rounded-lg border border-card-border"
@@ -111,20 +120,27 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
             {skipped ? (
               <span className="px-4 py-3 text-sm italic text-neutral-400">Not Tracked</span>
             ) : (
-              <span
-                className={`px-4 py-3 font-mono text-sm font-semibold tabular-nums ${
-                  value >= 0 ? "text-data-positive" : "text-data-negative"
-                }`}
-              >
-                {formatSG(value)}
+              <span className="flex items-center gap-1.5 px-4 py-3">
+                {estimated && (
+                  <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
+                    Est.
+                  </span>
+                )}
+                <span
+                  className={`font-mono text-sm font-semibold tabular-nums ${
+                    value >= 0 ? "text-data-positive" : "text-data-negative"
+                  }`}
+                >
+                  {formatSG(value)}
+                </span>
               </span>
             )}
           </li>
         ))}
       </ul>
 
-      {/* Strength & Weakness callouts (need at least 2 active categories) */}
-      {strength && weakness && activeEntries.length >= 2 && (
+      {/* Strength & Weakness callouts (need at least 2 non-estimated, non-skipped categories) */}
+      {strength && weakness && calloutEntries.length >= 2 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-lg bg-brand-50 px-4 py-3">
             <div className="flex items-center gap-1.5">

@@ -120,6 +120,9 @@ export default function StrokesGainedClient({
       clearTimeout(saveSuccessTimerRef.current);
 
     trackEvent("calculation_completed");
+    if (sgResult.estimatedCategories.length > 0) {
+      trackEvent("gir_estimated");
+    }
 
     // Update URL with shareable param (no navigation)
     const encoded = encodeRound(input);

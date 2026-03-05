@@ -94,6 +94,28 @@ describe("Round mapper → DB integration", () => {
     if (data?.id) insertedIds.push(data.id);
   });
 
+  it("saves round with null fairways_hit and null greens_in_regulation", async () => {
+    const round = makeRound();
+    delete round.fairwaysHit;
+    delete round.greensInRegulation;
+
+    const benchmark = getBracketForHandicap(round.handicapIndex);
+    const sg = calculateStrokesGained(round, benchmark);
+    const row = toRoundInsert(round, sg);
+
+    const { data, error } = await admin
+      .from("rounds")
+      .insert(row)
+      .select("id, fairways_hit, greens_in_regulation")
+      .single();
+
+    expect(error).toBeNull();
+    expect(data?.id).toBeDefined();
+    expect(data?.fairways_hit).toBeNull();
+    expect(data?.greens_in_regulation).toBeNull();
+    if (data?.id) insertedIds.push(data.id);
+  });
+
   it("stored SG values match calculated values", async () => {
     const round = makeRound();
     const benchmark = getBracketForHandicap(round.handicapIndex);

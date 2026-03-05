@@ -61,6 +61,7 @@ vi.mock("@/lib/golf/strokes-gained", () => ({
     },
     benchmarkBracket: "10-15" as const,
     skippedCategories: [],
+    estimatedCategories: [],
   })),
   toRadarChartData: vi.fn(() => [
     { category: "Off the Tee", player: 40 },
