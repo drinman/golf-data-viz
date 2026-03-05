@@ -19,5 +19,7 @@ describe("security headers", () => {
     expect(csp!.value).toContain("form-action 'self'");
     expect(csp!.value).toContain("frame-ancestors 'none'");
     expect(csp!.value).toContain("https://*.ingest.sentry.io");
+    expect(csp!.value).toContain("default-src 'self'");
+    expect(csp!.value).not.toContain("default-src 'self' blob:");
   });
 });

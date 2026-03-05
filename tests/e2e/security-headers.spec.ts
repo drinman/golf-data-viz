@@ -11,4 +11,6 @@ test("response includes Content-Security-Policy header", async ({
   expect(csp).toContain("form-action 'self'");
   expect(csp).toContain("frame-ancestors 'none'");
   expect(csp).toContain("https://*.ingest.sentry.io");
+  expect(csp).toContain("default-src 'self'");
+  expect(csp).not.toContain("default-src 'self' blob:");
 });
