@@ -347,6 +347,29 @@ describe("Save feedback", () => {
     expect(mockTrackEvent).toHaveBeenCalledWith("round_saved");
   });
 
+  it("shows a pending save state while the save request is in flight", async () => {
+    let resolveSave!: (value: { success: true }) => void;
+    mockSaveRound.mockReturnValue(
+      new Promise<{ success: true }>((resolve) => {
+        resolveSave = resolve;
+      })
+    );
+
+    render(<StrokesGainedClient />);
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    expect(screen.getByTestId("save-pending")).toHaveTextContent(
+      "Saving round..."
+    );
+
+    resolveSave({ success: true });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("save-pending")).toBeNull();
+    });
+    expect(screen.getByTestId("save-success")).toHaveTextContent("Round saved.");
+  });
+
   it("shows neutral 'Cloud save unavailable' notice for SAVE_DISABLED", async () => {
     mockSaveRound.mockResolvedValue({
       success: false,
@@ -379,6 +402,16 @@ describe("Save feedback", () => {
         /Round could not be saved/
       );
     });
+  });
+
+  it("skips the background save call when save is disabled in the UI", async () => {
+    render(<StrokesGainedClient saveEnabled={false} />);
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    expect(mockSaveRound).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("save-pending")).toBeNull();
+    expect(screen.queryByTestId("save-success")).toBeNull();
+    expect(screen.queryByTestId("save-error")).toBeNull();
   });
 
   it("only applies the latest save response (race condition guard)", async () => {

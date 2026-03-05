@@ -74,6 +74,12 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.goto("/strokes-gained");
 
     await expect(
+      page.getByText("Free post-round benchmark from manual scorecard stats.")
+    ).toBeVisible();
+    await expect(
+      page.getByText("This is a peer-compared SG proxy built from round-level inputs, not shot-level tracking.")
+    ).toBeVisible();
+    await expect(
       page.getByText("Your official USGA index (GHIN, TheGrint, etc.)")
     ).toBeVisible();
     await expect(
@@ -82,12 +88,6 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(
       page.getByText("How many of each score type? Must add up to 18")
     ).toBeVisible();
-
-    const saveConsent = page.getByLabel(
-      "Save this round anonymously to improve future benchmarks."
-    );
-    await expect(saveConsent).toBeVisible();
-    await expect(saveConsent).not.toBeChecked();
   });
 
   test("full happy path: submit round and see radar chart", async ({

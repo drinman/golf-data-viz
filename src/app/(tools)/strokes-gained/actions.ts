@@ -10,6 +10,7 @@ import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import { checkRateLimit, extractClientIp } from "@/lib/rate-limit";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
 import { assessRoundTrust } from "@/lib/golf/round-trust";
+import { getRoundSaveAvailability } from "@/lib/round-save";
 import { headers } from "next/headers";
 
 export type SaveRoundErrorCode =
@@ -42,7 +43,7 @@ export async function saveRound(
   input: RoundInput
 ): Promise<SaveRoundResult> {
   try {
-    if (process.env.ENABLE_ROUND_SAVE !== "true") {
+    if (!getRoundSaveAvailability().enabled) {
       return fail("SAVE_DISABLED", SAVE_DISABLED_MESSAGE);
     }
 

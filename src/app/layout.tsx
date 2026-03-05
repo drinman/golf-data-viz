@@ -36,12 +36,14 @@ export const metadata: Metadata = {
     default: "Golf Data Viz",
     template: "%s | Golf Data Viz",
   },
-  description: "Golf performance analysis for mid-handicap golfers.",
+  description:
+    "Free post-round golf benchmark from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.",
   openGraph: {
     type: "website",
     siteName: "Golf Data Viz",
     title: "Golf Data Viz",
-    description: "Golf performance analysis for mid-handicap golfers.",
+    description:
+      "Free post-round golf benchmark from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.",
     images: [
       {
         url: "/strokes-gained/og",
@@ -54,7 +56,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Golf Data Viz",
-    description: "Golf performance analysis for mid-handicap golfers.",
+    description:
+      "Free post-round golf benchmark from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.",
     images: ["/strokes-gained/og"],
   },
 };

@@ -31,12 +31,18 @@ jobs:
           curl -fsS --max-time 20 "${BASE}/strokes-gained/og?d=${PAYLOAD}" >/dev/null
 
       - name: Notify Slack on failure
-        if: ${{ failure() && secrets.UPTIME_ALERT_SLACK_WEBHOOK != '' }}
+        if: ${{ failure() }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.UPTIME_ALERT_SLACK_WEBHOOK }}
         shell: bash
         run: |
           set -euo pipefail
+
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "UPTIME_ALERT_SLACK_WEBHOOK not configured; skipping Slack notification."
+            exit 0
+          fi
+
           BASE="${BASE_URL:-https://golfdataviz.com}"
           MESSAGE="Uptime checks failed for ${BASE} in ${GITHUB_REPOSITORY}. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           PAYLOAD=$(jq -n --arg text "${MESSAGE}" '{text: $text}')

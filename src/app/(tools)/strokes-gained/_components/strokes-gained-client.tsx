@@ -24,10 +24,12 @@ import { saveRound } from "../actions";
 
 interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
+  saveEnabled?: boolean;
 }
 
 export default function StrokesGainedClient({
   initialInput,
+  saveEnabled = true,
 }: StrokesGainedClientProps) {
   const benchmarkMeta = getBenchmarkMeta();
 
@@ -53,6 +55,7 @@ export default function StrokesGainedClient({
     type: "config" | "runtime" | "rate_limited";
     message: string;
   } | null>(null);
+  const [savePending, setSavePending] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -114,6 +117,7 @@ export default function StrokesGainedClient({
     setLastInput(input);
 
     // Clear stale feedback from previous submit
+    setSavePending(false);
     setSaveError(null);
     setSaveSuccess(false);
     if (saveSuccessTimerRef.current)
@@ -136,11 +140,14 @@ export default function StrokesGainedClient({
     // Request scoping: only apply the result from the latest submit
     const requestId = ++saveRequestIdRef.current;
 
-    if (options?.saveToCloud === true) {
+    if (saveEnabled && options?.saveToCloud === true) {
+      setSavePending(true);
+
       // Save to DB in background — surface errors to user
       saveRound(input)
         .then((res) => {
           if (requestId !== saveRequestIdRef.current) return;
+          setSavePending(false);
           if (res.success) {
             trackEvent("round_saved");
             setSaveSuccess(true);
@@ -173,6 +180,7 @@ export default function StrokesGainedClient({
         })
         .catch((err) => {
           if (requestId !== saveRequestIdRef.current) return;
+          setSavePending(false);
           console.error("[StrokesGained] Save transport error:", err);
           trackEvent("round_save_failed", { error_type: "network" });
           setSaveError({
@@ -255,15 +263,20 @@ export default function StrokesGainedClient({
         Strokes Gained Benchmarker
       </h1>
       <p className="mt-2 text-neutral-600">
-        See where you gain and lose strokes vs your handicap peers.
+        Free post-round benchmark from manual scorecard stats.
       </p>
       <p className="mt-1 max-w-lg text-sm text-neutral-500">
         Most strokes gained tools compare you to Tour pros — but that doesn&apos;t
         help you decide where to practice. We benchmark against golfers at your
-        handicap level so you see what actually sets you apart.{" "}
+        handicap level so you see what actually sets you apart. No sensors or
+        subscription required.{" "}
         <Link href="/methodology" className="underline hover:text-neutral-700">
           See full methodology &rarr;
         </Link>
+      </p>
+      <p className="mt-4 max-w-lg rounded-md border border-cream-200 bg-cream-50 px-3 py-2 text-xs text-neutral-600">
+        This is a peer-compared SG proxy built from round-level inputs, not
+        shot-level tracking.
       </p>
 
       <div
@@ -280,8 +293,19 @@ export default function StrokesGainedClient({
           onSubmit={handleFormSubmit}
           initialValues={initialInput}
           isCalculating={isCalculating}
+          saveEnabled={saveEnabled}
         />
       </div>
+
+      {savePending && (
+        <div
+          data-testid="save-pending"
+          role="status"
+          className="mt-6 rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
+        >
+          Saving round...
+        </div>
+      )}
 
       {saveSuccess && (
         <div

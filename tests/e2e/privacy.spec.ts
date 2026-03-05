@@ -23,7 +23,7 @@ test.describe("Privacy policy page", () => {
   }) => {
     await expect(
       page.getByText(
-        "Sharing is opt-in. If you share a results link, it contains encoded round stats needed to recreate the chart."
+        "Sharing is opt-in. If you share a results link, it contains encoded, reversible round stats needed to recreate the chart."
       )
     ).toBeVisible();
     await expect(

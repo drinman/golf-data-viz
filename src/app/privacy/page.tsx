@@ -20,8 +20,10 @@ export default function PrivacyPage() {
       </p>
 
       <p className="mt-6 text-sm text-neutral-600">
-        Golf Data Viz is built by a golfer, for golfers. We collect only what we
-        need to show you where you gain and lose strokes — nothing more.
+        Golf Data Viz is built by a golfer, for golfers. It is a free,
+        post-round benchmark built from the scorecard stats you enter
+        manually. We collect only what we need to show your peer-compared
+        results and support the product.
       </p>
 
       {/* What we collect */}
@@ -33,7 +35,8 @@ export default function PrivacyPage() {
           What We Collect
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
-          When you enter a round, we store only the stats you provide:
+          To generate results, the app uses the round stats you enter. If you
+          opt in to save a round, we store only the stats you provide:
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
           <li>Score, course rating, and slope rating</li>
@@ -76,7 +79,8 @@ export default function PrivacyPage() {
           How Data Is Stored
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
-          Round data is stored in a{" "}
+          If you opt in to save a round, the round stats are stored anonymously
+          in a{" "}
           <a
             href="https://supabase.com"
             className="text-brand-800 underline"
@@ -85,9 +89,10 @@ export default function PrivacyPage() {
           >
             Supabase
           </a>
-          -hosted PostgreSQL database with row-level security enabled. Each
-          user&apos;s data is isolated at the database level — no user can access
-          another user&apos;s rounds.
+          -hosted PostgreSQL database. The tool does not require accounts, so
+          saved rounds are not tied to your name or email. Direct public writes
+          are disabled, and saves go through a server-side validation path
+          before reaching the database.
         </p>
       </section>
 
@@ -101,8 +106,8 @@ export default function PrivacyPage() {
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
           Sharing is <strong>opt-in</strong>. If you share a results link, it
-          contains encoded round stats needed to recreate the chart. We do not
-          sell, rent, or share your data with third parties.
+          contains encoded, reversible round stats needed to recreate the
+          chart. We do not sell, rent, or share your data with third parties.
         </p>
       </section>
 

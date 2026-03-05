@@ -10,15 +10,19 @@ export default function Home() {
       <section className="relative overflow-hidden px-4 py-24 sm:py-32">
         <ContourBg className="text-brand-900" />
         <div className="relative mx-auto max-w-4xl">
+          <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.22em] text-brand-800">
+            Free post-round benchmark
+          </p>
           <h1
             data-testid="hero-headline"
-            className="animate-fade-up font-display text-5xl tracking-tight text-neutral-950 sm:text-6xl"
+            className="animate-fade-up mt-4 font-display text-5xl tracking-tight text-neutral-950 sm:text-6xl"
           >
             Know where your strokes go
           </h1>
           <p className="animate-fade-up delay-1 mt-6 max-w-xl text-lg text-neutral-600">
-            Enter your round stats, see where you gain and lose strokes compared
-            to golfers at your handicap level — not Tour pros.
+            Enter your round stats manually and see where you gain and lose
+            strokes compared to golfers at your handicap level, not Tour pros.
+            No sensors, no subscription, and no Tour-pro baseline.
           </p>
           <div className="animate-fade-up delay-2 mt-10">
             <LandingCta />

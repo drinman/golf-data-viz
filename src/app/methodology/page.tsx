@@ -155,6 +155,12 @@ export default function MethodologyPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">Methodology</h1>
+      <p className="mt-2 max-w-2xl text-sm text-neutral-600">
+        Golf Data Viz is a free post-round benchmark that estimates
+        peer-compared strokes gained from round-level scorecard stats, not
+        shot-level tracking. This page explains the formulas, sources, and
+        limitations.
+      </p>
 
       {/* Section 1: Not True SG */}
       <section className="mt-8">

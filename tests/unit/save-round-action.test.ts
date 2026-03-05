@@ -38,6 +38,8 @@ describe("saveRound server action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("ENABLE_ROUND_SAVE", "true");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
     vi.spyOn(console, "warn").mockImplementation(() => {});
     mockCheckRateLimit.mockResolvedValue({ allowed: true });
     mockCreateAdminClient.mockReturnValue({

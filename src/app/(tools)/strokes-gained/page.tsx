@@ -3,7 +3,11 @@ import { decodeRound } from "@/lib/golf/share-codec";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import type { StrokesGainedCategory } from "@/lib/golf/types";
+import { getRoundSaveAvailability } from "@/lib/round-save";
 import StrokesGainedClient from "./_components/strokes-gained-client";
+
+const PAGE_DESCRIPTION =
+  "Free post-round SG proxy from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.";
 
 const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
   "off-the-tee": "Off the Tee",
@@ -31,20 +35,17 @@ export async function generateMetadata({
   if (!input) {
     return {
       title: "Strokes Gained Benchmarker",
-      description:
-        "See where you gain and lose strokes vs your handicap peers.",
+      description: PAGE_DESCRIPTION,
       alternates: { canonical: "/strokes-gained" },
       openGraph: {
         title: "Strokes Gained Benchmarker",
-        description:
-          "See where you gain and lose strokes vs your handicap peers.",
+        description: PAGE_DESCRIPTION,
         url: "/strokes-gained",
       },
       twitter: {
         card: "summary_large_image",
         title: "Strokes Gained Benchmarker",
-        description:
-          "See where you gain and lose strokes vs your handicap peers.",
+        description: PAGE_DESCRIPTION,
       },
     };
   }
@@ -98,6 +99,12 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const payload = typeof params.d === "string" ? params.d : undefined;
   const initialInput = payload ? decodeRound(payload) : null;
+  const saveEnabled = getRoundSaveAvailability().enabled;
 
-  return <StrokesGainedClient initialInput={initialInput} />;
+  return (
+    <StrokesGainedClient
+      initialInput={initialInput}
+      saveEnabled={saveEnabled}
+    />
+  );
 }
