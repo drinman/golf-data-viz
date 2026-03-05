@@ -29,15 +29,12 @@ describe("trackEvent", () => {
 
   it("calls Vercel track() with event name", () => {
     trackEvent("landing_cta_clicked");
-    expect(mockVercelTrack).toHaveBeenCalledWith("landing_cta_clicked", undefined);
+    expect(mockVercelTrack).toHaveBeenCalledWith("landing_cta_clicked");
   });
 
   it("calls Vercel track() with event name and props", () => {
     trackEvent("calculation_completed");
-    expect(mockVercelTrack).toHaveBeenCalledWith(
-      "calculation_completed",
-      undefined
-    );
+    expect(mockVercelTrack).toHaveBeenCalledWith("calculation_completed");
   });
 
   // --- GA4 sink ---

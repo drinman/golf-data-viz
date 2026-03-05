@@ -3,7 +3,7 @@
 
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { roundInputSchema, type RoundInputFormData } from "@/lib/golf/schemas";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import type { RoundInput } from "@/lib/golf/types";
@@ -56,6 +56,10 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
   const [showOptional, setShowOptional] = useState(false);
   const [saveToCloud, setSaveToCloud] = useState(false);
 
+  useEffect(() => {
+    setSaveToCloud(false);
+  }, [initialValues]);
+
   const {
     register,
     handleSubmit,
@@ -107,7 +111,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
     (Number(triples) || 0);
 
   function handleFormSubmit(data: RoundInputFormData) {
-    onSubmit(data as RoundInput, { saveToCloud });
+    onSubmit(data, { saveToCloud });
   }
 
   return (
@@ -361,7 +365,7 @@ export function RoundInputForm({ onSubmit, initialValues, isCalculating }: Round
               </FormField>
               <FormField
                 label="Up & Downs Made"
-                hint="Times you missed the green and tried to get up-and-down"
+                hint="Successful up-and-downs (got down in 2 from off the green)"
                 error={errors.upAndDownConverted?.message}
               >
                 <input
