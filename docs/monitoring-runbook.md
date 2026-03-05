@@ -5,7 +5,8 @@
 1. Set `SENTRY_DSN` in Vercel production environment variables.
 2. Optional: set `NEXT_PUBLIC_SENTRY_DSN` to capture browser/runtime errors directly.
 3. Optional: set `NEXT_PUBLIC_SENTRY_RELEASE` for client-side release tagging.
-4. Deploy once to activate `instrumentation.ts`, `sentry.server.config.ts`, and `sentry.edge.config.ts`.
+4. Set `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` in build environment to enable source map upload.
+5. Deploy once to activate `instrumentation.ts`, `sentry.server.config.ts`, and `sentry.edge.config.ts`.
 
 ## Required Alert Rules
 
