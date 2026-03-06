@@ -2,14 +2,32 @@
 
 import { trackEvent } from "@/lib/analytics/client";
 
-export function LandingCta() {
+function getUtmSource(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  return new URLSearchParams(window.location.search).get("utm_source") ?? undefined;
+}
+
+function getCtaHref(utmSource?: string): string {
+  if (!utmSource) return "/strokes-gained";
+
+  const params = new URLSearchParams({ utm_source: utmSource });
+  return `/strokes-gained?${params.toString()}`;
+}
+
+interface LandingCtaProps {
+  utmSource?: string;
+}
+
+export function LandingCta({ utmSource }: LandingCtaProps) {
+  const effectiveUtmSource = utmSource ?? getUtmSource();
+
   return (
     <a
-      href="/strokes-gained"
+      href={getCtaHref(effectiveUtmSource)}
       data-testid="hero-cta"
       className="inline-block rounded-lg bg-brand-800 px-6 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0"
       onClick={() => {
-        trackEvent("landing_cta_clicked");
+        trackEvent("landing_cta_clicked", { utm_source: effectiveUtmSource });
       }}
     >
       Benchmark My Round

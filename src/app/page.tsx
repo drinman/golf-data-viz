@@ -3,7 +3,14 @@ import { PenLine, BarChart3, Share2 } from "lucide-react";
 import { ContourBg } from "@/components/contour-bg";
 import { LandingCta } from "./_components/landing-cta";
 
-export default function Home() {
+interface HomePageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function Home({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const utmSource = typeof params.utm_source === "string" ? params.utm_source : undefined;
+
   return (
     <main>
       {/* Hero */}
@@ -20,12 +27,13 @@ export default function Home() {
             Know where your strokes go
           </h1>
           <p className="animate-fade-up delay-1 mt-6 max-w-xl text-lg text-neutral-600">
-            Enter your round stats manually and see where you gain and lose
-            strokes compared to golfers at your handicap level, not Tour pros.
-            No sensors, no subscription, and no Tour-pro baseline.
+            Use the scorecard stats you already track after a round to see
+            where you gain and lose strokes compared to golfers at your
+            handicap level. No sensors, no subscription, and no Tour-pro
+            baseline.
           </p>
           <div className="animate-fade-up delay-2 mt-10">
-            <LandingCta />
+            <LandingCta utmSource={utmSource} />
           </div>
         </div>
       </section>

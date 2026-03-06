@@ -9,15 +9,17 @@ export type AnalyticsEvent =
   | "round_save_failed"
   | "gir_estimated";
 
+type EmptyPayload = Record<never, never>;
+
 export type AnalyticsEventProps = {
-  landing_cta_clicked: Record<string, never>;
-  form_started: Record<string, never>;
-  calculation_completed: Record<string, never>;
-  download_png_clicked: { has_share_param: boolean };
-  copy_link_clicked: { has_share_param: boolean };
+  landing_cta_clicked: { utm_source?: string };
+  form_started: { utm_source?: string };
+  calculation_completed: { utm_source?: string };
+  download_png_clicked: { has_share_param: boolean; utm_source?: string };
+  copy_link_clicked: { has_share_param: boolean; utm_source?: string };
   shared_round_viewed: { referrer: string; utm_source: string };
-  round_saved: Record<string, never>;
-  gir_estimated: Record<string, never>;
+  round_saved: EmptyPayload;
+  gir_estimated: EmptyPayload;
   round_save_failed: {
     error_type:
       | "config"
@@ -28,16 +30,20 @@ export type AnalyticsEventProps = {
   };
 };
 
+type RequiredKeys<T extends object> = {
+  [K in keyof T]-?: object extends Pick<T, K> ? never : K;
+}[keyof T];
+
 /**
- * Events that carry no payload — props can be omitted.
+ * Events whose payload has no required fields.
  */
-export type NoPayloadEvent = {
-  [E in AnalyticsEvent]: AnalyticsEventProps[E] extends Record<string, never>
+export type OptionalPayloadEvent = {
+  [E in AnalyticsEvent]: RequiredKeys<AnalyticsEventProps[E]> extends never
     ? E
     : never;
 }[AnalyticsEvent];
 
 /**
- * Events that require a payload — props must be provided.
+ * Events whose payload includes at least one required field.
  */
-export type PayloadEvent = Exclude<AnalyticsEvent, NoPayloadEvent>;
+export type RequiredPayloadEvent = Exclude<AnalyticsEvent, OptionalPayloadEvent>;

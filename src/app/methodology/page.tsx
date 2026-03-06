@@ -151,6 +151,15 @@ function computeCalibrationRows() {
 export default function MethodologyPage() {
   const meta = getBenchmarkMeta();
   const calibrationRows = computeCalibrationRows();
+  const citationStatuses = CITATION_METRIC_KEYS.map((key) =>
+    getCitationStatus(meta.citations[key as CitationMetricKey])
+  );
+  const coveredMetricCount = citationStatuses.filter(
+    (status) => status === "partial" || status === "sourced"
+  ).length;
+  const unsourcedMetricCount = citationStatuses.filter(
+    (status) => status === "pending"
+  ).length;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
@@ -238,6 +247,12 @@ export default function MethodologyPage() {
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Data Sources &amp; Citations
         </h2>
+        <p className="mt-2 text-sm text-neutral-600">
+          {coveredMetricCount} of {CITATION_METRIC_KEYS.length} tracked metrics
+          {" "}have published-source coverage for some brackets.{" "}
+          {unsourcedMetricCount} remain unsourced, and the benchmark is still
+          provisional.
+        </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm" data-testid="citations-table">
             <thead>

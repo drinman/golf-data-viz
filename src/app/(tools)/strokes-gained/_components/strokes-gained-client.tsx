@@ -25,11 +25,17 @@ import {
   type TurnstileWidgetHandle,
 } from "@/components/security/turnstile-widget";
 import { saveRound } from "../actions";
+import { LaunchTrustPanel } from "./launch-trust-panel";
 
 interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
   saveEnabled?: boolean;
   turnstileSiteKey?: string | null;
+}
+
+function getUtmSource(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  return new URLSearchParams(window.location.search).get("utm_source") ?? undefined;
 }
 
 export default function StrokesGainedClient({
@@ -75,11 +81,23 @@ export default function StrokesGainedClient({
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const formStartedRef = useRef(false);
   const sharedRoundViewedRef = useRef(false);
+  const attributionUtmSourceRef = useRef<string | undefined>(undefined);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
   const saveRequestIdRef = useRef(0);
+
+  if (
+    attributionUtmSourceRef.current === undefined &&
+    typeof window !== "undefined"
+  ) {
+    attributionUtmSourceRef.current = getUtmSource();
+  }
+
+  function getAttributionUtmSource(): string | undefined {
+    return attributionUtmSourceRef.current ?? getUtmSource();
+  }
 
   // Fire shared_round_viewed when viewing a shared link
   useEffect(() => {
@@ -95,10 +113,7 @@ export default function StrokesGainedClient({
               }
             })()
           : "";
-      const utmSource =
-        typeof window !== "undefined"
-          ? new URLSearchParams(window.location.search).get("utm_source") ?? ""
-          : "";
+      const utmSource = attributionUtmSourceRef.current ?? "";
       trackEvent("shared_round_viewed", { referrer, utm_source: utmSource });
     }
   }, [initialInput]);
@@ -133,7 +148,9 @@ export default function StrokesGainedClient({
     if (saveSuccessTimerRef.current)
       clearTimeout(saveSuccessTimerRef.current);
 
-    trackEvent("calculation_completed");
+    trackEvent("calculation_completed", {
+      utm_source: getAttributionUtmSource(),
+    });
     if (sgResult.estimatedCategories.length > 0) {
       trackEvent("gir_estimated");
     }
@@ -267,6 +284,7 @@ export default function StrokesGainedClient({
     try {
       trackEvent("download_png_clicked", {
         has_share_param: window.location.search.includes("d="),
+        utm_source: getAttributionUtmSource(),
       });
       const blob = await captureElementAsPng(shareCardRef.current);
       downloadBlob(blob, "strokes-gained.png");
@@ -281,6 +299,7 @@ export default function StrokesGainedClient({
   const handleCopyLink = useCallback(async () => {
     trackEvent("copy_link_clicked", {
       has_share_param: window.location.search.includes("d="),
+      utm_source: getAttributionUtmSource(),
     });
 
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
@@ -329,18 +348,16 @@ export default function StrokesGainedClient({
         Free post-round benchmark from manual scorecard stats.
       </p>
       <p className="mt-1 max-w-lg text-sm text-neutral-500">
-        Most strokes gained tools compare you to Tour pros — but that doesn&apos;t
-        help you decide where to practice. We benchmark against golfers at your
-        handicap level so you see what actually sets you apart. No sensors or
-        subscription required.{" "}
+        Most strokes gained tools compare you to Tour pros, which is less
+        useful when you&apos;re deciding what to practice. This benchmarks your
+        scorecard stats against golfers at your handicap level. Best for
+        golfers already tracking manual round stats, and not a replacement for
+        Arccos or Shot Scope if you already use sensors.{" "}
         <Link href="/methodology" className="underline hover:text-neutral-700">
           See full methodology &rarr;
         </Link>
       </p>
-      <p className="mt-4 max-w-lg rounded-md border border-cream-200 bg-cream-50 px-3 py-2 text-xs text-neutral-600">
-        This is a peer-compared SG proxy built from round-level inputs, not
-        shot-level tracking.
-      </p>
+      <LaunchTrustPanel />
 
       <div
         className="mt-8 rounded-xl border border-card-border bg-card p-6 shadow-sm"
@@ -348,7 +365,9 @@ export default function StrokesGainedClient({
         onFocusCapture={() => {
           if (!formStartedRef.current) {
             formStartedRef.current = true;
-            trackEvent("form_started");
+            trackEvent("form_started", {
+              utm_source: getAttributionUtmSource(),
+            });
           }
         }}
       >

@@ -1,8 +1,8 @@
 import { track } from "@vercel/analytics";
 import type {
   AnalyticsEventProps,
-  NoPayloadEvent,
-  PayloadEvent,
+  OptionalPayloadEvent,
+  RequiredPayloadEvent,
 } from "./events";
 
 declare global {
@@ -16,15 +16,18 @@ declare global {
  * No-ops when a sink is unavailable. Never throws.
  *
  * Events with required payload fields enforce `props` at the call site.
- * Events with no payload allow omitting `props`.
+ * Events with optional-or-empty payloads allow omitting `props`.
  */
-export function trackEvent(event: NoPayloadEvent): void;
-export function trackEvent<E extends PayloadEvent>(
+export function trackEvent<E extends OptionalPayloadEvent>(
+  event: E,
+  props?: AnalyticsEventProps[E]
+): void;
+export function trackEvent<E extends RequiredPayloadEvent>(
   event: E,
   props: AnalyticsEventProps[E]
 ): void;
 export function trackEvent(
-  event: NoPayloadEvent | PayloadEvent,
+  event: OptionalPayloadEvent | RequiredPayloadEvent,
   props?: Record<string, unknown>
 ): void {
   // Vercel Analytics

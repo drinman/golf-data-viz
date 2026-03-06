@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import type {
   BenchmarkMeta,
@@ -41,6 +42,9 @@ interface ResultsSummaryProps {
 }
 
 export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
+  const [openEstimate, setOpenEstimate] = useState<StrokesGainedCategory | null>(
+    null
+  );
   const skippedSet = new Set(result.skippedCategories);
   const estimatedSet = new Set(result.estimatedCategories);
 
@@ -62,6 +66,17 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenEstimate(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <div className="w-full max-w-lg space-y-6">
       {/* Total SG — hero card */}
@@ -82,6 +97,12 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
 
       {/* Benchmark bracket */}
       <p className="text-sm text-neutral-400">Compared to {bracketLabel}</p>
+      {result.benchmarkBracket === "30+" && (
+        <p className="text-xs text-amber-700">
+          The 30+ bracket uses estimated benchmarks with limited published
+          data. Results are less reliable than other brackets.
+        </p>
+      )}
       <p className="text-xs italic text-neutral-400">
         Peer-compared SG{" "}
         {benchmarkMeta.provisional && (
@@ -101,7 +122,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
         {entries.map(({ key, label, description, value, skipped, estimated }) => (
           <li
             key={key}
-            className="flex items-center justify-between overflow-hidden rounded-lg border border-card-border"
+            className="relative flex items-center justify-between rounded-lg border border-card-border"
           >
             {/* Colored left bar */}
             {!skipped && (
@@ -120,11 +141,20 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
             {skipped ? (
               <span className="px-4 py-3 text-sm italic text-neutral-400">Not Tracked</span>
             ) : (
-              <span className="flex items-center gap-1.5 px-4 py-3">
+              <span className="relative flex items-center gap-1.5 px-4 py-3">
                 {estimated && (
-                  <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
+                  <button
+                    type="button"
+                    aria-label="Est."
+                    aria-expanded={openEstimate === key}
+                    aria-controls={`estimate-help-${key}`}
+                    onClick={() =>
+                      setOpenEstimate((current) => (current === key ? null : key))
+                    }
+                    className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500 transition-colors hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-800/30"
+                  >
                     Est.
-                  </span>
+                  </button>
                 )}
                 <span
                   className={`font-mono text-sm font-semibold tabular-nums ${
@@ -133,11 +163,31 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                 >
                   {formatSG(value)}
                 </span>
+                {estimated && openEstimate === key && (
+                  <div
+                    id={`estimate-help-${key}`}
+                    role="dialog"
+                    aria-label={`${label} estimate details`}
+                    className="absolute right-0 top-full z-10 mt-2 w-56 rounded-lg border border-cream-200 bg-white p-3 text-left text-xs leading-relaxed text-neutral-600 shadow-lg"
+                  >
+                    This category is estimated from related stats because not
+                    all inputs were provided.
+                  </div>
+                )}
               </span>
             )}
           </li>
         ))}
       </ul>
+      {estimatedSet.size > 0 && (
+        <p className="text-xs text-neutral-400">
+          Categories marked Est. are approximated from related inputs. See{" "}
+          <Link href="/methodology" className="underline hover:text-neutral-600">
+            methodology
+          </Link>{" "}
+          for details.
+        </p>
+      )}
 
       {/* Strength & Weakness callouts (need at least 2 non-estimated, non-skipped categories) */}
       {strength && weakness && calloutEntries.length >= 2 && (

@@ -68,7 +68,7 @@ async function fillRound(page: import("@playwright/test").Page) {
 }
 
 test.describe("Strokes Gained Benchmarker", () => {
-  test("form shows trust hints and save consent defaults to unchecked", async ({
+  test("form shows compact trust module and save consent defaults to unchecked", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -77,7 +77,31 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByText("Free post-round benchmark from manual scorecard stats.")
     ).toBeVisible();
     await expect(
+      page.getByText("Beta")
+    ).toBeVisible();
+    await expect(
+      page.getByText("Peer proxy")
+    ).toBeVisible();
+    await expect(
+      page.getByText("Private")
+    ).toBeVisible();
+    await expect(
+      page.getByText("Open")
+    ).toBeVisible();
+    await expect(
       page.getByText("This is a peer-compared SG proxy built from round-level inputs, not shot-level tracking.")
+    ).toHaveCount(0);
+    const commonQuestions = page.getByText("Common questions");
+    await expect(commonQuestions).toBeVisible();
+    await commonQuestions.click();
+    await expect(
+      page.getByRole("link", { name: "Methodology" }).first()
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Privacy" }).first()
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "GitHub" }).first()
     ).toBeVisible();
     await expect(
       page.getByText("Your official USGA index (GHIN, TheGrint, etc.)")
@@ -268,7 +292,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByText(/proxy model/i).first()).toBeVisible();
   });
 
-  test("partial round (blank FIR/GIR) shows Est. badges and survives share/reload", async ({
+  test("partial round (blank FIR/GIR) shows Est. controls and survives share/reload", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -276,9 +300,19 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     const sgResults = page.locator('[data-testid="sg-results"]');
 
-    // Estimated categories should show "Est." badge instead of "Not Tracked"
-    const estBadges = sgResults.getByText("Est.");
-    await expect(estBadges.first()).toBeVisible();
+    const estButtons = sgResults.getByRole("button", { name: "Est." });
+    await expect(estButtons.first()).toBeVisible();
+    await estButtons.first().click();
+    await expect(
+      sgResults.getByText(
+        "This category is estimated from related stats because not all inputs were provided."
+      )
+    ).toBeVisible();
+    await expect(
+      sgResults.getByText(
+        "Categories marked Est. are approximated from related inputs. See methodology for details."
+      )
+    ).toBeVisible();
 
     // All four categories should show SG values
     const results = sgResults.locator("ul");
@@ -296,9 +330,11 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByText("Your Strokes Gained Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
-    // "Est." badges should still render after reload
+    // "Est." controls should still render after reload
     const reloadedResults = page.locator('[data-testid="sg-results"]');
-    await expect(reloadedResults.getByText("Est.").first()).toBeVisible();
+    await expect(
+      reloadedResults.getByRole("button", { name: "Est." }).first()
+    ).toBeVisible();
   });
 
   test("unchecked save consent computes results without save banners", async ({

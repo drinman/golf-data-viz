@@ -28,13 +28,15 @@ describe("trackEvent", () => {
   // --- Vercel Analytics sink ---
 
   it("calls Vercel track() with event name", () => {
-    trackEvent("landing_cta_clicked");
-    expect(mockVercelTrack).toHaveBeenCalledWith("landing_cta_clicked");
+    trackEvent("form_started");
+    expect(mockVercelTrack).toHaveBeenCalledWith("form_started");
   });
 
-  it("calls Vercel track() with event name and props", () => {
-    trackEvent("calculation_completed");
-    expect(mockVercelTrack).toHaveBeenCalledWith("calculation_completed");
+  it("calls Vercel track() with event name and optional utm props", () => {
+    trackEvent("landing_cta_clicked", { utm_source: "reddit" });
+    expect(mockVercelTrack).toHaveBeenCalledWith("landing_cta_clicked", {
+      utm_source: "reddit",
+    });
   });
 
   // --- GA4 sink ---
@@ -43,10 +45,14 @@ describe("trackEvent", () => {
     const mockGtag = vi.fn();
     (window as unknown as Record<string, unknown>).gtag = mockGtag;
 
-    trackEvent("download_png_clicked", { has_share_param: true });
+    trackEvent("download_png_clicked", {
+      has_share_param: true,
+      utm_source: "reddit",
+    });
 
     expect(mockGtag).toHaveBeenCalledWith("event", "download_png_clicked", {
       has_share_param: true,
+      utm_source: "reddit",
       page_location: expect.stringMatching(/^https?:\/\//),
     });
   });

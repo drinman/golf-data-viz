@@ -8,7 +8,7 @@ I built a free post-round golf stats app to compare your round to golfers at you
 
 I built this because I wanted a quick way to look at a round and see where I actually gained or lost strokes relative to golfers at my own handicap, not Tour pros.
 
-The app is here: https://golfdataviz.com/strokes-gained
+The app is here: https://golfdataviz.com/strokes-gained?utm_source=reddit
 
 What it does:
 - Free, post-round benchmark from manual scorecard stats
@@ -43,7 +43,7 @@ That’s a lot of fields.
 Fair criticism. I’m trying to stay on the line where the inputs are still realistic for someone with a scorecard, but the output is useful enough to help decide what to practice.
 
 Are you storing my data?
-Only if you explicitly opt in to save a round. Saves are anonymous, and shared links only contain reversible encoded round stats when you choose to share them.
+Only if you explicitly opt in to save a round. Saves are anonymous. Shared links contain the round stats needed to recreate the chart, so only share them if you're comfortable sharing those stats.
 
 ## Launch-Day Checklist
 
@@ -54,6 +54,7 @@ Before posting:
 - Run the uptime workflow and confirm green.
 - Confirm Sentry alerts are active and receiving production events.
 - Verify a shared link renders correctly from `?d=` and its OG route responds.
+- Verify the analytics funnel includes `utm_source=reddit` on CTA, form start, calculation, and share events.
 
 ## Launch-Day Reply Rules
 

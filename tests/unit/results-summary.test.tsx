@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ResultsSummary } from "@/app/(tools)/strokes-gained/_components/results-summary";
 import { makeSGResult } from "../fixtures/factories";
 import type { BenchmarkMeta } from "@/lib/golf/types";
@@ -61,5 +62,80 @@ describe("Biggest Strength / Biggest Weakness callouts", () => {
 
     expect(screen.queryByText("Biggest Strength")).toBeNull();
     expect(screen.queryByText("Biggest Weakness")).toBeNull();
+  });
+});
+
+describe("Results trust cues", () => {
+  it("shows a 30+ reliability warning only for the 30+ bracket", () => {
+    const thirtyPlusResult = makeSGResult({ benchmarkBracket: "30+" });
+    const regularResult = makeSGResult({ benchmarkBracket: "10-15" });
+
+    const { rerender } = render(
+      <ResultsSummary result={thirtyPlusResult} benchmarkMeta={meta} />
+    );
+
+    expect(
+      screen.getByText(
+        "The 30+ bracket uses estimated benchmarks with limited published data. Results are less reliable than other brackets."
+      )
+    ).toBeVisible();
+
+    rerender(<ResultsSummary result={regularResult} benchmarkMeta={meta} />);
+
+    expect(
+      screen.queryByText(
+        "The 30+ bracket uses estimated benchmarks with limited published data. Results are less reliable than other brackets."
+      )
+    ).toBeNull();
+  });
+
+  it("shows one global note when categories are estimated", () => {
+    const result = makeSGResult({
+      estimatedCategories: ["approach", "around-the-green"],
+    });
+
+    render(<ResultsSummary result={result} benchmarkMeta={meta} />);
+
+    expect(
+      screen.getByText(/Categories marked Est\. are approximated from related inputs\./)
+    ).toBeVisible();
+  });
+
+  it("toggles estimate help with click and Escape, keeping only one popover open", async () => {
+    const user = userEvent.setup();
+    const result = makeSGResult({
+      estimatedCategories: ["approach", "around-the-green"],
+    });
+
+    render(<ResultsSummary result={result} benchmarkMeta={meta} />);
+
+    const estButtons = screen.getAllByRole("button", { name: "Est." });
+    expect(estButtons).toHaveLength(2);
+
+    await user.click(estButtons[0]);
+    expect(
+      screen.getByText(
+        "This category is estimated from related stats because not all inputs were provided."
+      )
+    ).toBeVisible();
+
+    await user.click(estButtons[1]);
+    expect(
+      screen.getByText(
+        "This category is estimated from related stats because not all inputs were provided."
+      )
+    ).toBeVisible();
+    expect(
+      screen.getAllByText(
+        "This category is estimated from related stats because not all inputs were provided."
+      )
+    ).toHaveLength(1);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(
+      screen.queryByText(
+        "This category is estimated from related stats because not all inputs were provided."
+      )
+    ).toBeNull();
   });
 });

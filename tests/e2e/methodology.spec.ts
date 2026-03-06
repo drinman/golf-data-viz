@@ -16,6 +16,17 @@ test.describe("Methodology page — citation table", () => {
     await expect(rows).toHaveCount(7);
   });
 
+  test("coverage summary reflects published coverage vs unsourced metrics", async ({
+    page,
+  }) => {
+    const citationsSection = page.getByTestId("citations-section");
+    await expect(
+      citationsSection.getByText(
+        "4 of 7 tracked metrics have published-source coverage for some brackets. 3 remain unsourced, and the benchmark is still provisional."
+      )
+    ).toBeVisible();
+  });
+
   test("sourced metrics show 'Partial' status and 6/7 coverage", async ({
     page,
   }) => {
