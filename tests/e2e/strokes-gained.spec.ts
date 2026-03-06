@@ -1,71 +1,9 @@
 import { test, expect } from "@playwright/test";
-
-/** Helper: fill and submit a partial round form (no FIR/GIR). */
-async function submitPartialRound(page: import("@playwright/test").Page) {
-  await page.fill('[name="handicapIndex"]', "14.3");
-  await page.fill('[name="course"]', "Pacifica Sharp Park");
-  await page.fill('[name="courseRating"]', "72.0");
-  await page.fill('[name="slopeRating"]', "130");
-  await page.fill('[name="score"]', "87");
-  // Leave fairwaysHit and greensInRegulation blank
-  await page.fill('[name="fairwayAttempts"]', "14");
-  await page.fill('[name="totalPutts"]', "33");
-  await page.fill('[name="penaltyStrokes"]', "2");
-  await page.fill('[name="eagles"]', "0");
-  await page.fill('[name="birdies"]', "1");
-  await page.fill('[name="pars"]', "7");
-  await page.fill('[name="bogeys"]', "7");
-  await page.fill('[name="doubleBogeys"]', "2");
-  await page.fill('[name="triplePlus"]', "1");
-  await page.click('button[type="submit"]');
-  await expect(
-    page.getByText("Your Strokes Gained Breakdown")
-  ).toBeVisible({ timeout: 5000 });
-}
-
-/** Helper: fill and submit a complete round form. */
-async function submitRound(page: import("@playwright/test").Page) {
-  await page.fill('[name="handicapIndex"]', "14.3");
-  await page.fill('[name="course"]', "Pacifica Sharp Park");
-  await page.fill('[name="courseRating"]', "72.0");
-  await page.fill('[name="slopeRating"]', "130");
-  await page.fill('[name="score"]', "87");
-  await page.fill('[name="fairwaysHit"]', "7");
-  await page.fill('[name="fairwayAttempts"]', "14");
-  await page.fill('[name="greensInRegulation"]', "6");
-  await page.fill('[name="totalPutts"]', "33");
-  await page.fill('[name="penaltyStrokes"]', "2");
-  await page.fill('[name="eagles"]', "0");
-  await page.fill('[name="birdies"]', "1");
-  await page.fill('[name="pars"]', "7");
-  await page.fill('[name="bogeys"]', "7");
-  await page.fill('[name="doubleBogeys"]', "2");
-  await page.fill('[name="triplePlus"]', "1");
-  await page.click('button[type="submit"]');
-  await expect(
-    page.getByText("Your Strokes Gained Breakdown")
-  ).toBeVisible({ timeout: 5000 });
-}
-
-/** Helper: fill a complete round form WITHOUT submitting. */
-async function fillRound(page: import("@playwright/test").Page) {
-  await page.fill('[name="handicapIndex"]', "14.3");
-  await page.fill('[name="course"]', "Pacifica Sharp Park");
-  await page.fill('[name="courseRating"]', "72.0");
-  await page.fill('[name="slopeRating"]', "130");
-  await page.fill('[name="score"]', "87");
-  await page.fill('[name="fairwaysHit"]', "7");
-  await page.fill('[name="fairwayAttempts"]', "14");
-  await page.fill('[name="greensInRegulation"]', "6");
-  await page.fill('[name="totalPutts"]', "33");
-  await page.fill('[name="penaltyStrokes"]', "2");
-  await page.fill('[name="eagles"]', "0");
-  await page.fill('[name="birdies"]', "1");
-  await page.fill('[name="pars"]', "7");
-  await page.fill('[name="bogeys"]', "7");
-  await page.fill('[name="doubleBogeys"]', "2");
-  await page.fill('[name="triplePlus"]', "1");
-}
+import {
+  fillFullRound,
+  submitFullRound,
+  submitPartialRound,
+} from "./helpers/round-form";
 
 test.describe("Strokes Gained Benchmarker", () => {
   test("course info row stays in a two-column desktop layout", async ({
@@ -158,7 +96,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByText("10-15 bracket")).toBeVisible();
 
     // Submit full round
-    await submitRound(page);
+    await submitFullRound(page);
 
     // Verify radar chart rendered (Nivo renders SVG) — scope to results container
     const sgResults = page.locator('[data-testid="sg-results"]');
@@ -186,7 +124,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     page,
   }) => {
     await page.goto("/strokes-gained");
-    await submitRound(page);
+    await submitFullRound(page);
 
     // URL should now contain ?d= param
     const urlAfterSubmit = page.url();
@@ -216,7 +154,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
   test("PNG download button triggers file download", async ({ page }) => {
     await page.goto("/strokes-gained");
-    await submitRound(page);
+    await submitFullRound(page);
 
     // Click download and verify a download event fires
     const downloadPromise = page.waitForEvent("download");
@@ -227,7 +165,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
   test("shared URL renders correct OG metadata", async ({ page }) => {
     await page.goto("/strokes-gained");
-    await submitRound(page);
+    await submitFullRound(page);
 
     // Get the shared URL
     const dParam = new URL(page.url()).searchParams.get("d");
@@ -276,7 +214,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     page,
   }) => {
     await page.goto("/strokes-gained");
-    await submitRound(page);
+    await submitFullRound(page);
 
     const sgResults = page.locator('[data-testid="sg-results"]');
 
@@ -372,7 +310,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     page,
   }) => {
     await page.goto("/strokes-gained");
-    await submitRound(page);
+    await submitFullRound(page);
 
     await expect(page.getByTestId("save-success")).not.toBeVisible();
     await expect(page.getByTestId("save-error")).not.toBeVisible();
@@ -382,7 +320,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     page,
   }) => {
     await page.goto("/strokes-gained");
-    await fillRound(page);
+    await fillFullRound(page);
 
     const submitBtn = page.locator('button[type="submit"]');
     await expect(submitBtn).toContainText("See My Strokes Gained");
@@ -403,7 +341,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     page,
   }) => {
     await page.goto("/strokes-gained");
-    await submitRound(page);
+    await submitFullRound(page);
 
     const dlBtn = page.getByTestId("download-png");
     await expect(dlBtn).toContainText("Download PNG");

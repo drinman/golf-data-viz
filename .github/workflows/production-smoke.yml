@@ -21,10 +21,6 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_SKIP_WEBSERVER: "true"
-          PLAYWRIGHT_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
+          PLAYWRIGHT_BASE_URL: ${{ vars.PRODUCTION_BASE_URL || 'https://golfdataviz.com' }}
         shell: bash
-        run: |
-          set -euo pipefail
-
-          export PLAYWRIGHT_BASE_URL="${PLAYWRIGHT_BASE_URL:-https://golfdataviz.com}"
-          npx playwright test --project=production-chromium --project=production-webkit
+        run: npx playwright test --project=production-chromium --project=production-webkit

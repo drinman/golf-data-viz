@@ -13,7 +13,7 @@ export default defineConfig({
   projects: [
     {
       name: "functional",
-      testIgnore: ["visual-regression.spec.ts", "production-smoke.spec.ts"],
+      testIgnore: [/visual-regression\.spec\.ts/, /production-smoke\.spec\.ts/],
     },
     {
       name: "visual",
