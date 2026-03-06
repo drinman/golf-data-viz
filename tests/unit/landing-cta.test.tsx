@@ -24,6 +24,7 @@ describe("LandingCta analytics", () => {
 
     render(<LandingCta />);
     const cta = screen.getByRole("link", { name: "Benchmark My Round" });
+    expect(cta).toHaveAttribute("href", "/strokes-gained?utm_source=reddit");
     cta.addEventListener("click", (event) => event.preventDefault());
     await user.click(cta);
 

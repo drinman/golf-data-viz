@@ -9,6 +9,8 @@ export type AnalyticsEvent =
   | "round_save_failed"
   | "gir_estimated";
 
+type EmptyPayload = Record<never, never>;
+
 export type AnalyticsEventProps = {
   landing_cta_clicked: { utm_source?: string };
   form_started: { utm_source?: string };
@@ -16,8 +18,8 @@ export type AnalyticsEventProps = {
   download_png_clicked: { has_share_param: boolean; utm_source?: string };
   copy_link_clicked: { has_share_param: boolean; utm_source?: string };
   shared_round_viewed: { referrer: string; utm_source: string };
-  round_saved: Record<string, never>;
-  gir_estimated: Record<string, never>;
+  round_saved: EmptyPayload;
+  gir_estimated: EmptyPayload;
   round_save_failed: {
     error_type:
       | "config"

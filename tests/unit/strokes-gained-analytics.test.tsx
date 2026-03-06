@@ -209,6 +209,7 @@ function renderClient(
 describe("StrokesGainedClient analytics instrumentation", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
@@ -218,7 +219,12 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     mockInitialSavePreference.current = true;
     mockSaveRound.mockResolvedValue({ success: true });
     mockTurnstileExecute.mockResolvedValue("turnstile-token");
-    vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+    vi
+      .spyOn(window.history, "replaceState")
+      .mockImplementation((data, unused, url) => {
+        if (url === undefined) return;
+        window.history.pushState(data, unused, url);
+      });
     window.history.pushState({}, "", "/strokes-gained?utm_source=reddit&d=encoded");
   });
 
@@ -337,11 +343,37 @@ describe("StrokesGainedClient analytics instrumentation", () => {
       utm_source: "reddit",
     });
   });
+
+  it("preserves utm attribution for share events after submit rewrites the URL", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: vi.fn(() => Promise.resolve()) },
+      configurable: true,
+    });
+    window.history.pushState({}, "", "/strokes-gained?utm_source=reddit");
+
+    renderClient();
+
+    await userEvent.click(screen.getByTestId("mock-submit"));
+    expect(window.location.search).toBe("?d=encoded-test-data");
+
+    await userEvent.click(screen.getByTestId("copy-link"));
+    await userEvent.click(screen.getByTestId("download-png"));
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("copy_link_clicked", {
+      has_share_param: true,
+      utm_source: "reddit",
+    });
+    expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
+      has_share_param: true,
+      utm_source: "reddit",
+    });
+  });
 });
 
 describe("Copy Link error handling", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
@@ -398,6 +430,7 @@ describe("Copy Link error handling", () => {
 describe("Save feedback", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {

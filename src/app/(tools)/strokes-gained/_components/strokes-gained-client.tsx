@@ -81,11 +81,23 @@ export default function StrokesGainedClient({
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const formStartedRef = useRef(false);
   const sharedRoundViewedRef = useRef(false);
+  const attributionUtmSourceRef = useRef<string | undefined>(undefined);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
   const saveRequestIdRef = useRef(0);
+
+  if (
+    attributionUtmSourceRef.current === undefined &&
+    typeof window !== "undefined"
+  ) {
+    attributionUtmSourceRef.current = getUtmSource();
+  }
+
+  function getAttributionUtmSource(): string | undefined {
+    return attributionUtmSourceRef.current ?? getUtmSource();
+  }
 
   // Fire shared_round_viewed when viewing a shared link
   useEffect(() => {
@@ -101,7 +113,7 @@ export default function StrokesGainedClient({
               }
             })()
           : "";
-      const utmSource = getUtmSource() ?? "";
+      const utmSource = attributionUtmSourceRef.current ?? "";
       trackEvent("shared_round_viewed", { referrer, utm_source: utmSource });
     }
   }, [initialInput]);
@@ -136,7 +148,9 @@ export default function StrokesGainedClient({
     if (saveSuccessTimerRef.current)
       clearTimeout(saveSuccessTimerRef.current);
 
-    trackEvent("calculation_completed", { utm_source: getUtmSource() });
+    trackEvent("calculation_completed", {
+      utm_source: getAttributionUtmSource(),
+    });
     if (sgResult.estimatedCategories.length > 0) {
       trackEvent("gir_estimated");
     }
@@ -270,7 +284,7 @@ export default function StrokesGainedClient({
     try {
       trackEvent("download_png_clicked", {
         has_share_param: window.location.search.includes("d="),
-        utm_source: getUtmSource(),
+        utm_source: getAttributionUtmSource(),
       });
       const blob = await captureElementAsPng(shareCardRef.current);
       downloadBlob(blob, "strokes-gained.png");
@@ -285,7 +299,7 @@ export default function StrokesGainedClient({
   const handleCopyLink = useCallback(async () => {
     trackEvent("copy_link_clicked", {
       has_share_param: window.location.search.includes("d="),
-      utm_source: getUtmSource(),
+      utm_source: getAttributionUtmSource(),
     });
 
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
@@ -351,7 +365,9 @@ export default function StrokesGainedClient({
         onFocusCapture={() => {
           if (!formStartedRef.current) {
             formStartedRef.current = true;
-            trackEvent("form_started", { utm_source: getUtmSource() });
+            trackEvent("form_started", {
+              utm_source: getAttributionUtmSource(),
+            });
           }
         }}
       >

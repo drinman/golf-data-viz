@@ -13,6 +13,14 @@ test("CTA navigates to /strokes-gained", async ({ page }) => {
   await expect(page).toHaveURL(/\/strokes-gained/);
 });
 
+test("CTA preserves utm_source when navigating to /strokes-gained", async ({
+  page,
+}) => {
+  await page.goto("/?utm_source=reddit");
+  await page.getByTestId("hero-cta").click();
+  await expect(page).toHaveURL(/\/strokes-gained\?utm_source=reddit/);
+});
+
 test("how-it-works section is visible", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("how-it-works")).toBeVisible();
