@@ -362,7 +362,7 @@ export function RoundInputForm({
         <button
           type="button"
           onClick={() => setShowOptional(!showOptional)}
-          className="text-sm font-medium text-brand-800 transition-colors hover:text-brand-700"
+          className="text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
         >
           {showOptional ? "Hide" : "Show"} More Stats
         </button>

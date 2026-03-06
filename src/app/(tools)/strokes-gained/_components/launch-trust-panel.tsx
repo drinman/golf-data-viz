@@ -52,7 +52,7 @@ export function LaunchTrustPanel() {
       </ul>
 
       <details className="mt-4 rounded-lg border border-cream-200 bg-white px-3 py-2">
-        <summary className="cursor-pointer font-medium text-neutral-900">
+        <summary className="cursor-pointer font-medium text-neutral-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/30">
           Common questions
         </summary>
         <dl className="mt-3 space-y-3 text-sm text-neutral-600">

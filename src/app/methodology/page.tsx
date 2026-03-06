@@ -186,14 +186,14 @@ export default function MethodologyPage() {
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           SG Category Formulas
         </h2>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-200 text-left">
                 <th className="pb-2 pr-4 font-medium text-neutral-600">
                   Category
                 </th>
-                <th className="pb-2 pr-4 font-medium text-neutral-600">
+                <th className="pb-2 pr-4 font-medium text-neutral-600 whitespace-nowrap">
                   Formula
                 </th>
                 <th className="pb-2 font-medium text-neutral-600">Weight</th>
@@ -204,7 +204,7 @@ export default function MethodologyPage() {
                 <td className="py-2 pr-4 font-medium text-neutral-800">
                   Off the Tee
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600 whitespace-nowrap">
                   (FIR% - peerFIR%) x 6.0 + (peerPenalties - penalties) x 0.8
                 </td>
                 <td className="py-2 font-mono text-neutral-600">6.0, 0.8</td>
@@ -213,7 +213,7 @@ export default function MethodologyPage() {
                 <td className="py-2 pr-4 font-medium text-neutral-800">
                   Approach
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600 whitespace-nowrap">
                   (GIR/18 - peerGIR%) x 8.0
                 </td>
                 <td className="py-2 font-mono text-neutral-600">8.0</td>
@@ -222,7 +222,7 @@ export default function MethodologyPage() {
                 <td className="py-2 pr-4 font-medium text-neutral-800">
                   Around the Green
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600 whitespace-nowrap">
                   (scrambleRate - peerScramble%) x 5.0
                 </td>
                 <td className="py-2 font-mono text-neutral-600">5.0</td>
@@ -231,7 +231,7 @@ export default function MethodologyPage() {
                 <td className="py-2 pr-4 font-medium text-neutral-800">
                   Putting
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs text-neutral-600">
+                <td className="py-2 pr-4 font-mono text-xs text-neutral-600 whitespace-nowrap">
                   (peerPutts/18 - playerPutts/18) x 4.0 + clamp(threePuttBonus,
                   -0.5, 0.5)
                 </td>
@@ -253,7 +253,7 @@ export default function MethodologyPage() {
           {unsourcedMetricCount} remain unsourced, and the benchmark is still
           provisional.
         </p>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm" data-testid="citations-table">
             <thead>
               <tr className="border-b border-neutral-200 text-left">
