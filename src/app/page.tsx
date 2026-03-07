@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { PenLine, BarChart3, Share2 } from "lucide-react";
 import { ContourBg } from "@/components/contour-bg";
+import { SampleResultPreview } from "@/components/sample-result-preview";
+import { getSampleResult } from "@/lib/golf/sample-round";
+import { CATEGORY_LABELS } from "@/lib/golf/constants";
+import type { StrokesGainedCategory } from "@/lib/golf/types";
 import { LandingCta } from "./_components/landing-cta";
 
 interface HomePageProps {
@@ -10,6 +14,14 @@ interface HomePageProps {
 export default async function Home({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const utmSource = typeof params.utm_source === "string" ? params.utm_source : undefined;
+
+  const sample = getSampleResult();
+  const sampleCategories = (
+    Object.keys(CATEGORY_LABELS) as StrokesGainedCategory[]
+  ).map((key) => ({
+    label: CATEGORY_LABELS[key],
+    value: sample.result.categories[key],
+  }));
 
   return (
     <main>
@@ -84,6 +96,35 @@ export default async function Home({ searchParams }: HomePageProps) {
                 where you stack up.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What you get */}
+      <section data-testid="sample-preview" className="border-t border-cream-200 px-4 py-14 sm:py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
+            What you get
+          </h2>
+          <p className="mt-2 text-sm text-neutral-600">
+            A strokes gained breakdown showing where your score separated from your peers.
+          </p>
+          <div className="mt-6">
+            <SampleResultPreview
+              chartData={sample.chartData}
+              categories={sampleCategories}
+              total={sample.result.total}
+              bracketLabel={sample.bracketLabel}
+              courseName={sample.input.course}
+              handicap={sample.input.handicapIndex}
+            />
+          </div>
+          <div className="mt-6">
+            <LandingCta
+              utmSource={utmSource}
+              eventName="sample_preview_cta_clicked"
+              testId="sample-preview-cta"
+            />
           </div>
         </div>
       </section>

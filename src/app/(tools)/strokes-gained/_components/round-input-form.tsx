@@ -219,7 +219,7 @@ export function RoundInputForm({
               inputMode="decimal"
               step="0.1"
               className={inputClass}
-              placeholder="72.0"
+              placeholder="e.g. 72.0"
               {...register("courseRating")}
             />
           </FormField>
@@ -232,7 +232,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               className={inputClass}
-              placeholder="130"
+              placeholder="e.g. 130"
               {...register("slopeRating")}
             />
           </FormField>
@@ -247,7 +247,7 @@ export function RoundInputForm({
             type="number"
             inputMode="numeric"
             className={inputClass}
-            placeholder="87"
+            placeholder="e.g. 87"
             {...register("score")}
           />
         </FormField>
@@ -331,7 +331,7 @@ export function RoundInputForm({
             </span>
           </div>
           <p className="mt-1 text-xs text-neutral-400">
-            How many of each score type? Must add up to 18
+            From your scorecard or post-round app. Must add up to 18.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
