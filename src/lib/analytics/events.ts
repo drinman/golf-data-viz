@@ -1,3 +1,5 @@
+import type { StrokesGainedCategory } from "@/lib/golf/types";
+
 export type AnalyticsEvent =
   | "landing_cta_clicked"
   | "form_started"
@@ -11,7 +13,9 @@ export type AnalyticsEvent =
   | "confidence_badge_clicked"
   | "methodology_tooltip_opened"
   | "result_viewed"
-  | "reconciliation_applied";
+  | "reconciliation_applied"
+  | "results_emphasis_impression"
+  | "category_detail_interacted";
 
 type EmptyPayload = Record<never, never>;
 
@@ -36,13 +40,25 @@ export type AnalyticsEventProps = {
   methodology_tooltip_opened: { category: string; surface: "results_summary" };
   result_viewed: {
     total_anchor_mode?: string;
+    methodology_version?: string;
+    benchmark_version?: string;
     calibration_version?: string;
     has_course_rating: boolean;
     has_slope_rating: boolean;
+    surface?: "results_page";
   };
   reconciliation_applied: {
     scale_factor: number;
     flags: string;
+  };
+  results_emphasis_impression: {
+    emphasized_categories: string;
+    surface: "results_page";
+  };
+  category_detail_interacted: {
+    category: StrokesGainedCategory;
+    interaction_type: "confidence_badge" | "methodology_tooltip";
+    surface: "results_page";
   };
 };
 
