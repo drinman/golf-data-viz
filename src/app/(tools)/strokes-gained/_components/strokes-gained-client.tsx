@@ -33,6 +33,7 @@ import {
 import { saveRound } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { CompactSamplePreview } from "@/components/compact-sample-preview";
+import type { SamplePreviewData } from "@/lib/golf/sample-round";
 
 function getClientPhase2Mode(): SgPhase2Mode {
   const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
@@ -42,15 +43,6 @@ function getClientPhase2Mode(): SgPhase2Mode {
 
 function getCalculator(mode: SgPhase2Mode) {
   return mode === "full" ? calculateStrokesGainedV3 : calculateStrokesGained;
-}
-
-interface SamplePreviewData {
-  chartData: RadarChartDatum[];
-  categories: { label: string; value: number }[];
-  total: number;
-  bracketLabel: string;
-  courseName: string;
-  handicap: number;
 }
 
 interface StrokesGainedClientProps {

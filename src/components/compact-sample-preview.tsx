@@ -1,22 +1,7 @@
-interface CategoryValue {
-  label: string;
-  value: number;
-}
+import { formatSG } from "@/lib/golf/format";
+import type { SamplePreviewData } from "@/lib/golf/sample-round";
 
-interface CompactSamplePreviewProps {
-  categories: CategoryValue[];
-  total: number;
-  courseName: string;
-  handicap: number;
-  // Accept but ignore chart-related props for interface compatibility
-  chartData?: unknown;
-  bracketLabel?: string;
-}
-
-function formatSG(value: number): string {
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}`;
-}
+type CompactSamplePreviewProps = Pick<SamplePreviewData, "categories" | "total" | "courseName" | "handicap">;
 
 export function CompactSamplePreview({
   categories,
@@ -33,7 +18,7 @@ export function CompactSamplePreview({
         Example: {handicap}-handicap round at {courseName}
       </p>
 
-      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-5">
+      <div className="mt-2 grid grid-cols-3 gap-x-4 gap-y-2 sm:grid-cols-5">
         {categories.map((cat) => (
           <div key={cat.label} className="text-center">
             <p className="text-xs text-neutral-500">{cat.label}</p>

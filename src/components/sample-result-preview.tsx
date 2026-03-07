@@ -1,26 +1,8 @@
 "use client";
 
 import { RadarChart } from "@/components/charts/radar-chart";
-import type { RadarChartDatum } from "@/lib/golf/types";
-
-interface CategoryValue {
-  label: string;
-  value: number;
-}
-
-interface SampleResultPreviewProps {
-  chartData: RadarChartDatum[];
-  categories: CategoryValue[];
-  total: number;
-  bracketLabel: string;
-  courseName: string;
-  handicap: number;
-}
-
-function formatSG(value: number): string {
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}`;
-}
+import { formatSG } from "@/lib/golf/format";
+import type { SamplePreviewData } from "@/lib/golf/sample-round";
 
 export function SampleResultPreview({
   chartData,
@@ -29,7 +11,7 @@ export function SampleResultPreview({
   bracketLabel,
   courseName,
   handicap,
-}: SampleResultPreviewProps) {
+}: SamplePreviewData) {
   return (
     <div
       data-testid="sample-result-preview"
@@ -39,7 +21,7 @@ export function SampleResultPreview({
         Example: {handicap}-handicap round at {courseName}
       </p>
 
-      <div className="mt-2" style={{ height: 280 }}>
+      <div className="mt-2 h-[280px]">
         <RadarChart data={chartData} bracketLabel={bracketLabel} />
       </div>
 

@@ -98,26 +98,13 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null;
 
   const sample = getSampleResult();
-  const sampleCategories = (
-    Object.keys(CATEGORY_LABELS) as StrokesGainedCategory[]
-  ).map((key) => ({
-    label: CATEGORY_LABELS[key],
-    value: sample.result.categories[key],
-  }));
 
   return (
     <StrokesGainedClient
       initialInput={initialInput}
       saveEnabled={saveEnabled}
       turnstileSiteKey={turnstileSiteKey}
-      samplePreview={{
-        chartData: sample.chartData,
-        categories: sampleCategories,
-        total: sample.result.total,
-        bracketLabel: sample.bracketLabel,
-        courseName: sample.input.course,
-        handicap: sample.input.handicapIndex,
-      }}
+      samplePreview={sample.preview}
     />
   );
 }

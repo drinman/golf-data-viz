@@ -3,8 +3,6 @@ import { PenLine, BarChart3, Share2 } from "lucide-react";
 import { ContourBg } from "@/components/contour-bg";
 import { SampleResultPreview } from "@/components/sample-result-preview";
 import { getSampleResult } from "@/lib/golf/sample-round";
-import { CATEGORY_LABELS } from "@/lib/golf/constants";
-import type { StrokesGainedCategory } from "@/lib/golf/types";
 import { LandingCta } from "./_components/landing-cta";
 
 interface HomePageProps {
@@ -16,12 +14,6 @@ export default async function Home({ searchParams }: HomePageProps) {
   const utmSource = typeof params.utm_source === "string" ? params.utm_source : undefined;
 
   const sample = getSampleResult();
-  const sampleCategories = (
-    Object.keys(CATEGORY_LABELS) as StrokesGainedCategory[]
-  ).map((key) => ({
-    label: CATEGORY_LABELS[key],
-    value: sample.result.categories[key],
-  }));
 
   return (
     <main>
@@ -110,14 +102,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             A strokes gained breakdown showing where your score separated from your peers.
           </p>
           <div className="mt-6">
-            <SampleResultPreview
-              chartData={sample.chartData}
-              categories={sampleCategories}
-              total={sample.result.total}
-              bracketLabel={sample.bracketLabel}
-              courseName={sample.input.course}
-              handicap={sample.input.handicapIndex}
-            />
+            <SampleResultPreview {...sample.preview} />
           </div>
           <div className="mt-6">
             <LandingCta
