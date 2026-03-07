@@ -1,5 +1,5 @@
 /**
- * Formatting utilities for golf handicap display.
+ * Formatting utilities for golf display values.
  */
 
 /** Format a handicap index for user-facing display.
@@ -11,4 +11,10 @@ export function formatHandicap(handicapIndex: number): string {
     return `+${Math.abs(handicapIndex).toFixed(1)}`;
   }
   return handicapIndex.toFixed(1);
+}
+
+/** Format a strokes gained value with sign prefix and 2 decimal places. */
+export function formatSG(value: number): string {
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}`;
 }

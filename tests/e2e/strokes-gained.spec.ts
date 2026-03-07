@@ -6,6 +6,26 @@ import {
 } from "./helpers/round-form";
 
 test.describe("Strokes Gained Benchmarker", () => {
+  test("compact sample preview is visible on SG page", async ({ page }) => {
+    await page.goto("/strokes-gained");
+    const preview = page.getByTestId("compact-sample-preview");
+    await expect(preview).toBeVisible();
+    await expect(preview.getByText("Torrey Pines South")).toBeVisible();
+    // Verify category labels are shown
+    await expect(preview.getByText("Off the Tee")).toBeVisible();
+    await expect(preview.getByText("Putting")).toBeVisible();
+    // Verify real sample output is rendered (not just headings)
+    await expect(preview.getByText("Total SG")).toBeVisible();
+    await expect(preview.getByText(/[+-]\d+\.\d{2}/).first()).toBeVisible();
+    // Confirm no SVG chart in compact version
+    await expect(preview.locator("svg")).toHaveCount(0);
+    // Confirm compact preview appears before the trust panel
+    const previewBox = await preview.boundingBox();
+    const trustPanel = page.locator('section[aria-label="What this is"]');
+    const trustBox = await trustPanel.boundingBox();
+    expect(previewBox!.y).toBeLessThan(trustBox!.y);
+  });
+
   test("course info row stays in a two-column desktop layout", async ({
     page,
   }) => {
@@ -43,7 +63,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.goto("/strokes-gained");
 
     await expect(
-      page.getByText("Free post-round benchmark from manual scorecard stats.")
+      page.getByText("A proxy strokes gained benchmark built from scorecard stats amateurs already track.")
     ).toBeVisible();
     await expect(
       page.getByText("Beta")
@@ -79,7 +99,7 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByText("Found on your scorecard — not the same as par")
     ).toBeVisible();
     await expect(
-      page.getByText("How many of each score type? Must add up to 18")
+      page.getByText("From your scorecard or post-round app. Must add up to 18.")
     ).toBeVisible();
   });
 
@@ -93,7 +113,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Fill handicap first and verify bracket label
     await page.fill('[name="handicapIndex"]', "14.3");
-    await expect(page.getByText("10\u201315 HCP")).toBeVisible();
+    await expect(page.getByTestId("form-wrapper").getByText("10\u201315 HCP")).toBeVisible();
 
     // Submit full round
     await submitFullRound(page);

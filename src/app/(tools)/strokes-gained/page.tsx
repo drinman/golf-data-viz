@@ -5,6 +5,7 @@ import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import type { StrokesGainedCategory } from "@/lib/golf/types";
 import { CATEGORY_LABELS } from "@/lib/golf/constants";
 import { getRoundSaveAvailability } from "@/lib/round-save";
+import { getSampleResult } from "@/lib/golf/sample-round";
 import StrokesGainedClient from "./_components/strokes-gained-client";
 
 const PAGE_DESCRIPTION =
@@ -96,11 +97,14 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
   const saveEnabled = getRoundSaveAvailability().enabled;
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null;
 
+  const sample = getSampleResult();
+
   return (
     <StrokesGainedClient
       initialInput={initialInput}
       saveEnabled={saveEnabled}
       turnstileSiteKey={turnstileSiteKey}
+      samplePreview={sample.preview}
     />
   );
 }

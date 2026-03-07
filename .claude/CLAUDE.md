@@ -51,6 +51,54 @@ src/
 - `npm run build` — Production build
 - `npm run lint` — ESLint
 
+## Environments (SDLC)
+
+| Environment | Vercel | Supabase | Sentry |
+|-------------|--------|----------|--------|
+| **Local** | `localhost:3000` | N/A (uses staging or local Supabase) | N/A |
+| **Staging** | Branch preview deploys (auto on push to non-`main` branches) | `uxelgkeagzjnwmjspcda` (`golf-data-viz-staging`) | `javascript-nextjs` (shared) |
+| **Prod** | Production deploy on `main` — `golfdataviz.com` | `wxlqnetdidreumtyzorz` (`golf-data-viz-prod`) | `javascript-nextjs` (shared) |
+
+- **Flow**: Local → Staging (PR branch) → Prod (merge to `main`)
+- **Vercel prod domains**: `golfdataviz.com`, `www.golfdataviz.com`, `golf-data-viz.vercel.app`
+- **Sentry**: Single project `javascript-nextjs` in org `dallas-inman` covers both staging and prod
+- **When verifying a deploy**: always match the environment — use staging Supabase ref for staging deploys, prod ref for prod deploys
+
+## MCP Servers (Live Infrastructure Access)
+
+Three MCP servers are connected for direct infrastructure interaction:
+
+### Supabase (`mcp__supabase__*`)
+- **Production**: `wxlqnetdidreumtyzorz` (golf-data-viz-prod)
+- **Staging**: `uxelgkeagzjnwmjspcda` (golf-data-viz-staging)
+- Capabilities: execute SQL, apply migrations, list tables/extensions, get logs, manage branches, generate TypeScript types
+- Use `mcp__supabase__execute_sql` for ad-hoc queries (rounds counts, bracket distributions, debugging)
+- Use `mcp__supabase__list_tables` / `mcp__supabase__get_logs` for schema and runtime inspection
+- Use `mcp__supabase__apply_migration` to apply new migrations
+
+### Vercel (`mcp__vercel__*`)
+- **Project**: `golf-data-viz` (`prj_JEOpUisLp4LxNSF0o1qvuxR2QJl1`)
+- **Team**: `team_AusQ5gpKE0lhKnMzvHXNp29m`
+- Capabilities: list/get deployments, view build & runtime logs, check project config, fetch deployment URLs
+- Use `mcp__vercel__list_deployments` to check recent deploy status
+- Use `mcp__vercel__get_deployment_build_logs` / `mcp__vercel__get_runtime_logs` to debug production issues
+
+### Sentry (`mcp__sentry__*`)
+- **Org**: `dallas-inman` (regionUrl: `https://us.sentry.io`)
+- Capabilities: search issues/events, get issue details, view traces, find releases, analyze with Seer
+- Use `mcp__sentry__search_issues` to find production errors
+- Use `mcp__sentry__get_issue_details` / `mcp__sentry__search_events` for root cause analysis
+- Always pass `organizationSlug: "dallas-inman"` and `regionUrl: "https://us.sentry.io"`
+- **Sentry project slug**: `javascript-nextjs`
+
+### MCP Usage Rules
+- **Prefer MCP tools over curl/CLI** for Supabase, Vercel, and Sentry — no auth setup needed
+- **Before writing migrations**: run `mcp__supabase__list_tables` (verbose) to confirm current schema
+- **After deploying**: check `mcp__vercel__list_deployments` for READY state, then `mcp__sentry__search_issues` for new errors
+- **Bug reports**: search Sentry first (`search_issues` → `get_issue_details`) before reading code
+- **"Check analytics" / "how's the app doing"**: run Supabase round counts + Vercel deploy status + Sentry error check in parallel (see MEMORY.md for full procedure)
+- **Default to production** (`wxlqnetdidreumtyzorz`) unless explicitly told to use staging
+
 ## Workflow Orchestration
 
 ### 1. Plan Mode Default

@@ -29,6 +29,24 @@ test("how-it-works section is visible", async ({ page }) => {
   await expect(steps).toHaveCount(3);
 });
 
+test("sample preview is visible on homepage with radar chart", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const preview = page.getByTestId("sample-result-preview");
+  await expect(preview).toBeVisible();
+  await expect(preview.locator("svg").first()).toBeVisible();
+  await expect(
+    page.getByTestId("sample-preview-cta")
+  ).toBeVisible();
+});
+
+test("sample preview CTA navigates to /strokes-gained", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("sample-preview-cta").click();
+  await expect(page).toHaveURL(/\/strokes-gained/);
+});
+
 test("no Next.js starter content remains", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("text=To get started")).not.toBeVisible();

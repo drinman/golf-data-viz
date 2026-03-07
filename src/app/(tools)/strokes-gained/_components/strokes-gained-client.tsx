@@ -32,6 +32,8 @@ import {
 } from "@/components/security/turnstile-widget";
 import { saveRound } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
+import { CompactSamplePreview } from "@/components/compact-sample-preview";
+import type { SamplePreviewData } from "@/lib/golf/sample-round";
 
 function getClientPhase2Mode(): SgPhase2Mode {
   const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
@@ -47,6 +49,7 @@ interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
   saveEnabled?: boolean;
   turnstileSiteKey?: string | null;
+  samplePreview?: SamplePreviewData;
 }
 
 function getUtmSource(): string | undefined {
@@ -58,6 +61,7 @@ export default function StrokesGainedClient({
   initialInput,
   saveEnabled = true,
   turnstileSiteKey = null,
+  samplePreview,
 }: StrokesGainedClientProps) {
   const benchmarkMeta = getBenchmarkMeta();
 
@@ -423,21 +427,25 @@ export default function StrokesGainedClient({
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">
-        Proxy Strokes Gained Benchmarker
+        Strokes Gained Benchmarker
       </h1>
       <p className="mt-2 text-neutral-600">
-        Free post-round benchmark from manual scorecard stats.
+        A proxy strokes gained benchmark built from scorecard stats amateurs already track.
       </p>
       <p className="mt-1 max-w-lg text-sm text-neutral-500">
-        Most strokes gained tools compare you to Tour pros, which is less
-        useful when you&apos;re deciding what to practice. This benchmarks your
-        scorecard stats against golfers at your handicap level. Best for
-        golfers already tracking manual round stats, and not a replacement for
-        Arccos or Shot Scope if you already use sensors.{" "}
+        See where you gain and lose strokes compared to golfers at your handicap
+        level. No sensors needed.{" "}
         <Link href="/methodology" className="underline hover:text-neutral-700">
           See full methodology &rarr;
         </Link>
       </p>
+
+      {samplePreview && (
+        <div className="mt-6">
+          <CompactSamplePreview {...samplePreview} />
+        </div>
+      )}
+
       <LaunchTrustPanel />
 
       <div
