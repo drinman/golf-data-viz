@@ -14,6 +14,9 @@ import { trackEvent } from "@/lib/analytics/client";
 import { ConfidenceBadge } from "./confidence-badge";
 import { MethodologyTooltip } from "./methodology-tooltip";
 
+// Emphasis copy is intentionally limited to putting + ATG — the only categories
+// getEmphasizedCategories can return. Falls back to CATEGORY_DESCRIPTIONS if
+// a future category is added without updating this map.
 const EMPHASIS_COPY: Partial<Record<StrokesGainedCategory, string>> = {
   putting:
     "Putting is one of the clearest scorecard-based signals in this round.",
@@ -62,6 +65,23 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const weakness = sorted[sorted.length - 1];
 
   const emphasizedCategories = getEmphasizedCategories(result);
+
+  function handleDetailToggle(
+    type: "confidence" | "methodology",
+    category: StrokesGainedCategory
+  ) {
+    const isClosing =
+      openPopover?.type === type && openPopover.category === category;
+    setOpenPopover(isClosing ? null : { type, category });
+    if (!isClosing) {
+      trackEvent("category_detail_interacted", {
+        category,
+        interaction_type:
+          type === "confidence" ? "confidence_badge" : "methodology_tooltip",
+        surface: "results_page",
+      });
+    }
+  }
 
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
@@ -146,7 +166,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                       />
                     </span>
                     <p className="mt-0.5 text-xs leading-relaxed text-neutral-500">
-                      {EMPHASIS_COPY[cat]}
+                      {EMPHASIS_COPY[cat] ?? CATEGORY_DESCRIPTIONS[cat]}
                     </p>
                   </div>
                   <span
@@ -189,18 +209,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                 <MethodologyTooltip
                   category={key}
                   isOpen={openPopover?.type === "methodology" && openPopover.category === key}
-                  onToggle={() => {
-                    const isClosing =
-                      openPopover?.type === "methodology" && openPopover.category === key;
-                    setOpenPopover(isClosing ? null : { type: "methodology", category: key });
-                    if (!isClosing) {
-                      trackEvent("category_detail_interacted", {
-                        category: key,
-                        interaction_type: "methodology_tooltip",
-                        surface: "results_page",
-                      });
-                    }
-                  }}
+                  onToggle={() => handleDetailToggle("methodology", key)}
                 />
               </span>
               <span className="mt-0.5 block text-xs font-normal text-neutral-400">
@@ -215,18 +224,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                   level={result.confidence[key]}
                   category={key}
                   isOpen={openPopover?.type === "confidence" && openPopover.category === key}
-                  onToggle={() => {
-                    const isClosing =
-                      openPopover?.type === "confidence" && openPopover.category === key;
-                    setOpenPopover(isClosing ? null : { type: "confidence", category: key });
-                    if (!isClosing) {
-                      trackEvent("category_detail_interacted", {
-                        category: key,
-                        interaction_type: "confidence_badge",
-                        surface: "results_page",
-                      });
-                    }
-                  }}
+                  onToggle={() => handleDetailToggle("confidence", key)}
                 />
                 <span
                   className={`font-mono text-sm font-semibold tabular-nums ${

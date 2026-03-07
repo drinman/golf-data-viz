@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEmphasizedCategories } from "@/lib/golf/emphasis";
+import type { StrokesGainedCategory } from "@/lib/golf/types";
 import { makeSGResult } from "../fixtures/factories";
 
 describe("getEmphasizedCategories", () => {
@@ -72,16 +73,18 @@ describe("getEmphasizedCategories", () => {
   });
 
   it("handles undefined skippedCategories defensively", () => {
-    const result = makeSGResult({
-      confidence: {
-        "off-the-tee": "medium",
-        approach: "high",
-        "around-the-green": "high",
-        putting: "high",
-      },
-    });
-    // Force undefined to simulate defensive case
-    (result as Record<string, unknown>).skippedCategories = undefined;
+    const result = {
+      ...makeSGResult({
+        confidence: {
+          "off-the-tee": "medium",
+          approach: "high",
+          "around-the-green": "high",
+          putting: "high",
+        },
+      }),
+      // Simulate runtime edge case where field is missing/undefined
+      skippedCategories: undefined as unknown as StrokesGainedCategory[],
+    };
     expect(() => getEmphasizedCategories(result)).not.toThrow();
     expect(getEmphasizedCategories(result)).toEqual([
       "putting",

@@ -135,7 +135,10 @@ export default function StrokesGainedClient({
       const utmSource = attributionUtmSourceRef.current ?? "";
       trackEvent("shared_round_viewed", { referrer, utm_source: utmSource });
 
-      // Fire emphasis impression for shared-link initial loads
+      // Fire emphasis impression for shared-link initial loads.
+      // This is the only path for shared links — handleFormSubmit only fires
+      // on user-initiated recalculations, and this useEffect is ref-guarded
+      // (sharedRoundViewedRef) so it fires exactly once.
       if (initialComputed?.result) {
         const emphasizedCats = getEmphasizedCategories(initialComputed.result);
         if (emphasizedCats.length > 0) {
@@ -196,7 +199,9 @@ export default function StrokesGainedClient({
       surface: "results_page",
     });
 
-    // Emphasis impression — fire once per result change, tied to user action
+    // Emphasis impression — fire once per result change, tied to user action.
+    // Comma-joined because GA4 doesn't support array values; query with CONTAINS
+    // if filtering by individual category.
     const emphasizedCats = getEmphasizedCategories(sgResult);
     if (emphasizedCats.length > 0) {
       trackEvent("results_emphasis_impression", {
