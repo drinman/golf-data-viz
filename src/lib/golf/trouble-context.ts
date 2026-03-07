@@ -77,8 +77,6 @@ export function buildTroubleContextSummary(
 /** Generate narrative text from trouble context. */
 export function generateTroubleNarrative(
   context: RoundTroubleContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _result: StrokesGainedResult
 ): TroubleNarrative {
   const { summary, troubleHoles } = context;
   const total = troubleHoles.length;

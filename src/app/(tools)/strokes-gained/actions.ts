@@ -201,7 +201,15 @@ export async function saveRound(
       return fail("DB_ERROR", DB_ERROR_MESSAGE);
     }
 
-    const roundId = insertedRows?.[0]?.id ?? null;
+    const roundId = insertedRows?.[0]?.id;
+    if (!roundId) {
+      console.error("[saveRound] Insert succeeded but no round ID returned");
+      captureMonitoringException(new Error("Insert succeeded but no round ID returned"), {
+        source: "saveRound",
+        code: "DB_ERROR",
+      });
+      return fail("DB_ERROR", DB_ERROR_MESSAGE);
+    }
 
     // Shadow mode: compute V3, persist comparison record, log delta
     if (phase2Mode === "shadow") {
@@ -232,7 +240,7 @@ export async function saveRound(
       }
     }
 
-    return { success: true, roundId: roundId ?? "" };
+    return { success: true, roundId };
   } catch (err) {
     if (err instanceof SupabaseConfigError) {
       console.error("[saveRound] Supabase config error:", err.message);

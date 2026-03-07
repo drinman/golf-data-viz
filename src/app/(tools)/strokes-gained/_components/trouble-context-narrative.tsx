@@ -8,7 +8,7 @@ interface TroubleContextNarrativeProps {
   narrative: TroubleNarrative;
   teeCount: number;
   totalHoles: number;
-  onRemove: () => void;
+  onRemove?: () => void;
 }
 
 export function TroubleContextNarrative({
@@ -39,13 +39,15 @@ export function TroubleContextNarrative({
           {narrative.body}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="text-xs font-medium text-neutral-400 transition-colors hover:text-neutral-600"
-      >
-        Remove trouble context
-      </button>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-xs font-medium text-neutral-400 transition-colors hover:text-neutral-600"
+        >
+          Remove trouble context
+        </button>
+      )}
     </div>
   );
 }

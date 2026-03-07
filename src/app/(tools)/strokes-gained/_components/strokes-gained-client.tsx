@@ -440,6 +440,14 @@ export default function StrokesGainedClient({
       ? "Copied!"
       : "Copy Link";
 
+  const troubleEligible = result && lastInput
+    ? shouldShowTroubleContextPrompt(
+        lastInput,
+        result,
+        getInterpolatedBenchmark(lastInput.handicapIndex)
+      )
+    : false;
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">
@@ -588,28 +596,15 @@ export default function StrokesGainedClient({
           />
 
           {/* Trouble context prompt — shown when eligible and not yet annotated */}
-          {(() => {
-            const troubleEligible = lastInput
-              ? shouldShowTroubleContextPrompt(
-                  lastInput,
-                  result,
-                  getInterpolatedBenchmark(lastInput.handicapIndex)
-                )
-              : false;
-            return (
-              troubleEligible &&
-              !troubleContext &&
-              !troublePromptDismissed && (
-                <TroubleContextPrompt
-                  onAddContext={() => {
-                    setTroubleModalOpen(true);
-                    trackEvent("trouble_context_started");
-                  }}
-                  onDismiss={() => setTroublePromptDismissed(true)}
-                />
-              )
-            );
-          })()}
+          {troubleEligible && !troubleContext && !troublePromptDismissed && (
+            <TroubleContextPrompt
+              onAddContext={() => {
+                setTroubleModalOpen(true);
+                trackEvent("trouble_context_started");
+              }}
+              onDismiss={() => setTroublePromptDismissed(true)}
+            />
+          )}
 
           {troubleModalOpen && (
             <TroubleContextModal
@@ -675,7 +670,7 @@ export default function StrokesGainedClient({
               courseName={lastInput.course}
               score={lastInput.score}
               benchmarkMeta={benchmarkMeta}
-              hasTroubleContext={troubleContext != null}
+              hasTroubleContext={troubleContext !== null}
             />
           </div>
         </div>

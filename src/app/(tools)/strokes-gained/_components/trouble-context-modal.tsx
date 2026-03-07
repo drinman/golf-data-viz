@@ -74,10 +74,8 @@ export function TroubleContextModal({
     onApply({ troubleHoles: holes, summary });
   }
 
-  const countOptions = [1, 2, 3, 4].map((n) => ({
-    value: Math.min(n, MAX_TROUBLE_HOLES),
-    label: n === 4 ? "4+" : String(n),
-  }));
+  const countOptions = [1, 2, 3, 4];
+
 
   return (
     <div
@@ -102,15 +100,15 @@ export function TroubleContextModal({
                 score.
               </p>
               <div className="mt-4 flex gap-2">
-                {countOptions.map(({ value, label }) => (
+                {countOptions.map((n) => (
                   <button
-                    key={label}
+                    key={n}
                     type="button"
-                    data-testid={`trouble-count-${label}`}
-                    onClick={() => handleCountSelect(value)}
+                    data-testid={`trouble-count-${n}`}
+                    onClick={() => handleCountSelect(n)}
                     className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-cream-200 text-sm font-semibold text-neutral-800 transition-all hover:border-brand-800/30 hover:bg-cream-50"
                   >
-                    {label}
+                    {n}
                   </button>
                 ))}
               </div>
@@ -204,6 +202,21 @@ export function TroubleContextModal({
                 >
                   Apply context
                 </button>
+                {holes.length < MAX_TROUBLE_HOLES && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHoles((prev) => [
+                        ...prev,
+                        { holeNumber: null, primaryCause: "tee" as TroubleCause },
+                      ]);
+                      setHoleCount((c) => c + 1);
+                    }}
+                    className="text-sm font-medium text-brand-800 transition-colors hover:text-brand-600"
+                  >
+                    + Add hole
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={onClose}

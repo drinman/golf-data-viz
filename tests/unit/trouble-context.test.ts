@@ -156,9 +156,8 @@ describe("generateTroubleNarrative", () => {
       ],
       summary: { tee: 2, approach: 0, around_green: 0, putting: 0, penalty: 0 },
     };
-    const result = makeSGResult();
 
-    const narrative = generateTroubleNarrative(context, result);
+    const narrative = generateTroubleNarrative(context);
 
     expect(narrative.headline.toLowerCase()).toContain("tee");
     expect(narrative.weaknessCaveat).not.toBeNull();
@@ -170,9 +169,8 @@ describe("generateTroubleNarrative", () => {
       troubleHoles: [{ holeNumber: 3, primaryCause: "tee" }],
       summary: { tee: 1, approach: 0, around_green: 0, putting: 0, penalty: 0 },
     };
-    const result = makeSGResult();
 
-    const narrative = generateTroubleNarrative(context, result);
+    const narrative = generateTroubleNarrative(context);
 
     expect(narrative.headline.length).toBeGreaterThan(0);
     expect(narrative.weaknessCaveat).toBeNull();
@@ -186,9 +184,8 @@ describe("generateTroubleNarrative", () => {
       ],
       summary: { tee: 0, approach: 1, around_green: 0, putting: 0, penalty: 1 },
     };
-    const result = makeSGResult();
 
-    const narrative = generateTroubleNarrative(context, result);
+    const narrative = generateTroubleNarrative(context);
 
     expect(narrative.headline.length).toBeGreaterThan(0);
     expect(narrative.weaknessCaveat).toBeNull();
@@ -204,9 +201,8 @@ describe("generateTroubleNarrative", () => {
       ],
       summary: { tee: 3, approach: 1, around_green: 0, putting: 0, penalty: 0 },
     };
-    const result = makeSGResult();
 
-    const narrative = generateTroubleNarrative(context, result);
+    const narrative = generateTroubleNarrative(context);
 
     expect(narrative.headline.toLowerCase()).toContain("tee");
   });

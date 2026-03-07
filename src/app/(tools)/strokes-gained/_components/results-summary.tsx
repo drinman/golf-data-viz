@@ -53,6 +53,8 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
   const skippedSet = new Set(result.skippedCategories);
   const estimatedSet = new Set(result.estimatedCategories);
 
+  const troubleNarrative = troubleContext ? generateTroubleNarrative(troubleContext) : null;
+
   const entries = CATEGORY_ORDER.map((key) => ({
     key,
     label: CATEGORY_LABELS[key],
@@ -208,17 +210,14 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
       )}
 
       {/* Trouble context narrative — inserted between emphasis and breakdown */}
-      {troubleContext && (() => {
-        const narrative = generateTroubleNarrative(troubleContext, result);
-        return (
-          <TroubleContextNarrative
-            narrative={narrative}
-            teeCount={troubleContext.summary.tee}
-            totalHoles={troubleContext.troubleHoles.length}
-            onRemove={onRemoveTroubleContext ?? (() => {})}
-          />
-        );
-      })()}
+      {troubleNarrative && troubleContext && (
+        <TroubleContextNarrative
+          narrative={troubleNarrative}
+          teeCount={troubleContext.summary.tee}
+          totalHoles={troubleContext.troubleHoles.length}
+          onRemove={onRemoveTroubleContext}
+        />
+      )}
 
       {/* Per-category breakdown */}
       <ul className="space-y-3">
@@ -315,14 +314,11 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
               {CATEGORY_DESCRIPTIONS[weakness.key]}
             </p>
             <p className="font-mono text-sm tabular-nums text-data-negative">{formatSG(weakness.value)}</p>
-            {troubleContext && (() => {
-              const narrative = generateTroubleNarrative(troubleContext, result);
-              return narrative.weaknessCaveat ? (
-                <p className="mt-1 text-xs italic text-amber-700">
-                  {narrative.weaknessCaveat}
-                </p>
-              ) : null;
-            })()}
+            {troubleNarrative?.weaknessCaveat && (
+              <p className="mt-1 text-xs italic text-amber-700">
+                {troubleNarrative.weaknessCaveat}
+              </p>
+            )}
           </div>
         </div>
       )}
