@@ -10,6 +10,7 @@ import type {
 } from "@/lib/golf/types";
 import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/golf/constants";
 import { ConfidenceBadge } from "./confidence-badge";
+import { MethodologyTooltip } from "./methodology-tooltip";
 
 const CATEGORY_DESCRIPTIONS: Record<StrokesGainedCategory, string> = {
   "off-the-tee": "Driving accuracy and penalty avoidance vs your peers",
@@ -29,7 +30,10 @@ interface ResultsSummaryProps {
 }
 
 export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
-  const [openBadge, setOpenBadge] = useState<StrokesGainedCategory | null>(null);
+  const [openPopover, setOpenPopover] = useState<{
+    type: "confidence" | "methodology";
+    category: StrokesGainedCategory;
+  } | null>(null);
   const skippedSet = new Set(result.skippedCategories);
   const estimatedSet = new Set(result.estimatedCategories);
 
@@ -117,7 +121,20 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
               />
             )}
             <span className="flex-1 px-4 py-3 text-sm font-medium text-neutral-800">
-              {label}
+              <span className="inline-flex items-center gap-1">
+                {label}
+                <MethodologyTooltip
+                  category={key}
+                  isOpen={openPopover?.type === "methodology" && openPopover.category === key}
+                  onToggle={() =>
+                    setOpenPopover(
+                      openPopover?.type === "methodology" && openPopover.category === key
+                        ? null
+                        : { type: "methodology", category: key }
+                    )
+                  }
+                />
+              </span>
               <span className="mt-0.5 block text-xs font-normal text-neutral-400">
                 {description}
               </span>
@@ -129,8 +146,14 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                 <ConfidenceBadge
                   level={result.confidence[key]}
                   category={key}
-                  isOpen={openBadge === key}
-                  onToggle={() => setOpenBadge(openBadge === key ? null : key)}
+                  isOpen={openPopover?.type === "confidence" && openPopover.category === key}
+                  onToggle={() =>
+                    setOpenPopover(
+                      openPopover?.type === "confidence" && openPopover.category === key
+                        ? null
+                        : { type: "confidence", category: key }
+                    )
+                  }
                 />
                 <span
                   className={`font-mono text-sm font-semibold tabular-nums ${

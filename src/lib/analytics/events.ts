@@ -9,6 +9,7 @@ export type AnalyticsEvent =
   | "round_save_failed"
   | "gir_estimated"
   | "confidence_badge_clicked"
+  | "methodology_tooltip_opened"
   | "result_viewed"
   | "reconciliation_applied";
 
@@ -32,6 +33,7 @@ export type AnalyticsEventProps = {
       | "verification";
   };
   confidence_badge_clicked: { category: string; level: string };
+  methodology_tooltip_opened: { category: string; surface: "results_summary" };
   result_viewed: {
     total_anchor_mode?: string;
     calibration_version?: string;
