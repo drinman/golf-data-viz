@@ -9,8 +9,17 @@ import type {
   StrokesGainedResult,
 } from "@/lib/golf/types";
 import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/golf/constants";
+import { getEmphasizedCategories } from "@/lib/golf/emphasis";
+import { trackEvent } from "@/lib/analytics/client";
 import { ConfidenceBadge } from "./confidence-badge";
 import { MethodologyTooltip } from "./methodology-tooltip";
+
+const EMPHASIS_COPY: Partial<Record<StrokesGainedCategory, string>> = {
+  putting:
+    "Putting is one of the clearest scorecard-based signals in this round.",
+  "around-the-green":
+    "Your short-game result looks actionable here because the supporting inputs are strong enough to trust directionally.",
+};
 
 const CATEGORY_DESCRIPTIONS: Record<StrokesGainedCategory, string> = {
   "off-the-tee": "Driving accuracy and penalty avoidance vs your peers",
@@ -51,6 +60,8 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const sorted = [...calloutEntries].sort((a, b) => b.value - a.value);
   const strength = sorted[0];
   const weakness = sorted[sorted.length - 1];
+
+  const emphasizedCategories = getEmphasizedCategories(result);
 
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
@@ -105,6 +116,58 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
         v{benchmarkMeta.version}
       </p>
 
+      {/* Emphasis block — most actionable scorecard-based insights */}
+      {emphasizedCategories.length > 0 && (
+        <div
+          data-testid="emphasis-block"
+          className="rounded-lg border border-brand-100 bg-brand-50/50 px-5 py-4"
+        >
+          <p className="font-display text-sm font-semibold tracking-tight text-neutral-950">
+            Most actionable scorecard-based insights
+          </p>
+          <p className="mt-0.5 text-xs text-neutral-500">
+            These are the clearest signals from your scorecard-based round data today.
+          </p>
+          <div className="mt-3 space-y-2.5">
+            {emphasizedCategories.map((cat) => {
+              const value = result.categories[cat];
+              return (
+                <div
+                  key={cat}
+                  className="flex items-start justify-between gap-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-800">
+                      {CATEGORY_LABELS[cat]}
+                      <ConfidenceBadge
+                        level={result.confidence[cat]}
+                        category={cat}
+                        interactive={false}
+                      />
+                    </span>
+                    <p className="mt-0.5 text-xs leading-relaxed text-neutral-500">
+                      {EMPHASIS_COPY[cat]}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 font-mono text-sm font-semibold tabular-nums ${
+                      value >= 0 ? "text-data-positive" : "text-data-negative"
+                    }`}
+                  >
+                    {formatSG(value)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {emphasizedCategories.length === 1 && (
+            <p className="mt-2.5 text-xs text-neutral-400">
+              Other categories are available below with confidence details.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Per-category breakdown */}
       <ul className="space-y-3">
         {entries.map(({ key, label, description, value, skipped }) => (
@@ -126,13 +189,18 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                 <MethodologyTooltip
                   category={key}
                   isOpen={openPopover?.type === "methodology" && openPopover.category === key}
-                  onToggle={() =>
-                    setOpenPopover(
-                      openPopover?.type === "methodology" && openPopover.category === key
-                        ? null
-                        : { type: "methodology", category: key }
-                    )
-                  }
+                  onToggle={() => {
+                    const isClosing =
+                      openPopover?.type === "methodology" && openPopover.category === key;
+                    setOpenPopover(isClosing ? null : { type: "methodology", category: key });
+                    if (!isClosing) {
+                      trackEvent("category_detail_interacted", {
+                        category: key,
+                        interaction_type: "methodology_tooltip",
+                        surface: "results_page",
+                      });
+                    }
+                  }}
                 />
               </span>
               <span className="mt-0.5 block text-xs font-normal text-neutral-400">
@@ -147,13 +215,18 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                   level={result.confidence[key]}
                   category={key}
                   isOpen={openPopover?.type === "confidence" && openPopover.category === key}
-                  onToggle={() =>
-                    setOpenPopover(
-                      openPopover?.type === "confidence" && openPopover.category === key
-                        ? null
-                        : { type: "confidence", category: key }
-                    )
-                  }
+                  onToggle={() => {
+                    const isClosing =
+                      openPopover?.type === "confidence" && openPopover.category === key;
+                    setOpenPopover(isClosing ? null : { type: "confidence", category: key });
+                    if (!isClosing) {
+                      trackEvent("category_detail_interacted", {
+                        category: key,
+                        interaction_type: "confidence_badge",
+                        surface: "results_page",
+                      });
+                    }
+                  }}
                 />
                 <span
                   className={`font-mono text-sm font-semibold tabular-nums ${

@@ -12,6 +12,7 @@ import {
   getInterpolatedBenchmark,
   getBenchmarkMeta,
 } from "@/lib/golf/benchmarks";
+import { getEmphasizedCategories } from "@/lib/golf/emphasis";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
 import {
   calculateStrokesGained,
@@ -133,6 +134,17 @@ export default function StrokesGainedClient({
           : "";
       const utmSource = attributionUtmSourceRef.current ?? "";
       trackEvent("shared_round_viewed", { referrer, utm_source: utmSource });
+
+      // Fire emphasis impression for shared-link initial loads
+      if (initialComputed?.result) {
+        const emphasizedCats = getEmphasizedCategories(initialComputed.result);
+        if (emphasizedCats.length > 0) {
+          trackEvent("results_emphasis_impression", {
+            emphasized_categories: emphasizedCats.join(","),
+            surface: "results_page",
+          });
+        }
+      }
     }
   }, [initialInput]);
 
@@ -176,10 +188,23 @@ export default function StrokesGainedClient({
     // Phase 2 analytics
     trackEvent("result_viewed", {
       total_anchor_mode: sgResult.totalAnchorMode,
+      methodology_version: sgResult.methodologyVersion,
+      benchmark_version: sgResult.benchmarkVersion,
       calibration_version: sgResult.calibrationVersion,
       has_course_rating: input.courseRating > 0,
       has_slope_rating: input.slopeRating >= 55 && input.slopeRating <= 155,
+      surface: "results_page",
     });
+
+    // Emphasis impression — fire once per result change, tied to user action
+    const emphasizedCats = getEmphasizedCategories(sgResult);
+    if (emphasizedCats.length > 0) {
+      trackEvent("results_emphasis_impression", {
+        emphasized_categories: emphasizedCats.join(","),
+        surface: "results_page",
+      });
+    }
+
     if (sgResult.reconciliationScaleFactor != null) {
       trackEvent("reconciliation_applied", {
         scale_factor: sgResult.reconciliationScaleFactor,
