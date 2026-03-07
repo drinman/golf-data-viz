@@ -27,7 +27,7 @@ export async function submitPartialRound(page: Page) {
   await fillPartialRound(page);
   await page.click('button[type="submit"]');
   await expect(
-    page.getByText("Your Strokes Gained Breakdown")
+    page.getByText("Your Proxy SG Breakdown")
   ).toBeVisible({ timeout: 5000 });
 }
 
@@ -35,6 +35,6 @@ export async function submitFullRound(page: Page) {
   await fillFullRound(page);
   await page.click('button[type="submit"]');
   await expect(
-    page.getByText("Your Strokes Gained Breakdown")
+    page.getByText("Your Proxy SG Breakdown")
   ).toBeVisible({ timeout: 5000 });
 }

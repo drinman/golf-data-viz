@@ -39,7 +39,7 @@ test("strokes-gained page loads", async ({ page }) => {
   await page.goto("/strokes-gained");
   await expect(page.locator("h1")).toContainText("Strokes Gained");
   await expect(page.getByText("Beta")).toBeVisible();
-  await expect(page.getByText("Peer proxy")).toBeVisible();
+  await expect(page.getByText("Proxy Strokes Gained", { exact: true })).toBeVisible();
   await expect(page.locator('button[type="submit"]')).toBeVisible();
 });
 

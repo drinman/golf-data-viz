@@ -49,7 +49,7 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByText("Beta")
     ).toBeVisible();
     await expect(
-      page.getByText("Peer proxy")
+      page.getByText("Proxy Strokes Gained", { exact: true })
     ).toBeVisible();
     await expect(
       page.getByText("Private")
@@ -73,7 +73,7 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByRole("link", { name: "GitHub" }).first()
     ).toBeVisible();
     await expect(
-      page.getByText("Your official USGA index (GHIN, TheGrint, etc.)")
+      page.getByText("Standard handicaps enter as 14.3. Plus handicaps use the + toggle and enter 2.3.")
     ).toBeVisible();
     await expect(
       page.getByText("Found on your scorecard — not the same as par")
@@ -93,7 +93,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Fill handicap first and verify bracket label
     await page.fill('[name="handicapIndex"]', "14.3");
-    await expect(page.getByText("10-15 bracket")).toBeVisible();
+    await expect(page.getByText("10\u201315 HCP")).toBeVisible();
 
     // Submit full round
     await submitFullRound(page);
@@ -112,7 +112,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(results.getByText("Off the Tee")).toBeVisible();
     await expect(results.getByText("Approach")).toBeVisible();
     await expect(results.getByText("Around the Green")).toBeVisible();
-    await expect(results.getByText("Putting")).toBeVisible();
+    await expect(results.getByText("Putting", { exact: true })).toBeVisible();
 
     // Verify bracket label in results summary (exact text)
     await expect(
@@ -138,7 +138,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Results should auto-render without any form interaction
     await expect(
-      page.getByText("Your Strokes Gained Breakdown")
+      page.getByText("Your Proxy SG Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Radar chart should be present
@@ -221,7 +221,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     // Trust label with new "Peer-compared SG" language + Beta pill
     // Scoped to visible results summary (share card has a duplicate off-screen)
     const trustLabel = sgResults
-      .getByText(/Peer-compared SG.*Benchmarks v/)
+      .getByText(/Proxy SG.*Benchmarks/)
       .first();
     await expect(trustLabel).toBeVisible();
     await expect(
@@ -261,7 +261,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByText(/proxy model/i).first()).toBeVisible();
   });
 
-  test("partial round (blank FIR/GIR) shows Est. controls and survives share/reload", async ({
+  test("partial round (blank FIR/GIR) shows confidence badges and survives share/reload", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -269,18 +269,13 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     const sgResults = page.locator('[data-testid="sg-results"]');
 
-    const estButtons = sgResults.getByRole("button", { name: "Est." });
-    await expect(estButtons.first()).toBeVisible();
-    await estButtons.first().click();
+    // Confidence badges render as buttons with aria-label "X confidence"
+    const confidenceButtons = sgResults.getByRole("button", { name: /confidence/ });
+    await expect(confidenceButtons.first()).toBeVisible();
+    await confidenceButtons.first().click();
+    // Clicking a confidence badge opens an explanation popover
     await expect(
-      sgResults.getByText(
-        "This category is estimated from related stats because not all inputs were provided."
-      )
-    ).toBeVisible();
-    await expect(
-      sgResults.getByText(
-        "Categories marked Est. are approximated from related inputs. See methodology for details."
-      )
+      sgResults.locator('[role="dialog"]').first()
     ).toBeVisible();
 
     // All four categories should show SG values
@@ -288,7 +283,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(results.getByText("Off the Tee")).toBeVisible();
     await expect(results.getByText("Approach")).toBeVisible();
     await expect(results.getByText("Around the Green")).toBeVisible();
-    await expect(results.getByText("Putting")).toBeVisible();
+    await expect(results.getByText("Putting", { exact: true })).toBeVisible();
 
     // Get the share URL and navigate to it fresh
     const dParam = new URL(page.url()).searchParams.get("d");
@@ -296,13 +291,13 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     await page.goto(`/strokes-gained?d=${dParam}`);
     await expect(
-      page.getByText("Your Strokes Gained Breakdown")
+      page.getByText("Your Proxy SG Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
-    // "Est." controls should still render after reload
+    // Confidence badges should still render after reload
     const reloadedResults = page.locator('[data-testid="sg-results"]');
     await expect(
-      reloadedResults.getByRole("button", { name: "Est." }).first()
+      reloadedResults.getByRole("button", { name: /confidence/ }).first()
     ).toBeVisible();
   });
 
@@ -369,7 +364,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Enter unsigned value
     await page.fill('[name="handicapIndex"]', "2.3");
-    await expect(page.getByText("Plus HCP")).toBeVisible();
+    await expect(page.locator("span").getByText("Plus HCP")).toBeVisible();
 
     // Fill rest of round
     await page.fill('[name="course"]', "Plus Test Course");
@@ -394,7 +389,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(sgResults).toBeVisible({ timeout: 5000 });
 
     // Verify "Plus HCP" in results
-    await expect(sgResults.getByText("Plus HCP")).toBeVisible();
+    await expect(sgResults.getByText("Compared to Plus HCP")).toBeVisible();
 
     // Verify disclosure text
     await expect(
@@ -407,7 +402,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     await page.goto(`/strokes-gained?d=${dParam}`);
     await expect(
-      page.getByText("Your Strokes Gained Breakdown")
+      page.getByText("Your Proxy SG Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Verify toggle rehydrates as "+"
@@ -416,7 +411,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.locator('[name="handicapIndex"]')).toHaveValue("2.3");
     // Verify results still show Plus HCP and disclosure
     await expect(
-      page.locator('[data-testid="sg-results"]').getByText("Plus HCP")
+      page.locator('[data-testid="sg-results"]').getByText("Compared to Plus HCP")
     ).toBeVisible();
     await expect(
       page.locator('[data-testid="sg-results"]').getByText(/Category benchmarks use scratch/)
@@ -453,7 +448,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     // Should show validation error, not results
     await expect(page.getByText(/total 18/i)).toBeVisible({ timeout: 3000 });
     await expect(
-      page.getByText("Your Strokes Gained Breakdown")
+      page.getByText("Your Proxy SG Breakdown")
     ).not.toBeVisible();
   });
 });

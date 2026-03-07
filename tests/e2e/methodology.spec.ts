@@ -22,7 +22,7 @@ test.describe("Methodology page — citation table", () => {
     const citationsSection = page.getByTestId("citations-section");
     await expect(
       citationsSection.getByText(
-        "4 of 7 tracked metrics have published-source coverage for some brackets. 3 remain unsourced, and the benchmark is still provisional."
+        "6 of 7 tracked metrics have published-source coverage for some brackets. 1 remain unsourced."
       )
     ).toBeVisible();
   });
@@ -30,12 +30,14 @@ test.describe("Methodology page — citation table", () => {
   test("sourced metrics show 'Partial' status and 6/7 coverage", async ({
     page,
   }) => {
-    // These 4 metrics have Shot Scope data for 6 of 7 brackets (missing 30+)
+    // These 6 metrics have Shot Scope data for 6 of 7 brackets (missing 30+)
     const sourcedMetrics = [
       "averageScore",
       "fairwayPercentage",
       "girPercentage",
       "upAndDownPercentage",
+      "puttsPerRound",
+      "penaltiesPerRound",
     ];
 
     for (const metric of sourcedMetrics) {
@@ -53,8 +55,6 @@ test.describe("Methodology page — citation table", () => {
 
   test("unsourced metrics show 'Pending' status", async ({ page }) => {
     const pendingMetrics = [
-      "puttsPerRound",
-      "penaltiesPerRound",
       "scoringDistribution",
     ];
 
@@ -79,7 +79,7 @@ test.describe("Methodology page — citation table", () => {
   test("unsourced metrics show em-dash for accessed date and coverage", async ({
     page,
   }) => {
-    const row = page.getByTestId("citation-row-puttsPerRound");
+    const row = page.getByTestId("citation-row-scoringDistribution");
     // \u2014 = em dash, rendered as "—"
     const cells = row.locator("td");
     // Accessed (3rd column, index 2) and Coverage (4th column, index 3)
@@ -96,10 +96,10 @@ test.describe("Methodology page — changelog", () => {
 
     const changelog = page.getByTestId("changelog-section");
     const items = changelog.locator("li");
-    await expect(items).toHaveCount(2);
+    await expect(items).toHaveCount(3);
 
     // First entry is the latest version
-    await expect(items.first()).toContainText("v0.2.0");
+    await expect(items.first()).toContainText("v1.0.0");
     await expect(items.last()).toContainText("v0.1.0");
   });
 
@@ -107,8 +107,8 @@ test.describe("Methodology page — changelog", () => {
     await page.goto("/methodology");
 
     const changelog = page.getByTestId("changelog-section");
-    await expect(changelog.getByText("2026-03-01")).toBeVisible();
-    await expect(changelog.getByText(/Shot Scope/)).toBeVisible();
+    await expect(changelog.getByText("2026-03-06")).toBeVisible();
+    await expect(changelog.getByText(/source-locked.*Shot Scope/)).toBeVisible();
   });
 });
 

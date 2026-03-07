@@ -44,6 +44,7 @@ src/
 - Colocate page-specific components in `_components/` subdirs
 - Keep golf calculation logic in `src/lib/golf/` — pure functions, fully tested
 - Use Supabase Row Level Security for per-user data isolation
+- When renaming user-facing strings, updating benchmark data, or changing UI labels, update the corresponding e2e tests in `tests/e2e/` in the same PR. Run `npx playwright test --project=functional` before marking done.
 
 ## Commands
 - `npm run dev` — Start dev server (Turbopack)
