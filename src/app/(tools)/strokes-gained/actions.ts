@@ -5,7 +5,7 @@ import { toRoundInsert } from "@/lib/golf/round-mapper";
 import { roundInputSchema } from "@/lib/golf/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SupabaseConfigError } from "@/lib/supabase/errors";
-import { getBracketForHandicap } from "@/lib/golf/benchmarks";
+import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import { checkRateLimit, extractClientIp } from "@/lib/rate-limit";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
@@ -116,8 +116,8 @@ export async function saveRound(
 
     // Recalculate SG server-side — never trust client-supplied values
     const validatedInput = parsed.data as RoundInput;
-    const bracket = getBracketForHandicap(validatedInput.handicapIndex);
-    const sg = calculateStrokesGained(validatedInput, bracket);
+    const benchmark = getInterpolatedBenchmark(validatedInput.handicapIndex);
+    const sg = calculateStrokesGained(validatedInput, benchmark);
     const trust = assessRoundTrust(validatedInput);
 
     const supabase = createAdminClient();

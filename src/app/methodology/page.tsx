@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import {
   getBenchmarkMeta,
-  getBracketForHandicap,
+  getInterpolatedBenchmark,
   getCitationStatus,
 } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
@@ -136,7 +136,7 @@ const CALIBRATION_FIXTURES = [
 
 function computeCalibrationRows() {
   return CALIBRATION_FIXTURES.map((fixture) => {
-    const benchmark = getBracketForHandicap(fixture.input.handicapIndex);
+    const benchmark = getInterpolatedBenchmark(fixture.input.handicapIndex);
     const result = calculateStrokesGained(fixture.input, benchmark);
     return {
       label: fixture.label,
@@ -166,9 +166,9 @@ export default function MethodologyPage() {
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">Methodology</h1>
       <p className="mt-2 max-w-2xl text-sm text-neutral-600">
         Golf Data Viz is a free post-round benchmark that estimates
-        peer-compared strokes gained from round-level scorecard stats, not
-        shot-level tracking. This page explains the formulas, sources, and
-        limitations.
+        proxy strokes gained from round-level scorecard stats, not
+        shot-level tracking. This page explains the formulas, sources,
+        confidence levels, and limitations.
       </p>
 
       {/* Section 1: Not True SG */}
@@ -232,8 +232,7 @@ export default function MethodologyPage() {
                   Putting
                 </td>
                 <td className="py-2 pr-4 font-mono text-xs text-neutral-600 whitespace-nowrap">
-                  (peerPutts/18 - playerPutts/18) x 4.0 + clamp(threePuttBonus,
-                  -0.5, 0.5)
+                  (peerPutts/18 - playerPutts/18) x 4.0
                 </td>
                 <td className="py-2 font-mono text-neutral-600">4.0</td>
               </tr>
@@ -357,7 +356,92 @@ export default function MethodologyPage() {
         </ul>
       </section>
 
-      {/* Section 5: Calibration */}
+      {/* Section 5: Proxy SG vs Shot-Level SG */}
+      <section className="mt-10">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          Proxy SG vs Shot-Level SG
+        </h2>
+        <div className="mt-4 space-y-3 text-sm text-neutral-600">
+          <p>
+            True strokes gained (as used by the PGA Tour) measures each shot&apos;s
+            start and end position against expected strokes from that location.
+            This requires GPS or shot-tracking hardware.
+          </p>
+          <p>
+            Proxy SG estimates category-level performance from aggregate round
+            stats (fairways hit, GIR, putts, penalties, scoring distribution).
+            It answers &ldquo;where am I gaining/losing relative to my handicap
+            peers?&rdquo; without shot-level data.
+          </p>
+          <p>
+            Proxy SG is directionally useful for practice prioritization but
+            cannot capture within-category nuance (e.g., putt starting
+            distances, approach miss direction, driving distance).
+          </p>
+        </div>
+      </section>
+
+      {/* Section 6: Confidence Levels */}
+      <section className="mt-10">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          Confidence Levels
+        </h2>
+        <p className="mt-2 text-sm text-neutral-600">
+          Each category displays a confidence badge reflecting the quality of data
+          available for that estimate.
+        </p>
+        <div className="mt-4 overflow-x-auto -mx-4 px-4">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-neutral-200 text-left">
+                <th className="pb-2 pr-4 font-medium text-neutral-600">Level</th>
+                <th className="pb-2 pr-4 font-medium text-neutral-600">Meaning</th>
+                <th className="pb-2 font-medium text-neutral-600">Category Examples</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              <tr>
+                <td className="py-2 pr-4">
+                  <span className="rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-medium uppercase text-data-positive">High</span>
+                </td>
+                <td className="py-2 pr-4 text-neutral-600">Direct data provided by user</td>
+                <td className="py-2 text-neutral-600">Putting (total putts), Approach (GIR provided), ATG (up-and-down data)</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4">
+                  <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium uppercase text-amber-700">Med</span>
+                </td>
+                <td className="py-2 pr-4 text-neutral-600">Derived from related inputs</td>
+                <td className="py-2 text-neutral-600">OTT (FIR-only — no distance/miss quality), Approach (GIR estimated), ATG (from GIR + scoring)</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4">
+                  <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium uppercase text-neutral-500">Low</span>
+                </td>
+                <td className="py-2 pr-4 text-neutral-600">Limited data available</td>
+                <td className="py-2 text-neutral-600">OTT (penalties only), ATG (estimated from estimated GIR)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Section 7: OTT Limitations */}
+      <section className="mt-10">
+        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+          Off the Tee Limitations
+        </h2>
+        <p className="mt-2 text-sm text-neutral-600">
+          Off the Tee uses fairway accuracy and penalty data only. It does not
+          measure driving distance, miss direction, or recovery difficulty.
+          FIR-only OTT is rated Medium confidence because it cannot distinguish
+          &ldquo;missed fairway but great drive&rdquo; from &ldquo;missed fairway
+          and dead.&rdquo; Higher confidence OTT will require richer inputs
+          (distance, playable miss) in a future phase.
+        </p>
+      </section>
+
+      {/* Section 8: Calibration */}
       <section className="mt-10">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Calibration Sanity Check

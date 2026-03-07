@@ -89,7 +89,7 @@ describe("Results trust cues", () => {
     ).toBeNull();
   });
 
-  it("shows one global note when categories are estimated", () => {
+  it("shows confidence footer text", () => {
     const result = makeSGResult({
       estimatedCategories: ["approach", "around-the-green"],
     });
@@ -97,45 +97,58 @@ describe("Results trust cues", () => {
     render(<ResultsSummary result={result} benchmarkMeta={meta} />);
 
     expect(
-      screen.getByText(/Categories marked Est\. are approximated from related inputs\./)
+      screen.getByText(/Confidence levels reflect input completeness/)
     ).toBeVisible();
   });
 
-  it("toggles estimate help with click and Escape, keeping only one popover open", async () => {
-    const user = userEvent.setup();
+  it("shows confidence badges for each category", () => {
     const result = makeSGResult({
       estimatedCategories: ["approach", "around-the-green"],
     });
 
     render(<ResultsSummary result={result} benchmarkMeta={meta} />);
 
-    const estButtons = screen.getAllByRole("button", { name: "Est." });
-    expect(estButtons).toHaveLength(2);
+    // Confidence badges render as interactive buttons with aria-label
+    const badges = screen.getAllByRole("button", { name: /confidence/ });
+    expect(badges.length).toBeGreaterThan(0);
+  });
 
-    await user.click(estButtons[0]);
-    expect(
-      screen.getByText(
-        "This category is estimated from related stats because not all inputs were provided."
-      )
-    ).toBeVisible();
+  it("keeps only one confidence popover open and dismisses on Escape", async () => {
+    const user = userEvent.setup();
+    const result = makeSGResult();
 
-    await user.click(estButtons[1]);
-    expect(
-      screen.getByText(
-        "This category is estimated from related stats because not all inputs were provided."
-      )
-    ).toBeVisible();
-    expect(
-      screen.getAllByText(
-        "This category is estimated from related stats because not all inputs were provided."
-      )
-    ).toHaveLength(1);
+    render(<ResultsSummary result={result} benchmarkMeta={meta} />);
 
+    const badges = screen.getAllByRole("button", { name: /confidence/ });
+    expect(badges.length).toBe(4);
+
+    // Open first badge
+    await user.click(badges[0]);
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+
+    // Click second badge — first should close, second opens
+    await user.click(badges[1]);
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+
+    // Escape dismisses
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(
-      screen.queryByText(
-        "This category is estimated from related stats because not all inputs were provided."
-      )
-    ).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("dismisses popover on click outside", async () => {
+    const user = userEvent.setup();
+    const result = makeSGResult();
+
+    render(<ResultsSummary result={result} benchmarkMeta={meta} />);
+
+    const badges = screen.getAllByRole("button", { name: /confidence/ });
+
+    // Open a badge
+    await user.click(badges[0]);
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+
+    // Click outside (on the document body)
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

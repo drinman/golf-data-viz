@@ -37,6 +37,8 @@ export type Database = {
       rounds: {
         Row: {
           benchmark_bracket: string | null
+          benchmark_handicap: number | null
+          benchmark_version: string | null
           birdies: number
           bogeys: number
           course_name: string
@@ -49,6 +51,7 @@ export type Database = {
           greens_in_regulation: number | null
           handicap_index: number
           id: string
+          methodology_version: string | null
           pars: number
           penalty_strokes: number
           played_at: string
@@ -73,6 +76,8 @@ export type Database = {
         }
         Insert: {
           benchmark_bracket?: string | null
+          benchmark_handicap?: number | null
+          benchmark_version?: string | null
           birdies: number
           bogeys: number
           course_name: string
@@ -85,6 +90,7 @@ export type Database = {
           greens_in_regulation?: number | null
           handicap_index: number
           id?: string
+          methodology_version?: string | null
           pars: number
           penalty_strokes: number
           played_at: string
@@ -109,6 +115,8 @@ export type Database = {
         }
         Update: {
           benchmark_bracket?: string | null
+          benchmark_handicap?: number | null
+          benchmark_version?: string | null
           birdies?: number
           bogeys?: number
           course_name?: string
@@ -121,6 +129,7 @@ export type Database = {
           greens_in_regulation?: number | null
           handicap_index?: number
           id?: string
+          methodology_version?: string | null
           pars?: number
           penalty_strokes?: number
           played_at?: string

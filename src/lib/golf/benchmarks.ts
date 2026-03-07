@@ -9,6 +9,7 @@
  */
 
 import type {
+  BenchmarkAnchor,
   BenchmarkMeta,
   BracketBenchmark,
   CitationMetricKey,
@@ -27,6 +28,7 @@ interface BenchmarkFile {
   methodology: string;
   sampleSizeByBracket: Record<string, number | null>;
   notes: string[];
+  anchors: BenchmarkAnchor[];
   citations: Record<CitationMetricKey, MetricCitation[]>;
   changelog: ChangelogEntry[];
   brackets: BracketBenchmark[];
@@ -79,7 +81,7 @@ function handicapToBracketLabel(index: number): HandicapBracket {
   return "30+";
 }
 
-/** Get the benchmark for a given handicap index (snap-to-nearest bracket). */
+/** Get the benchmark for a given handicap index (snap-to-nearest bracket). Display-only. */
 export function getBracketForHandicap(index: number): BracketBenchmark {
   const label = handicapToBracketLabel(index);
   const bracket = data.brackets.find((b) => b.bracket === label);
@@ -87,4 +89,95 @@ export function getBracketForHandicap(index: number): BracketBenchmark {
     throw new Error(`Bracket not found for label: ${label}`);
   }
   return bracket;
+}
+
+/** Sorted anchors from the benchmark data file. */
+const sortedAnchors: BenchmarkAnchor[] = [...data.anchors].sort(
+  (a, b) => a.handicapIndex - b.handicapIndex
+);
+
+/** Interpolate a BenchmarkAnchor for an exact handicap index. */
+export function interpolateBenchmark(handicapIndex: number): BenchmarkAnchor {
+  if (!Number.isFinite(handicapIndex) || handicapIndex < 0 || handicapIndex > 54) {
+    throw new RangeError(
+      `Handicap index must be between 0 and 54, got ${handicapIndex}`
+    );
+  }
+
+  const first = sortedAnchors[0];
+  const last = sortedAnchors[sortedAnchors.length - 1];
+
+  // Clamp to boundaries
+  if (handicapIndex <= first.handicapIndex) return { ...first, handicapIndex };
+  if (handicapIndex >= last.handicapIndex) return { ...last, handicapIndex };
+
+  // Find straddling anchors
+  let lower = first;
+  let upper = sortedAnchors[1];
+  for (let i = 1; i < sortedAnchors.length; i++) {
+    if (sortedAnchors[i].handicapIndex >= handicapIndex) {
+      lower = sortedAnchors[i - 1];
+      upper = sortedAnchors[i];
+      break;
+    }
+  }
+
+  // Exact match
+  if (handicapIndex === lower.handicapIndex) return { ...lower };
+  if (handicapIndex === upper.handicapIndex) return { ...upper };
+
+  const t =
+    (handicapIndex - lower.handicapIndex) /
+    (upper.handicapIndex - lower.handicapIndex);
+
+  function lerp(a: number, b: number): number {
+    return a + (b - a) * t;
+  }
+
+  return {
+    handicapIndex,
+    averageScore: lerp(lower.averageScore, upper.averageScore),
+    fairwayPercentage: lerp(lower.fairwayPercentage, upper.fairwayPercentage),
+    girPercentage: lerp(lower.girPercentage, upper.girPercentage),
+    puttsPerRound: lerp(lower.puttsPerRound, upper.puttsPerRound),
+    upAndDownPercentage: lerp(lower.upAndDownPercentage, upper.upAndDownPercentage),
+    penaltiesPerRound: lerp(lower.penaltiesPerRound, upper.penaltiesPerRound),
+  };
+}
+
+/** Get interpolated benchmark in BracketBenchmark shape for downstream compat. */
+export function getInterpolatedBenchmark(handicapIndex: number): BracketBenchmark {
+  const anchor = interpolateBenchmark(handicapIndex);
+  const bracket = handicapToBracketLabel(handicapIndex);
+
+  // Scoring distribution (eagles, birdies, pars, etc.) is only used for GIR
+  // estimation — a fallback when the user doesn't provide GIR directly.
+  // It's not in the anchors array and isn't interpolated; snapping to the
+  // nearest bracket is acceptable because the GIR estimate is already marked
+  // as "medium" confidence regardless.
+  const bracketData = data.brackets.find((b) => b.bracket === bracket);
+  const scoring = bracketData?.scoring ?? {
+    eaglesPerRound: 0,
+    birdiesPerRound: 0,
+    parsPerRound: 0,
+    bogeysPerRound: 0,
+    doublesPerRound: 0,
+    triplePlusPerRound: 0,
+  };
+
+  return {
+    bracket,
+    averageScore: anchor.averageScore,
+    fairwayPercentage: anchor.fairwayPercentage,
+    girPercentage: anchor.girPercentage,
+    puttsPerRound: anchor.puttsPerRound,
+    upAndDownPercentage: anchor.upAndDownPercentage,
+    penaltiesPerRound: anchor.penaltiesPerRound,
+    scoring,
+  };
+}
+
+/** Get the benchmark data version string. */
+export function getBenchmarkVersion(): string {
+  return data.version;
 }

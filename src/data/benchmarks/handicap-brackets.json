@@ -1,14 +1,11 @@
 {
-  "version": "0.2.0",
-  "updatedAt": "2026-03-01",
-  "provisional": true,
+  "version": "1.0.0",
+  "updatedAt": "2026-03-06",
+  "provisional": false,
   "sources": [
-    "Shot Scope Law of Averages Series (2024–2025)",
-    "USGA handicap index statistics (2024)",
-    "Arccos aggregate performance reports (2023-2024)",
-    "Lou Stagner published amateur statistics"
+    "Shot Scope Law of Averages Series (2024–2025)"
   ],
-  "methodology": "Core metrics (FIR%, GIR%, up-and-down%, average score) sourced from Shot Scope Law of Averages articles. Average score derived from Shot Scope par-hole scoring averages (4 par-3s + 10 par-4s + 4 par-5s on a standard par-72 layout). Putts per round, penalties, and scoring distribution retain seed estimates pending sourcing. See /methodology for details.",
+  "methodology": "All metrics sourced from a single Shot Scope Law of Averages edition. Anchors represent discrete handicap points published by Shot Scope (scratch, 5, 10, 15, 20, 25). Runtime interpolation produces exact-index benchmarks — no derived midpoints are stored. Average score derived from Shot Scope par-hole scoring averages (4 par-3s + 10 par-4s + 4 par-5s on a standard par-72 layout).",
   "sampleSizeByBracket": {
     "0-5": null,
     "5-10": null,
@@ -19,10 +16,77 @@
     "30+": null
   },
   "notes": [
-    "v0.2.0: Shot Scope data for core metrics (brackets 0-5 through 25-30).",
-    "Bracket 30+ retains seed values — no Shot Scope coverage.",
-    "puttsPerRound, penaltiesPerRound, and scoringDistribution retain seed estimates.",
+    "v1.0.0: All SG-consumed metrics sourced from Shot Scope Law of Averages.",
+    "Anchors at scratch, 5, 10, 15, 20, 25, 30 HCP — interpolation fills gaps at runtime.",
+    "puttsPerRound and penaltiesPerRound now sourced (were seed estimates in v0.2.0).",
+    "Anchor at 30 HCP and bracket 30+ use estimated values — no Shot Scope coverage above 25 HCP.",
     "FIR% is not monotonically decreasing across handicaps — confirmed by Shot Scope data."
+  ],
+  "anchors": [
+    {
+      "handicapIndex": 0,
+      "averageScore": 74.0,
+      "fairwayPercentage": 50,
+      "girPercentage": 59,
+      "puttsPerRound": 29.8,
+      "upAndDownPercentage": 54,
+      "penaltiesPerRound": 0.65
+    },
+    {
+      "handicapIndex": 5,
+      "averageScore": 80.4,
+      "fairwayPercentage": 51,
+      "girPercentage": 41,
+      "puttsPerRound": 30.2,
+      "upAndDownPercentage": 47,
+      "penaltiesPerRound": 0.91
+    },
+    {
+      "handicapIndex": 10,
+      "averageScore": 83.2,
+      "fairwayPercentage": 50,
+      "girPercentage": 35,
+      "puttsPerRound": 31.2,
+      "upAndDownPercentage": 40,
+      "penaltiesPerRound": 1.62
+    },
+    {
+      "handicapIndex": 15,
+      "averageScore": 89.5,
+      "fairwayPercentage": 47,
+      "girPercentage": 23,
+      "puttsPerRound": 32.2,
+      "upAndDownPercentage": 35,
+      "penaltiesPerRound": 2.15
+    },
+    {
+      "handicapIndex": 20,
+      "averageScore": 94.0,
+      "fairwayPercentage": 45,
+      "girPercentage": 16,
+      "puttsPerRound": 33.4,
+      "upAndDownPercentage": 32,
+      "penaltiesPerRound": 2.73
+    },
+    {
+      "handicapIndex": 25,
+      "averageScore": 103.4,
+      "fairwayPercentage": 50,
+      "girPercentage": 9,
+      "puttsPerRound": 34.6,
+      "upAndDownPercentage": 24,
+      "penaltiesPerRound": 3.30
+    },
+    {
+      "handicapIndex": 30,
+      "averageScore": 108.5,
+      "fairwayPercentage": 30,
+      "girPercentage": 9,
+      "puttsPerRound": 36,
+      "upAndDownPercentage": 14,
+      "penaltiesPerRound": 4.6,
+      "_note": "Estimated — no Shot Scope coverage above 25 HCP. Values from 30+ bracket."
+    }
   ],
   "citations": {
     "averageScore": [
@@ -157,7 +221,50 @@
         "coveredBrackets": ["25-30"]
       }
     ],
-    "puttsPerRound": [],
+    "puttsPerRound": [
+      {
+        "source": "Shot Scope Law of Averages: 0-HCP",
+        "url": "https://shotscope.com/blog/stats/reduce-hcp-law-of-averages-0hcp/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["0-5"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 5-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-5hcp-averages/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["5-10"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 10-HCP",
+        "url": "https://shotscope.com/blog/stats/10handicap-law-of-averages-series/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["10-15"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 15-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-15hcp/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["15-20"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 20-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-20hcp-averages/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["20-25"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 25-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-25hcp/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["25-30"]
+      }
+    ],
     "upAndDownPercentage": [
       {
         "source": "Shot Scope Law of Averages: 0-HCP",
@@ -202,10 +309,58 @@
         "coveredBrackets": ["25-30"]
       }
     ],
-    "penaltiesPerRound": [],
+    "penaltiesPerRound": [
+      {
+        "source": "Shot Scope Law of Averages: 0-HCP",
+        "url": "https://shotscope.com/blog/stats/reduce-hcp-law-of-averages-0hcp/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["0-5"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 5-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-5hcp-averages/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["5-10"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 10-HCP",
+        "url": "https://shotscope.com/blog/stats/10handicap-law-of-averages-series/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["10-15"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 15-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-15hcp/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["15-20"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 20-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-20hcp-averages/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["20-25"]
+      },
+      {
+        "source": "Shot Scope Law of Averages: 25-HCP",
+        "url": "https://shotscope.com/blog/practice-green/game-improvement/reduce-your-handicap-25hcp/",
+        "publishedDate": null,
+        "accessedDate": "2026-03-06",
+        "coveredBrackets": ["25-30"]
+      }
+    ],
     "scoringDistribution": []
   },
   "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-06",
+      "summary": "All SG-consumed metrics source-locked from Shot Scope. Anchor-based interpolation replaces bracket snapping. puttsPerRound and penaltiesPerRound now sourced."
+    },
     {
       "version": "0.2.0",
       "date": "2026-03-01",
@@ -223,9 +378,9 @@
       "averageScore": 74.0,
       "fairwayPercentage": 50,
       "girPercentage": 59,
-      "puttsPerRound": 31,
+      "puttsPerRound": 29.8,
       "upAndDownPercentage": 54,
-      "penaltiesPerRound": 1.3,
+      "penaltiesPerRound": 0.65,
       "scoring": {
         "eaglesPerRound": 0.02,
         "birdiesPerRound": 2.2,
@@ -240,9 +395,9 @@
       "averageScore": 80.4,
       "fairwayPercentage": 51,
       "girPercentage": 41,
-      "puttsPerRound": 32,
+      "puttsPerRound": 30.2,
       "upAndDownPercentage": 47,
-      "penaltiesPerRound": 1.7,
+      "penaltiesPerRound": 0.91,
       "scoring": {
         "eaglesPerRound": 0.01,
         "birdiesPerRound": 1.4,
@@ -257,9 +412,9 @@
       "averageScore": 83.2,
       "fairwayPercentage": 50,
       "girPercentage": 35,
-      "puttsPerRound": 33,
+      "puttsPerRound": 31.2,
       "upAndDownPercentage": 40,
-      "penaltiesPerRound": 2.2,
+      "penaltiesPerRound": 1.62,
       "scoring": {
         "eaglesPerRound": 0,
         "birdiesPerRound": 0.8,
@@ -274,9 +429,9 @@
       "averageScore": 89.5,
       "fairwayPercentage": 47,
       "girPercentage": 23,
-      "puttsPerRound": 34,
+      "puttsPerRound": 32.2,
       "upAndDownPercentage": 35,
-      "penaltiesPerRound": 2.8,
+      "penaltiesPerRound": 2.15,
       "scoring": {
         "eaglesPerRound": 0,
         "birdiesPerRound": 0.4,
@@ -291,9 +446,9 @@
       "averageScore": 94.0,
       "fairwayPercentage": 45,
       "girPercentage": 16,
-      "puttsPerRound": 35,
+      "puttsPerRound": 33.4,
       "upAndDownPercentage": 32,
-      "penaltiesPerRound": 3.3,
+      "penaltiesPerRound": 2.73,
       "scoring": {
         "eaglesPerRound": 0,
         "birdiesPerRound": 0.2,
@@ -308,9 +463,9 @@
       "averageScore": 103.4,
       "fairwayPercentage": 50,
       "girPercentage": 9,
-      "puttsPerRound": 36,
+      "puttsPerRound": 34.6,
       "upAndDownPercentage": 24,
-      "penaltiesPerRound": 3.9,
+      "penaltiesPerRound": 3.30,
       "scoring": {
         "eaglesPerRound": 0,
         "birdiesPerRound": 0.1,
@@ -325,7 +480,7 @@
       "averageScore": 108.5,
       "fairwayPercentage": 30,
       "girPercentage": 9,
-      "puttsPerRound": 37,
+      "puttsPerRound": 36,
       "upAndDownPercentage": 14,
       "penaltiesPerRound": 4.6,
       "scoring": {

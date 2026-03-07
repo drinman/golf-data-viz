@@ -8,7 +8,10 @@ import type {
   StrokesGainedResult,
   RadarChartDatum,
 } from "@/lib/golf/types";
-import { getBracketForHandicap, getBenchmarkMeta } from "@/lib/golf/benchmarks";
+import {
+  getInterpolatedBenchmark,
+  getBenchmarkMeta,
+} from "@/lib/golf/benchmarks";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
 import {
   calculateStrokesGained,
@@ -48,7 +51,7 @@ export default function StrokesGainedClient({
   // Precompute initial state from shared URL (avoids useEffect + setState cascade)
   const initialComputed = initialInput
     ? (() => {
-        const benchmark = getBracketForHandicap(initialInput.handicapIndex);
+        const benchmark = getInterpolatedBenchmark(initialInput.handicapIndex);
         const sgResult = calculateStrokesGained(initialInput, benchmark);
         return { result: sgResult, chartData: toRadarChartData(sgResult) };
       })()
@@ -133,7 +136,7 @@ export default function StrokesGainedClient({
   ) {
     setIsCalculating(true);
 
-    const benchmark = getBracketForHandicap(input.handicapIndex);
+    const benchmark = getInterpolatedBenchmark(input.handicapIndex);
     const sgResult = calculateStrokesGained(input, benchmark);
     const radar = toRadarChartData(sgResult);
 
@@ -342,7 +345,7 @@ export default function StrokesGainedClient({
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">
-        Strokes Gained Benchmarker
+        Proxy Strokes Gained Benchmarker
       </h1>
       <p className="mt-2 text-neutral-600">
         Free post-round benchmark from manual scorecard stats.
@@ -450,7 +453,7 @@ export default function StrokesGainedClient({
           className="mt-12 space-y-8"
         >
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
-            Your Strokes Gained Breakdown
+            Your Proxy SG Breakdown
           </h2>
           <details className="mt-2 text-sm text-neutral-500">
             <summary className="cursor-pointer font-medium text-neutral-600">
@@ -460,6 +463,7 @@ export default function StrokesGainedClient({
               <p>Outside the dashed ring = better than peers. Inside = worse.</p>
               <p>Positive (+) = you gained strokes. Negative (−) = you lost strokes.</p>
               <p>Focus on your weakest category — that&apos;s where practice helps most.</p>
+              <p>Confidence badges (High/Med/Low) show how much data each category uses. See the methodology page for details.</p>
             </div>
           </details>
           <div style={{ height: 400 }}>

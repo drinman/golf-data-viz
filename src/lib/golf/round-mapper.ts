@@ -43,5 +43,10 @@ export function toRoundInsert(
     sg_around_the_green: sg.categories["around-the-green"],
     sg_putting: sg.categories["putting"],
     benchmark_bracket: sg.benchmarkBracket,
+
+    // Methodology tracking
+    methodology_version: sg.methodologyVersion,
+    benchmark_version: sg.benchmarkVersion,
+    benchmark_handicap: sg.benchmarkHandicap,
   };
 }

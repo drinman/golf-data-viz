@@ -1,35 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import type {
   BenchmarkMeta,
   StrokesGainedCategory,
   StrokesGainedResult,
 } from "@/lib/golf/types";
-import { BRACKET_LABELS } from "@/lib/golf/constants";
-
-const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
-  "off-the-tee": "Off the Tee",
-  approach: "Approach",
-  "around-the-green": "Around the Green",
-  putting: "Putting",
-};
+import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/golf/constants";
+import { ConfidenceBadge } from "./confidence-badge";
 
 const CATEGORY_DESCRIPTIONS: Record<StrokesGainedCategory, string> = {
   "off-the-tee": "Driving accuracy and penalty avoidance vs your peers",
   approach: "Hitting greens in regulation vs your peers",
   "around-the-green": "Scrambling and up-and-down success vs your peers",
-  putting: "Putting efficiency and three-putt avoidance vs your peers",
+  putting: "Putting efficiency vs your peers",
 };
-
-const CATEGORY_ORDER: StrokesGainedCategory[] = [
-  "off-the-tee",
-  "approach",
-  "around-the-green",
-  "putting",
-];
 
 function formatSG(value: number): string {
   const sign = value >= 0 ? "+" : "";
@@ -42,9 +29,7 @@ interface ResultsSummaryProps {
 }
 
 export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
-  const [openEstimate, setOpenEstimate] = useState<StrokesGainedCategory | null>(
-    null
-  );
+  const [openBadge, setOpenBadge] = useState<StrokesGainedCategory | null>(null);
   const skippedSet = new Set(result.skippedCategories);
   const estimatedSet = new Set(result.estimatedCategories);
 
@@ -66,17 +51,6 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpenEstimate(null);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
   return (
     <div className="w-full max-w-lg space-y-6">
       {/* Total SG — hero card */}
@@ -85,7 +59,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
           result.total >= 0 ? "bg-brand-50" : "bg-red-50"
         }`}
       >
-        <p className="text-sm font-medium text-neutral-600">Total Strokes Gained</p>
+        <p className="text-sm font-medium text-neutral-600">Total Proxy SG</p>
         <p
           className={`font-display text-4xl tracking-tight ${
             result.total >= 0 ? "text-data-positive" : "text-data-negative"
@@ -104,7 +78,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
         </p>
       )}
       <p className="text-xs italic text-neutral-400">
-        Peer-compared SG{" "}
+        Proxy SG (scorecard-based){" "}
         {benchmarkMeta.provisional && (
           <span className="not-italic rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
             Beta
@@ -119,7 +93,7 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
 
       {/* Per-category breakdown */}
       <ul className="space-y-3">
-        {entries.map(({ key, label, description, value, skipped, estimated }) => (
+        {entries.map(({ key, label, description, value, skipped }) => (
           <li
             key={key}
             className="relative flex items-center justify-between rounded-lg border border-card-border"
@@ -142,20 +116,12 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
               <span className="px-4 py-3 text-sm italic text-neutral-400">Not Tracked</span>
             ) : (
               <span className="relative flex items-center gap-1.5 px-4 py-3">
-                {estimated && (
-                  <button
-                    type="button"
-                    aria-label="Est."
-                    aria-expanded={openEstimate === key}
-                    aria-controls={`estimate-help-${key}`}
-                    onClick={() =>
-                      setOpenEstimate((current) => (current === key ? null : key))
-                    }
-                    className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500 transition-colors hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-800/30"
-                  >
-                    Est.
-                  </button>
-                )}
+                <ConfidenceBadge
+                  level={result.confidence[key]}
+                  category={key}
+                  isOpen={openBadge === key}
+                  onToggle={() => setOpenBadge(openBadge === key ? null : key)}
+                />
                 <span
                   className={`font-mono text-sm font-semibold tabular-nums ${
                     value >= 0 ? "text-data-positive" : "text-data-negative"
@@ -163,31 +129,18 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
                 >
                   {formatSG(value)}
                 </span>
-                {estimated && openEstimate === key && (
-                  <div
-                    id={`estimate-help-${key}`}
-                    role="dialog"
-                    aria-label={`${label} estimate details`}
-                    className="absolute right-0 top-full z-10 mt-2 w-56 rounded-lg border border-cream-200 bg-white p-3 text-left text-xs leading-relaxed text-neutral-600 shadow-lg"
-                  >
-                    This category is estimated from related stats because not
-                    all inputs were provided.
-                  </div>
-                )}
               </span>
             )}
           </li>
         ))}
       </ul>
-      {estimatedSet.size > 0 && (
-        <p className="text-xs text-neutral-400">
-          Categories marked Est. are approximated from related inputs. See{" "}
-          <Link href="/methodology" className="underline hover:text-neutral-600">
-            methodology
-          </Link>{" "}
-          for details.
-        </p>
-      )}
+      <p className="text-xs text-neutral-400">
+        Confidence levels reflect input completeness. High = direct data. Med = derived estimate. Low = limited data. See{" "}
+        <Link href="/methodology" className="underline hover:text-neutral-600">
+          methodology
+        </Link>{" "}
+        for details.
+      </p>
 
       {/* Strength & Weakness callouts (need at least 2 non-estimated, non-skipped categories) */}
       {strength && weakness && calloutEntries.length >= 2 && (

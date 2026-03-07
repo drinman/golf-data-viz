@@ -18,9 +18,9 @@ export function LaunchTrustPanel() {
           published.
         </li>
         <li>
-          <strong className="text-neutral-950">Peer proxy</strong>
+          <strong className="text-neutral-950">Proxy Strokes Gained</strong>
           {" "}
-          Round-level strokes gained estimate versus your handicap bracket, not
+          Round-level strokes gained estimate versus your handicap peers, not
           shot-level tracking.
         </li>
         <li>
@@ -91,6 +91,16 @@ export function LaunchTrustPanel() {
               Only if you opt in to save a round. Shared links contain the round
               stats needed to recreate the chart, so only share them if you are
               comfortable sharing those stats.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-medium text-neutral-900">
+              What do the confidence badges mean?
+            </dt>
+            <dd className="mt-1">
+              High = direct data provided. Med = derived from related inputs.
+              Low = limited data. More inputs = higher confidence. See the
+              methodology page for details.
             </dd>
           </div>
         </dl>

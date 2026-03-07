@@ -99,7 +99,8 @@ export default async function Home({ searchParams }: HomePageProps) {
           <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-neutral-600 sm:text-base">
             <p>
               Strokes Gained shows where your score separated from your peers by
-              category, not just raw totals.
+              category, not just raw totals. This tool provides proxy SG — a
+              scorecard-based estimate, not shot-level tracking.
             </p>
             <p>
               Losing strokes to Tour players is expected. Comparing you to your

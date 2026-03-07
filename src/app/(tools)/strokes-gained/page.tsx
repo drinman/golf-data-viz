@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
 import { decodeRound } from "@/lib/golf/share-codec";
-import { getBracketForHandicap } from "@/lib/golf/benchmarks";
+import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
 import type { StrokesGainedCategory } from "@/lib/golf/types";
+import { CATEGORY_LABELS } from "@/lib/golf/constants";
 import { getRoundSaveAvailability } from "@/lib/round-save";
 import StrokesGainedClient from "./_components/strokes-gained-client";
 
 const PAGE_DESCRIPTION =
-  "Free post-round SG proxy from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.";
-
-const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
-  "off-the-tee": "Off the Tee",
-  approach: "Approach",
-  "around-the-green": "Around the Green",
-  putting: "Putting",
-};
+  "Free post-round proxy strokes gained from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.";
 
 function formatSG(value: number): string {
   const sign = value >= 0 ? "+" : "";
@@ -50,7 +44,7 @@ export async function generateMetadata({
     };
   }
 
-  const benchmark = getBracketForHandicap(input.handicapIndex);
+  const benchmark = getInterpolatedBenchmark(input.handicapIndex);
   const result = calculateStrokesGained(input, benchmark);
 
   const skippedSet = new Set(result.skippedCategories);

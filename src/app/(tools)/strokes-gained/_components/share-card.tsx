@@ -3,26 +3,12 @@
 import { forwardRef } from "react";
 import type {
   BenchmarkMeta,
-  StrokesGainedCategory,
   StrokesGainedResult,
   RadarChartDatum,
 } from "@/lib/golf/types";
-import { BRACKET_LABELS } from "@/lib/golf/constants";
+import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/golf/constants";
 import { RadarChart } from "@/components/charts/radar-chart";
-
-const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
-  "off-the-tee": "Off the Tee",
-  approach: "Approach",
-  "around-the-green": "Around the Green",
-  putting: "Putting",
-};
-
-const CATEGORY_ORDER: StrokesGainedCategory[] = [
-  "off-the-tee",
-  "approach",
-  "around-the-green",
-  "putting",
-];
+import { ConfidenceBadge } from "./confidence-badge";
 
 function formatSG(value: number): string {
   const sign = value >= 0 ? "+" : "";
@@ -71,7 +57,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </p>
               {benchmarkMeta && (
                 <p className="mt-0.5 text-xs italic text-brand-100/70">
-                  Peer-compared SG{benchmarkMeta.provisional ? " · Beta" : ""} &middot; Benchmarks v{benchmarkMeta.version}
+                  Proxy SG &mdash; scorecard-based estimate &middot; Benchmarks v{benchmarkMeta.version}
                 </p>
               )}
             </div>
@@ -92,7 +78,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                   {formatSG(result.total)}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-brand-100/70">Total SG</p>
+              <p className="mt-1 text-xs text-brand-100/70">Proxy SG</p>
             </div>
           </div>
           {/* Gold separator */}
@@ -112,7 +98,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
           {/* Category rows */}
           <div className="mt-4 space-y-1.5">
-            {entries.map(({ key, label, value, skipped, estimated }, i) => (
+            {entries.map(({ key, label, value, skipped }, i) => (
               <div
                 key={key}
                 className={`flex items-center justify-between overflow-hidden rounded-md ${
@@ -136,11 +122,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5 px-4 py-2">
-                    {estimated && (
-                      <span className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] font-medium text-neutral-500">
-                        Est.
-                      </span>
-                    )}
+                    <ConfidenceBadge
+                      level={result.confidence[key]}
+                      category={key}
+                      interactive={false}
+                    />
                     <span
                       className={`font-mono text-sm font-semibold ${
                         value >= 0 ? "text-data-positive" : "text-data-negative"
@@ -153,6 +139,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </div>
             ))}
           </div>
+
+          <p className="mt-3 text-center text-[10px] text-neutral-400">
+            Proxy SG — scorecard-based estimate. Confidence: High = direct data, Med = derived, Low = limited.
+          </p>
 
           {/* Watermark */}
           <div className="mt-5 flex items-center justify-center gap-2">

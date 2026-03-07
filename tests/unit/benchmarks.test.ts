@@ -4,6 +4,8 @@ import {
   getBracketForHandicap,
   getBenchmarkMeta,
   getCitationStatus,
+  interpolateBenchmark,
+  getInterpolatedBenchmark,
 } from "@/lib/golf/benchmarks";
 import {
   CITATION_METRIC_KEYS,
@@ -150,23 +152,22 @@ describe("citation schema", () => {
     }
   });
 
-  it("provisional is true when not all P0 metrics have 2+ sources covering all brackets", () => {
-    const p0Keys = [
+  it("provisional matches whether all SG-consumed metrics are sourced", () => {
+    const sgConsumedKeys = [
       "averageScore",
       "fairwayPercentage",
       "girPercentage",
       "puttsPerRound",
       "upAndDownPercentage",
+      "penaltiesPerRound",
     ] as const;
 
-    const allMet = p0Keys.every((key) => {
-      const entries = meta.citations[key];
-      if (entries.length < 2) return false;
-      const covered = new Set(entries.flatMap((c) => c.coveredBrackets));
-      return ALL_HANDICAP_BRACKETS.every((b) => covered.has(b));
+    const allSourced = sgConsumedKeys.every((key) => {
+      const status = getCitationStatus(meta.citations[key]);
+      return status !== "pending";
     });
 
-    if (allMet) {
+    if (allSourced) {
       expect(meta.provisional).toBe(false);
     } else {
       expect(meta.provisional).toBe(true);
@@ -363,5 +364,93 @@ describe("handicap-brackets.json sanity", () => {
         brackets[i - 1].scoring.birdiesPerRound
       );
     }
+  });
+});
+
+describe("interpolateBenchmark", () => {
+  it("returns exact anchor values at anchor points", () => {
+    const at5 = interpolateBenchmark(5);
+    expect(at5.handicapIndex).toBe(5);
+    // Should match the 5-HCP anchor
+    expect(at5.averageScore).toBeGreaterThan(70);
+    expect(at5.averageScore).toBeLessThan(90);
+  });
+
+  it("interpolates between two anchors for HCP 12.0", () => {
+    const at10 = interpolateBenchmark(10);
+    const at15 = interpolateBenchmark(15);
+    const at12 = interpolateBenchmark(12);
+
+    // 12 is between 10 and 15, so all metrics should be between the two anchors
+    expect(at12.averageScore).toBeGreaterThan(at10.averageScore);
+    expect(at12.averageScore).toBeLessThan(at15.averageScore);
+    expect(at12.girPercentage).toBeLessThan(at10.girPercentage);
+    expect(at12.girPercentage).toBeGreaterThan(at15.girPercentage);
+  });
+
+  it("clamps to lowest anchor for HCP 0.0", () => {
+    const at0 = interpolateBenchmark(0);
+    // Should match the scratch anchor (74.0 average score from Shot Scope)
+    expect(at0.averageScore).toBe(74.0);
+    expect(at0.handicapIndex).toBe(0);
+  });
+
+  it("clamps to highest anchor for HCP 54.0", () => {
+    const at54 = interpolateBenchmark(54);
+    const at30 = interpolateBenchmark(30);
+    // Should clamp to highest anchor (30)
+    expect(at54.averageScore).toBe(at30.averageScore);
+  });
+
+  it("interpolates puttsPerRound between anchors", () => {
+    const at10 = interpolateBenchmark(10);
+    const at15 = interpolateBenchmark(15);
+    const at12 = interpolateBenchmark(12);
+
+    expect(at12.puttsPerRound).toBeGreaterThanOrEqual(at10.puttsPerRound);
+    expect(at12.puttsPerRound).toBeLessThanOrEqual(at15.puttsPerRound);
+  });
+
+  it("interpolates penaltiesPerRound between anchors", () => {
+    const at10 = interpolateBenchmark(10);
+    const at15 = interpolateBenchmark(15);
+    const at12 = interpolateBenchmark(12);
+
+    expect(at12.penaltiesPerRound).toBeGreaterThanOrEqual(at10.penaltiesPerRound);
+    expect(at12.penaltiesPerRound).toBeLessThanOrEqual(at15.penaltiesPerRound);
+  });
+
+  it("throws RangeError for negative handicap", () => {
+    expect(() => interpolateBenchmark(-1)).toThrow(RangeError);
+  });
+
+  it("throws RangeError for handicap > 54", () => {
+    expect(() => interpolateBenchmark(55)).toThrow(RangeError);
+  });
+
+  it("throws RangeError for NaN", () => {
+    expect(() => interpolateBenchmark(NaN)).toThrow(RangeError);
+  });
+});
+
+describe("getInterpolatedBenchmark", () => {
+  it("returns BracketBenchmark-shaped object with bracket label", () => {
+    const result = getInterpolatedBenchmark(12);
+    expect(result.bracket).toBe("10-15");
+    expect(typeof result.averageScore).toBe("number");
+    expect(typeof result.fairwayPercentage).toBe("number");
+    expect(typeof result.girPercentage).toBe("number");
+    expect(typeof result.puttsPerRound).toBe("number");
+    expect(typeof result.upAndDownPercentage).toBe("number");
+    expect(typeof result.penaltiesPerRound).toBe("number");
+    expect(result.scoring).toBeDefined();
+  });
+
+  it("returns interpolated values, not snapped bracket values", () => {
+    const interpolated = getInterpolatedBenchmark(12);
+
+    // The interpolated values should be valid and positive
+    expect(interpolated.averageScore).toBeGreaterThan(0);
+    expect(interpolated.girPercentage).toBeGreaterThan(0);
   });
 });

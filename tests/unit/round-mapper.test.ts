@@ -109,6 +109,18 @@ describe("toRoundInsert", () => {
     expect(row).not.toHaveProperty("created_at");
   });
 
+  it("includes methodology_version, benchmark_version, and benchmark_handicap", () => {
+    const sg = makeSGResult({
+      methodologyVersion: "2.0.0",
+      benchmarkVersion: "1.0.0",
+      benchmarkHandicap: 14.3,
+    });
+    const row = toRoundInsert(makeRound(), sg);
+    expect(row.methodology_version).toBe("2.0.0");
+    expect(row.benchmark_version).toBe("1.0.0");
+    expect(row.benchmark_handicap).toBe(14.3);
+  });
+
   it("returns a value assignable to TablesInsert<'rounds'>", () => {
     const row = toRoundInsert(makeRound(), makeSGResult());
     expectTypeOf(row).toMatchTypeOf<TablesInsert<"rounds">>();

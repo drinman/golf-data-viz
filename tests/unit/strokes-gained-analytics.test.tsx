@@ -21,28 +21,31 @@ vi.mock("@/lib/analytics/client", () => ({
   trackEvent: mockTrackEvent,
 }));
 
+const mockBracket = {
+  bracket: "10-15" as const,
+  averageScore: 87,
+  fairwayPercentage: 0.42,
+  girPercentage: 0.28,
+  puttsPerRound: 33,
+  upAndDownPercentage: 0.25,
+  penaltiesPerRound: 1.2,
+  scoring: {
+    eaglesPerRound: 0.02,
+    birdiesPerRound: 1.0,
+    parsPerRound: 5.5,
+    bogeysPerRound: 7.0,
+    doublesPerRound: 3.0,
+    triplePlusPerRound: 1.5,
+  },
+};
+
 vi.mock("@/lib/golf/benchmarks", () => ({
-  getBracketForHandicap: vi.fn(() => ({
-    bracket: "10-15" as const,
-    averageScore: 87,
-    fairwayPercentage: 0.42,
-    girPercentage: 0.28,
-    puttsPerRound: 33,
-    upAndDownPercentage: 0.25,
-    penaltiesPerRound: 1.2,
-    scoring: {
-      eaglesPerRound: 0.02,
-      birdiesPerRound: 1.0,
-      parsPerRound: 5.5,
-      bogeysPerRound: 7.0,
-      doublesPerRound: 3.0,
-      triplePlusPerRound: 1.5,
-    },
-  })),
+  getBracketForHandicap: vi.fn(() => mockBracket),
+  getInterpolatedBenchmark: vi.fn(() => mockBracket),
   getBenchmarkMeta: vi.fn(() => ({
-    version: "0.1.0",
-    updatedAt: "2026-02-28",
-    provisional: true,
+    version: "1.0.0",
+    updatedAt: "2026-03-06",
+    provisional: false,
     sources: [],
     citations: Object.fromEntries(
       [
@@ -55,7 +58,7 @@ vi.mock("@/lib/golf/benchmarks", () => ({
         "scoringDistribution",
       ].map((key) => [key, []])
     ),
-    changelog: [{ version: "0.1.0", date: "2026-02-28", summary: "Test" }],
+    changelog: [{ version: "1.0.0", date: "2026-03-06", summary: "Test" }],
   })),
 }));
 
@@ -71,6 +74,16 @@ vi.mock("@/lib/golf/strokes-gained", () => ({
     benchmarkBracket: "10-15" as const,
     skippedCategories: [],
     estimatedCategories: [],
+    confidence: {
+      "off-the-tee": "medium",
+      approach: "high",
+      "around-the-green": "medium",
+      putting: "high",
+    },
+    methodologyVersion: "2.0.0",
+    benchmarkVersion: "1.0.0",
+    benchmarkHandicap: 14.3,
+    diagnostics: { threePuttImpact: null },
   })),
   toRadarChartData: vi.fn(() => [
     { category: "Off the Tee", player: 40 },
@@ -242,7 +255,7 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     renderClient();
 
     expect(screen.getByText("Beta")).toBeVisible();
-    expect(screen.getByText("Peer proxy")).toBeVisible();
+    expect(screen.getByText("Proxy Strokes Gained")).toBeVisible();
     expect(screen.getByText("Private")).toBeVisible();
     expect(screen.getByText("Open")).toBeVisible();
     expect(
@@ -313,6 +326,16 @@ describe("StrokesGainedClient analytics instrumentation", () => {
       benchmarkBracket: "10-15",
       skippedCategories: [],
       estimatedCategories: ["approach", "around-the-green"],
+      confidence: {
+        "off-the-tee": "medium",
+        approach: "medium",
+        "around-the-green": "low",
+        putting: "high",
+      },
+      methodologyVersion: "2.0.0",
+      benchmarkVersion: "1.0.0",
+      benchmarkHandicap: 12,
+      diagnostics: { threePuttImpact: null },
     });
 
     renderClient();

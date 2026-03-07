@@ -91,7 +91,7 @@ describe("ShareCard", () => {
     );
 
     expect(screen.getByText("+2.50")).toBeTruthy();
-    expect(screen.getByText("Total SG")).toBeTruthy();
+    expect(screen.getByText("Proxy SG")).toBeTruthy();
   });
 
   it("shows bracket label", () => {
@@ -111,7 +111,7 @@ describe("ShareCard", () => {
     expect(screen.getByText(/10–15 HCP/)).toBeTruthy();
   });
 
-  it("shows Peer-compared SG trust label with Beta pill", () => {
+  it("shows Proxy SG trust label", () => {
     const result = makeSGResult();
     const chartData = makeChartData();
     const meta: BenchmarkMeta = {
@@ -135,7 +135,7 @@ describe("ShareCard", () => {
       />
     );
 
-    expect(screen.getByText(/Peer-compared SG/)).toBeTruthy();
+    expect(screen.getAllByText(/Proxy SG/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows context legend and strokes-gained watermark URL", () => {

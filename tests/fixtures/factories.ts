@@ -37,6 +37,16 @@ export function makeSGResult(
     benchmarkBracket: "10-15",
     skippedCategories: [],
     estimatedCategories: [],
+    confidence: {
+      "off-the-tee": "medium",
+      approach: "high",
+      "around-the-green": "medium",
+      putting: "high",
+    },
+    methodologyVersion: "2.0.0",
+    benchmarkVersion: "1.0.0",
+    benchmarkHandicap: 14.3,
+    diagnostics: { threePuttImpact: null },
     ...overrides,
   };
 }

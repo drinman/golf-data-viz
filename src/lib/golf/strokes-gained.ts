@@ -16,8 +16,11 @@ import type {
   BracketBenchmark,
   StrokesGainedResult,
   StrokesGainedCategory,
+  ConfidenceLevel,
   RadarChartDatum,
 } from "./types";
+import { METHODOLOGY_VERSION, CATEGORY_LABELS } from "./constants";
+import { getBenchmarkVersion } from "./benchmarks";
 
 /**
  * Estimate GIR from scoring distribution when user doesn't track it.
@@ -96,25 +99,28 @@ function calcATG(input: RoundInput, benchmark: BracketBenchmark): number {
   return (playerScrambleRate - peerScrambleRate) * SG_WEIGHTS.ATG_WEIGHT;
 }
 
-/** Calculate SG: Putting */
-function calcPutting(input: RoundInput, benchmark: BracketBenchmark): number {
+/** Calculate SG: Putting. Returns sg (without three-putt) and threePuttImpact as diagnostic. */
+function calcPutting(
+  input: RoundInput,
+  benchmark: BracketBenchmark
+): { sg: number; threePuttImpact: number | null } {
   const playerPuttsPerHole = input.totalPutts / 18;
   const peerPuttsPerHole = benchmark.puttsPerRound / 18;
-  const puttsComponent =
+  const sg =
     (peerPuttsPerHole - playerPuttsPerHole) * SG_WEIGHTS.PUTTING_WEIGHT;
 
-  // Three-putt bonus (if data available), capped to ±0.5
-  let threePuttBonus = 0;
+  // Three-putt impact computed as diagnostic only (not added to sg)
+  let threePuttImpact: number | null = null;
   if (input.threePutts != null) {
     const peerThreePutts = benchmark.puttsPerRound * 0.1;
-    threePuttBonus = clamp(
+    threePuttImpact = clamp(
       (peerThreePutts - input.threePutts) * 0.3,
       -0.5,
       0.5
     );
   }
 
-  return puttsComponent + threePuttBonus;
+  return { sg, threePuttImpact };
 }
 
 /** Calculate strokes gained across all 4 categories. */
@@ -125,9 +131,12 @@ export function calculateStrokesGained(
   const estimatedCategories: StrokesGainedCategory[] = [];
   const skippedCategories: StrokesGainedCategory[] = [];
 
+  // Track GIR estimation state for confidence
+  const girEstimated = input.greensInRegulation == null;
+
   // When GIR is missing, estimate it from scoring distribution
   let effectiveInput = input;
-  if (input.greensInRegulation == null) {
+  if (girEstimated) {
     const effectiveGIR = estimateGIR(input);
     effectiveInput = { ...input, greensInRegulation: effectiveGIR };
     estimatedCategories.push("approach");
@@ -142,11 +151,13 @@ export function calculateStrokesGained(
     }
   }
 
+  const puttingResult = calcPutting(effectiveInput, benchmark);
+
   const categories: Record<StrokesGainedCategory, number> = {
     "off-the-tee": calcOTT(effectiveInput, benchmark),
     approach: calcApproach(effectiveInput, benchmark),
     "around-the-green": calcATG(effectiveInput, benchmark),
-    putting: calcPutting(effectiveInput, benchmark),
+    putting: puttingResult.sg,
   };
 
   const skippedSet = new Set(skippedCategories);
@@ -156,22 +167,43 @@ export function calculateStrokesGained(
     .filter(([cat]) => !skippedSet.has(cat))
     .reduce((sum, [, val]) => sum + val, 0);
 
+  // Compute confidence per category
+  const hasUpAndDown =
+    input.upAndDownAttempts != null &&
+    input.upAndDownConverted != null &&
+    input.upAndDownAttempts > 0;
+
+  const confidence: Record<StrokesGainedCategory, ConfidenceLevel> = {
+    // TODO: Promote OTT to "high" when richer inputs land (distance, miss
+    // quality — Phase 3 / Arccos integration). FIR-only caps at "medium".
+    "off-the-tee":
+      input.fairwaysHit != null && input.fairwayAttempts > 0
+        ? "medium"
+        : "low", // penalties only
+    approach: girEstimated ? "medium" : "high",
+    "around-the-green": hasUpAndDown
+      ? "high"
+      : girEstimated
+        ? "low" // estimated from estimated GIR
+        : "medium", // estimated from real GIR + scoring
+    putting: "high", // totalPutts always required
+  };
+
   return {
     total,
     categories,
     benchmarkBracket: benchmark.bracket,
     skippedCategories,
     estimatedCategories,
+    confidence,
+    methodologyVersion: METHODOLOGY_VERSION,
+    benchmarkVersion: getBenchmarkVersion(),
+    benchmarkHandicap: input.handicapIndex,
+    diagnostics: {
+      threePuttImpact: puttingResult.threePuttImpact,
+    },
   };
 }
-
-/** Category display labels for chart axes. */
-const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
-  "off-the-tee": "Off the Tee",
-  approach: "Approach",
-  "around-the-green": "Around the Green",
-  putting: "Putting",
-};
 
 /** Clamp a value to [min, max]. */
 function clamp(value: number, min: number, max: number): number {

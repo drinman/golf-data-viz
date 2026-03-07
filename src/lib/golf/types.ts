@@ -22,6 +22,26 @@ export type StrokesGainedCategory =
   | "around-the-green"
   | "putting";
 
+/** Confidence level for a strokes gained category */
+export type ConfidenceLevel = "high" | "medium" | "low";
+
+/** A single benchmark anchor point from the canonical source */
+export interface BenchmarkAnchor {
+  handicapIndex: number;
+  averageScore: number;
+  fairwayPercentage: number;
+  girPercentage: number;
+  puttsPerRound: number;
+  upAndDownPercentage: number;
+  penaltiesPerRound: number;
+}
+
+/** Diagnostic values computed alongside SG but not included in totals */
+export interface SGDiagnostics {
+  /** Impact of three-putt penalty (computed but excluded from SG total) */
+  threePuttImpact: number | null;
+}
+
 /** Raw round stats as entered by the user */
 export interface RoundInput {
   course: string;
@@ -64,6 +84,16 @@ export interface StrokesGainedResult {
   skippedCategories: StrokesGainedCategory[];
   /** Categories whose values were derived from estimated (not user-provided) data */
   estimatedCategories: StrokesGainedCategory[];
+  /** Confidence level for each SG category */
+  confidence: Record<StrokesGainedCategory, ConfidenceLevel>;
+  /** Methodology version used to compute this result */
+  methodologyVersion: string;
+  /** Version of the benchmark data used (e.g., "1.0.0") */
+  benchmarkVersion: string;
+  /** Exact handicap index used for interpolation */
+  benchmarkHandicap: number;
+  /** Diagnostic values computed but not included in totals */
+  diagnostics: SGDiagnostics;
 }
 
 /** Benchmark data for a single handicap bracket */

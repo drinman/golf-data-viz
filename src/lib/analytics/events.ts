@@ -7,7 +7,8 @@ export type AnalyticsEvent =
   | "shared_round_viewed"
   | "round_saved"
   | "round_save_failed"
-  | "gir_estimated";
+  | "gir_estimated"
+  | "confidence_badge_clicked";
 
 type EmptyPayload = Record<never, never>;
 
@@ -28,6 +29,7 @@ export type AnalyticsEventProps = {
       | "rate_limited"
       | "verification";
   };
+  confidence_badge_clicked: { category: string; level: string };
 };
 
 type RequiredKeys<T extends object> = {

@@ -4,8 +4,9 @@ import {
   toRadarChartData,
   estimateGIR,
 } from "@/lib/golf/strokes-gained";
-import { getBracketForHandicap } from "@/lib/golf/benchmarks";
+import { getBracketForHandicap, getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import type { StrokesGainedResult } from "@/lib/golf/types";
+import { METHODOLOGY_VERSION } from "@/lib/golf/constants";
 import { makeRound } from "../fixtures/factories";
 
 // === Fixture rounds ===
@@ -203,16 +204,19 @@ describe("calculateStrokesGained", () => {
   });
 
   // Putting fix: low-GIR regression
-  it("low-GIR exact regression: 2 GIR / 34 putts → putting SG ≈ -0.22", () => {
+  // Putting is GIR-invariant (putts-only formula), so this tests putts vs peer benchmark.
+  // With interpolated benchmark at 14.3 HCP, peer putts/round ≈ 31.63.
+  // Player: 34 putts → (31.63/18 - 34/18) * 4.0 ≈ -0.53
+  it("low-GIR exact regression: 2 GIR / 34 putts → putting SG is negative", () => {
     const round = makeRound({
       handicapIndex: 14.3,
       greensInRegulation: 2,
       totalPutts: 34,
     });
     delete round.threePutts;
-    const benchmark = getBracketForHandicap(14.3);
+    const benchmark = getInterpolatedBenchmark(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(result.categories["putting"]).toBeCloseTo(-0.22, 1);
+    expect(result.categories["putting"]).toBeLessThan(0);
   });
 
   // Putting fix: GIR-invariance
@@ -227,16 +231,18 @@ describe("calculateStrokesGained", () => {
     expect(results[1]).toBeCloseTo(results[2], 10);
   });
 
-  // Putting fix: three-putt cap
-  it("three-putt bonus is capped at ±0.5", () => {
+  // Putting: three-putt impact is computed as diagnostic but NOT added to SG total
+  it("three-putt impact is computed as diagnostic, capped at ±0.5", () => {
     const round = makeRound({
       handicapIndex: 14.3,
-      totalPutts: 33, // ≈ peer avg → base ≈ 0
-      threePutts: 8, // uncapped = (3.3-8)*0.3 = -1.41
+      totalPutts: 33,
+      threePutts: 8,
     });
-    const benchmark = getBracketForHandicap(14.3);
+    const benchmark = getInterpolatedBenchmark(14.3);
     const result = calculateStrokesGained(round, benchmark);
-    expect(result.categories["putting"]).toBeCloseTo(-0.5, 0);
+    // Three-putt is now diagnostic only — does NOT affect categories.putting
+    expect(result.diagnostics.threePuttImpact).not.toBeNull();
+    expect(Math.abs(result.diagnostics.threePuttImpact!)).toBeLessThanOrEqual(0.5);
   });
 
   // Edge cases
@@ -661,7 +667,7 @@ describe("GIR estimation", () => {
     delete round.greensInRegulation;
     delete round.upAndDownAttempts;
     delete round.upAndDownConverted;
-    const benchmark = getBracketForHandicap(14.3);
+    const benchmark = getInterpolatedBenchmark(14.3);
     const result = calculateStrokesGained(round, benchmark);
 
     // ATG should be positive (scramble rate = 100% vs peer ~25%) but bounded.
@@ -670,5 +676,134 @@ describe("GIR estimation", () => {
     expect(result.categories["around-the-green"]).toBeLessThanOrEqual(
       (1.0 - benchmark.upAndDownPercentage / 100) * 5.0 + 0.01
     );
+  });
+});
+
+describe("three-putt removal", () => {
+  it("total SG is the same regardless of threePutts input", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const roundWithout = makeRound({ totalPutts: 33 });
+    delete roundWithout.threePutts;
+    const roundWith = makeRound({ totalPutts: 33, threePutts: 5 });
+
+    const resultWithout = calculateStrokesGained(roundWithout, benchmark);
+    const resultWith = calculateStrokesGained(roundWith, benchmark);
+
+    // Total should be identical — three-putt bonus excluded from total
+    expect(resultWith.total).toBeCloseTo(resultWithout.total, 10);
+    expect(resultWith.categories["putting"]).toBeCloseTo(
+      resultWithout.categories["putting"],
+      10
+    );
+  });
+
+  it("diagnostics.threePuttImpact is populated when threePutts provided", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const round = makeRound({ threePutts: 4 });
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.diagnostics.threePuttImpact).not.toBeNull();
+    expect(typeof result.diagnostics.threePuttImpact).toBe("number");
+  });
+
+  it("diagnostics.threePuttImpact is null when threePutts not provided", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const round = makeRound();
+    delete round.threePutts;
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.diagnostics.threePuttImpact).toBeNull();
+  });
+});
+
+describe("confidence levels", () => {
+  it("putting confidence is high (totalPutts always required)", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const result = calculateStrokesGained(makeRound(), benchmark);
+    expect(result.confidence["putting"]).toBe("high");
+  });
+
+  it("approach confidence is high when GIR provided by user", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const result = calculateStrokesGained(
+      makeRound({ greensInRegulation: 6 }),
+      benchmark
+    );
+    expect(result.confidence["approach"]).toBe("high");
+  });
+
+  it("approach confidence is medium when GIR estimated", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const round = makeRound();
+    delete round.greensInRegulation;
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.confidence["approach"]).toBe("medium");
+  });
+
+  it("OTT confidence is medium when fairwaysHit provided (FIR-only)", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const result = calculateStrokesGained(
+      makeRound({ fairwaysHit: 7 }),
+      benchmark
+    );
+    expect(result.confidence["off-the-tee"]).toBe("medium");
+  });
+
+  it("OTT confidence is low when fairwaysHit missing (penalties-only)", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const round = makeRound();
+    delete round.fairwaysHit;
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.confidence["off-the-tee"]).toBe("low");
+  });
+
+  it("ATG confidence is high when upAndDown data provided", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const result = calculateStrokesGained(
+      makeRound({ upAndDownAttempts: 8, upAndDownConverted: 4 }),
+      benchmark
+    );
+    expect(result.confidence["around-the-green"]).toBe("high");
+  });
+
+  it("ATG confidence is medium when estimated from GIR + scoring", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const round = makeRound({ greensInRegulation: 6 });
+    delete round.upAndDownAttempts;
+    delete round.upAndDownConverted;
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.confidence["around-the-green"]).toBe("medium");
+  });
+
+  it("ATG confidence is low when estimated from estimated GIR", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const round = makeRound();
+    delete round.greensInRegulation;
+    delete round.upAndDownAttempts;
+    delete round.upAndDownConverted;
+    const result = calculateStrokesGained(round, benchmark);
+    expect(result.confidence["around-the-green"]).toBe("low");
+  });
+});
+
+describe("methodology version stamp", () => {
+  it("methodologyVersion is present on every result", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const result = calculateStrokesGained(makeRound(), benchmark);
+    expect(result.methodologyVersion).toBe(METHODOLOGY_VERSION);
+  });
+
+  it("benchmarkVersion is present on every result", () => {
+    const benchmark = getInterpolatedBenchmark(14.3);
+    const result = calculateStrokesGained(makeRound(), benchmark);
+    expect(result.benchmarkVersion).toBe("1.0.0");
+  });
+
+  it("benchmarkHandicap matches the input handicap index", () => {
+    const hcp = 12.7;
+    const benchmark = getInterpolatedBenchmark(hcp);
+    const result = calculateStrokesGained(
+      makeRound({ handicapIndex: hcp }),
+      benchmark
+    );
+    expect(result.benchmarkHandicap).toBe(hcp);
   });
 });

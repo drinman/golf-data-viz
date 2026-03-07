@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { decodeRound } from "@/lib/golf/share-codec";
-import { getBracketForHandicap, getBenchmarkMeta } from "@/lib/golf/benchmarks";
+import { getInterpolatedBenchmark, getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained, toRadarChartData } from "@/lib/golf/strokes-gained";
 import { ShareCard } from "../_components/share-card";
 
@@ -34,7 +34,7 @@ export default async function ShareCardPreviewPage({
     );
   }
 
-  const benchmark = getBracketForHandicap(input.handicapIndex);
+  const benchmark = getInterpolatedBenchmark(input.handicapIndex);
   const result = calculateStrokesGained(input, benchmark);
   const chartData = toRadarChartData(result);
   const benchmarkMeta = getBenchmarkMeta();

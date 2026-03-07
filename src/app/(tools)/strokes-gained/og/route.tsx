@@ -1,10 +1,9 @@
 import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
 import { decodeRound } from "@/lib/golf/share-codec";
-import { getBracketForHandicap, getBenchmarkMeta } from "@/lib/golf/benchmarks";
+import { getInterpolatedBenchmark, getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
-import type { StrokesGainedCategory } from "@/lib/golf/types";
-import { BRACKET_LABELS } from "@/lib/golf/constants";
+import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER, CONFIDENCE_COLORS_HEX, CONFIDENCE_LABELS } from "@/lib/golf/constants";
 
 export const runtime = "edge";
 
@@ -28,20 +27,6 @@ const fontData = Promise.all([
   loadFont("../../../../assets/fonts/DMSans-Medium.ttf"),
   loadFont("../../../../assets/fonts/DMSans-SemiBold.ttf"),
 ]);
-
-const CATEGORY_LABELS: Record<StrokesGainedCategory, string> = {
-  "off-the-tee": "Off the Tee",
-  approach: "Approach",
-  "around-the-green": "Around the Green",
-  putting: "Putting",
-};
-
-const CATEGORY_ORDER: StrokesGainedCategory[] = [
-  "off-the-tee",
-  "approach",
-  "around-the-green",
-  "putting",
-];
 
 function formatSG(value: number): string {
   const sign = value >= 0 ? "+" : "";
@@ -135,21 +120,21 @@ export async function GET(request: NextRequest) {
   }
 
   // Compute SG results
-  const benchmark = getBracketForHandicap(input.handicapIndex);
+  const benchmark = getInterpolatedBenchmark(input.handicapIndex);
   const result = calculateStrokesGained(input, benchmark);
   const courseName = truncateText(input.course, 58);
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
   const meta = getBenchmarkMeta();
-  const trustLabel = `Peer-compared SG${meta.provisional ? " · Beta" : ""} · Benchmarks v${meta.version}`;
+  const trustLabel = `Proxy SG · Scorecard-based · Benchmarks v${meta.version}`;
 
   const skippedSet = new Set(result.skippedCategories);
-  const estimatedSet = new Set(result.estimatedCategories);
   const entries = CATEGORY_ORDER.map((key) => ({
+    key,
     label: CATEGORY_LABELS[key],
     value: result.categories[key],
     skipped: skippedSet.has(key),
-    estimated: estimatedSet.has(key),
+    confidence: result.confidence[key],
   }));
 
   return new ImageResponse(
@@ -236,7 +221,7 @@ export async function GET(request: NextRequest) {
                 </div>
               </div>
               <div style={{ fontSize: 14, color: "#7cb899", marginTop: 6 }}>
-                Total SG
+                Proxy SG
               </div>
             </div>
           </div>
@@ -261,7 +246,7 @@ export async function GET(request: NextRequest) {
               gap: 12,
             }}
           >
-            {entries.map(({ label, value, skipped, estimated }, i) => (
+            {entries.map(({ label, value, skipped, confidence }, i) => (
               <div
                 key={label}
                 style={{
@@ -283,11 +268,17 @@ export async function GET(request: NextRequest) {
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {estimated && (
-                      <div style={{ fontSize: 14, fontWeight: 500, color: "#a8a29e", backgroundColor: "#f5f5f4", borderRadius: 4, padding: "2px 6px" }}>
-                        Est.
-                      </div>
-                    )}
+                    <div style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: CONFIDENCE_COLORS_HEX[confidence].text,
+                      backgroundColor: CONFIDENCE_COLORS_HEX[confidence].bg,
+                      borderRadius: 4,
+                      padding: "2px 8px",
+                      letterSpacing: "0.05em",
+                    }}>
+                      {CONFIDENCE_LABELS[confidence].toUpperCase()}
+                    </div>
                     <div
                       style={{
                         fontSize: 26,
