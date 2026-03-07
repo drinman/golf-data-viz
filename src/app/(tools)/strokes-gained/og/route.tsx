@@ -3,6 +3,8 @@ import { type NextRequest } from "next/server";
 import { decodeRound } from "@/lib/golf/share-codec";
 import { getInterpolatedBenchmark, getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
+import { calculateStrokesGainedV3 } from "@/lib/golf/strokes-gained-v3";
+import { getSgPhase2Mode } from "@/lib/golf/phase2-mode";
 import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER, CONFIDENCE_COLORS_HEX, CONFIDENCE_LABELS } from "@/lib/golf/constants";
 
 export const runtime = "edge";
@@ -121,12 +123,20 @@ export async function GET(request: NextRequest) {
 
   // Compute SG results
   const benchmark = getInterpolatedBenchmark(input.handicapIndex);
-  const result = calculateStrokesGained(input, benchmark);
+  const phase2Mode = getSgPhase2Mode();
+  const result = phase2Mode === "full"
+    ? calculateStrokesGainedV3(input, benchmark)
+    : calculateStrokesGained(input, benchmark);
   const courseName = truncateText(input.course, 58);
   const bracketLabel =
     BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
   const meta = getBenchmarkMeta();
-  const trustLabel = `Proxy SG · Scorecard-based · Benchmarks v${meta.version}`;
+  const anchorLabel = result.totalAnchorMode === "course_adjusted"
+    ? "Course-Adjusted"
+    : result.totalAnchorMode === "course_neutral"
+      ? "Course-Neutral"
+      : "Scorecard-based";
+  const trustLabel = `Proxy SG · ${anchorLabel} · Benchmarks v${meta.version}`;
 
   const skippedSet = new Set(result.skippedCategories);
   const entries = CATEGORY_ORDER.map((key) => ({

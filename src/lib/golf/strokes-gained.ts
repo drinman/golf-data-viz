@@ -43,60 +43,70 @@ export const SG_WEIGHTS = {
   PUTTING_WEIGHT: 4.0,
 } as const;
 
-/** Calculate SG: Off-the-Tee */
-function calcOTT(input: RoundInput, benchmark: BracketBenchmark): number {
-  // Skip FIR component when fairwaysHit not tracked or par-3 course (0 attempts)
-  const firComponent =
-    input.fairwaysHit != null && input.fairwayAttempts > 0
-      ? (input.fairwaysHit / input.fairwayAttempts -
-          benchmark.fairwayPercentage / 100) *
-        SG_WEIGHTS.OTT_FIR_WEIGHT
-      : 0;
+// ── Raw signal functions (unweighted deltas) ──
 
-  // Positive penaltyDelta = player has fewer penalties = good
-  const penaltyDelta = benchmark.penaltiesPerRound - input.penaltyStrokes;
-  const penaltyComponent = penaltyDelta * SG_WEIGHTS.OTT_PENALTY_WEIGHT;
-
-  return firComponent + penaltyComponent;
+/** Raw FIR delta: playerFIR% - peerFIR% (unweighted). */
+export function computeRawOttFirDelta(input: RoundInput, benchmark: BracketBenchmark): number {
+  if (input.fairwaysHit == null || input.fairwayAttempts <= 0) return 0;
+  return input.fairwaysHit / input.fairwayAttempts - benchmark.fairwayPercentage / 100;
 }
 
-/** Calculate SG: Approach */
-function calcApproach(input: RoundInput, benchmark: BracketBenchmark): number {
+/** Raw penalty delta: peerPenalties - playerPenalties (unweighted). */
+export function computeRawOttPenaltyDelta(input: RoundInput, benchmark: BracketBenchmark): number {
+  return benchmark.penaltiesPerRound - input.penaltyStrokes;
+}
+
+/** Raw approach delta: playerGIR/18 - peerGIR% (unweighted). */
+export function computeRawApproachDelta(input: RoundInput, benchmark: BracketBenchmark): number {
   if (input.greensInRegulation == null) return 0;
-  const playerGIR = input.greensInRegulation / 18;
-  const peerGIR = benchmark.girPercentage / 100;
-  return (playerGIR - peerGIR) * SG_WEIGHTS.APPROACH_WEIGHT;
+  return input.greensInRegulation / 18 - benchmark.girPercentage / 100;
 }
 
-/** Calculate SG: Around-the-Green */
-function calcATG(input: RoundInput, benchmark: BracketBenchmark): number {
-  // Path 1: Use actual up-and-down data when available
+/** Raw ATG delta: playerScramble% - peerScramble% (unweighted). */
+export function computeRawAtgDelta(input: RoundInput, benchmark: BracketBenchmark): number {
+  // Path 1: actual up-and-down data
   if (
     input.upAndDownAttempts != null &&
     input.upAndDownConverted != null &&
     input.upAndDownAttempts > 0
   ) {
-    const playerUpDown = input.upAndDownConverted / input.upAndDownAttempts;
-    const peerUpDown = benchmark.upAndDownPercentage / 100;
-    return (playerUpDown - peerUpDown) * SG_WEIGHTS.ATG_WEIGHT;
+    return input.upAndDownConverted / input.upAndDownAttempts - benchmark.upAndDownPercentage / 100;
   }
-
-  // Path 2: Fallback — estimate scramble rate from scoring on missed greens
+  // Path 2: estimate from scoring
   if (input.greensInRegulation == null) return 0;
   const missedGreens = 18 - input.greensInRegulation;
   if (missedGreens === 0) return 0;
-
-  // Estimate pars made on GIR (≈90% par rate on GIR for mid-HCP)
   const estimatedParsOnGIR = input.greensInRegulation * 0.9;
-  // Cap scramble pars to missed greens — can't scramble more than you missed
   const scramblePars = Math.min(
     missedGreens,
     Math.max(0, input.pars - estimatedParsOnGIR)
   );
-  const playerScrambleRate = scramblePars / missedGreens;
-  const peerScrambleRate = benchmark.upAndDownPercentage / 100;
+  return scramblePars / missedGreens - benchmark.upAndDownPercentage / 100;
+}
 
-  return (playerScrambleRate - peerScrambleRate) * SG_WEIGHTS.ATG_WEIGHT;
+/** Raw putting delta: peerPutts/18 - playerPutts/18 (unweighted). */
+export function computeRawPuttingDelta(input: RoundInput, benchmark: BracketBenchmark): number {
+  return benchmark.puttsPerRound / 18 - input.totalPutts / 18;
+}
+
+// ── Weighted category functions ──
+
+/** Calculate SG: Off-the-Tee */
+function calcOTT(input: RoundInput, benchmark: BracketBenchmark): number {
+  return (
+    computeRawOttFirDelta(input, benchmark) * SG_WEIGHTS.OTT_FIR_WEIGHT +
+    computeRawOttPenaltyDelta(input, benchmark) * SG_WEIGHTS.OTT_PENALTY_WEIGHT
+  );
+}
+
+/** Calculate SG: Approach */
+function calcApproach(input: RoundInput, benchmark: BracketBenchmark): number {
+  return computeRawApproachDelta(input, benchmark) * SG_WEIGHTS.APPROACH_WEIGHT;
+}
+
+/** Calculate SG: Around-the-Green */
+function calcATG(input: RoundInput, benchmark: BracketBenchmark): number {
+  return computeRawAtgDelta(input, benchmark) * SG_WEIGHTS.ATG_WEIGHT;
 }
 
 /** Calculate SG: Putting. Returns sg (without three-putt) and threePuttImpact as diagnostic. */
@@ -104,10 +114,7 @@ function calcPutting(
   input: RoundInput,
   benchmark: BracketBenchmark
 ): { sg: number; threePuttImpact: number | null } {
-  const playerPuttsPerHole = input.totalPutts / 18;
-  const peerPuttsPerHole = benchmark.puttsPerRound / 18;
-  const sg =
-    (peerPuttsPerHole - playerPuttsPerHole) * SG_WEIGHTS.PUTTING_WEIGHT;
+  const sg = computeRawPuttingDelta(input, benchmark) * SG_WEIGHTS.PUTTING_WEIGHT;
 
   // Three-putt impact computed as diagnostic only (not added to sg)
   let threePuttImpact: number | null = null;

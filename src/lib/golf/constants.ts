@@ -7,6 +7,12 @@ import type {
 /** Current methodology version — stamped on every StrokesGainedResult. */
 export const METHODOLOGY_VERSION = "2.0.0" as const;
 
+/** Phase 2 methodology version for the V3 pipeline. */
+export const METHODOLOGY_VERSION_V3 = "3.0.0" as const;
+
+/** Current calibration version — loaded from coefficients JSON. */
+export const CALIBRATION_VERSION = "seed-1.0.0" as const;
+
 /** Short display labels for handicap brackets (e.g., "10–15 HCP"). */
 export const BRACKET_LABELS: Record<HandicapBracket, string> = {
   "0-5": "0–5 HCP",

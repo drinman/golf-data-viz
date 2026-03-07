@@ -67,6 +67,16 @@ export function ResultsSummary({ result, benchmarkMeta }: ResultsSummaryProps) {
         >
           {formatSG(result.total)}
         </p>
+        {result.totalAnchorMode === "course_adjusted" && (
+          <span className="mt-2 inline-block rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-medium text-data-positive">
+            Course-Adjusted
+          </span>
+        )}
+        {result.totalAnchorMode === "course_neutral" && (
+          <span className="mt-2 inline-block rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-700">
+            Course-Neutral Estimate
+          </span>
+        )}
       </div>
 
       {/* Benchmark bracket */}

@@ -40,6 +40,9 @@ export interface BenchmarkAnchor {
 export interface SGDiagnostics {
   /** Impact of three-putt penalty (computed but excluded from SG total) */
   threePuttImpact: number | null;
+  // Phase 2 optional diagnostics
+  rawCategoryValues?: Record<StrokesGainedCategory, number>;
+  provisionalCategoryValues?: Record<StrokesGainedCategory, number>;
 }
 
 /** Raw round stats as entered by the user */
@@ -94,6 +97,13 @@ export interface StrokesGainedResult {
   benchmarkHandicap: number;
   /** Diagnostic values computed but not included in totals */
   diagnostics: SGDiagnostics;
+  // Phase 2 optional fields
+  calibrationVersion?: string;
+  totalAnchorMode?: TotalAnchorMode;
+  totalAnchorValue?: number;
+  inputPath?: CalibrationInputPath;
+  reconciliationScaleFactor?: number;
+  reconciliationFlags?: string[];
 }
 
 /** Benchmark data for a single handicap bracket */
@@ -164,6 +174,43 @@ export interface BenchmarkMeta {
   sources: string[];
   citations: Record<CitationMetricKey, MetricCitation[]>;
   changelog: ChangelogEntry[];
+}
+
+// ── Phase 2 types ──
+
+export type TotalAnchorMode = "course_adjusted" | "course_neutral";
+/** Phase 2 initial path set — may expand in future phases (e.g., distance-enriched, partial-hole) */
+export type CalibrationInputPath = "full" | "gir-estimated" | "atg-fallback";
+
+export interface TotalAnchorResult {
+  value: number;
+  mode: TotalAnchorMode;
+  playerDifferential: number | null; // null for course-neutral
+  peerExpectation: number; // course-aware expected score or benchmark avg
+}
+
+export interface ReconciliationResult {
+  categories: Record<StrokesGainedCategory, number>;
+  adjustments: Record<StrokesGainedCategory, number>;
+  preReconciliationSum: number;
+  scaleFactor: number;
+  gap: number;
+  flags: string[];
+}
+
+export interface CalibrationCoefficients {
+  ottFir: number;
+  ottPenalty: number;
+  approach: number;
+  aroundTheGreen: number;
+  putting: number;
+}
+
+export interface CalibrationConfig {
+  version: string;
+  updatedAt: string;
+  profiles: Record<CalibrationInputPath, CalibrationCoefficients>;
+  bounds: { min: number; max: number };
 }
 
 /** Chart-ready data shape for Nivo radar chart */

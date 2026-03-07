@@ -47,3 +47,6 @@ supabase/.branches/
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# claude code (contains MCP API keys)
+.mcp.json

@@ -17,6 +17,8 @@ import {
   calculateStrokesGained,
   toRadarChartData,
 } from "@/lib/golf/strokes-gained";
+import { calculateStrokesGainedV3 } from "@/lib/golf/strokes-gained-v3";
+import type { SgPhase2Mode } from "@/lib/golf/phase2-mode";
 import { encodeRound } from "@/lib/golf/share-codec";
 import { captureElementAsPng, downloadBlob } from "@/lib/capture";
 import { RoundInputForm } from "./round-input-form";
@@ -29,6 +31,16 @@ import {
 } from "@/components/security/turnstile-widget";
 import { saveRound } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
+
+function getClientPhase2Mode(): SgPhase2Mode {
+  const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
+  if (mode === "shadow" || mode === "full") return mode;
+  return "off";
+}
+
+function getCalculator(mode: SgPhase2Mode) {
+  return mode === "full" ? calculateStrokesGainedV3 : calculateStrokesGained;
+}
 
 interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
@@ -48,11 +60,14 @@ export default function StrokesGainedClient({
 }: StrokesGainedClientProps) {
   const benchmarkMeta = getBenchmarkMeta();
 
+  const phase2Mode = getClientPhase2Mode();
+  const calculate = getCalculator(phase2Mode);
+
   // Precompute initial state from shared URL (avoids useEffect + setState cascade)
   const initialComputed = initialInput
     ? (() => {
         const benchmark = getInterpolatedBenchmark(initialInput.handicapIndex);
-        const sgResult = calculateStrokesGained(initialInput, benchmark);
+        const sgResult = calculate(initialInput, benchmark);
         return { result: sgResult, chartData: toRadarChartData(sgResult) };
       })()
     : null;
@@ -137,7 +152,7 @@ export default function StrokesGainedClient({
     setIsCalculating(true);
 
     const benchmark = getInterpolatedBenchmark(input.handicapIndex);
-    const sgResult = calculateStrokesGained(input, benchmark);
+    const sgResult = calculate(input, benchmark);
     const radar = toRadarChartData(sgResult);
 
     setResult(sgResult);
@@ -156,6 +171,20 @@ export default function StrokesGainedClient({
     });
     if (sgResult.estimatedCategories.length > 0) {
       trackEvent("gir_estimated");
+    }
+
+    // Phase 2 analytics
+    trackEvent("result_viewed", {
+      total_anchor_mode: sgResult.totalAnchorMode,
+      calibration_version: sgResult.calibrationVersion,
+      has_course_rating: input.courseRating > 0,
+      has_slope_rating: input.slopeRating >= 55 && input.slopeRating <= 155,
+    });
+    if (sgResult.reconciliationScaleFactor != null) {
+      trackEvent("reconciliation_applied", {
+        scale_factor: sgResult.reconciliationScaleFactor,
+        flags: (sgResult.reconciliationFlags ?? []).join(","),
+      });
     }
 
     // Update URL with shareable param (no navigation)

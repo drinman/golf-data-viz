@@ -8,7 +8,9 @@ export type AnalyticsEvent =
   | "round_saved"
   | "round_save_failed"
   | "gir_estimated"
-  | "confidence_badge_clicked";
+  | "confidence_badge_clicked"
+  | "result_viewed"
+  | "reconciliation_applied";
 
 type EmptyPayload = Record<never, never>;
 
@@ -30,6 +32,16 @@ export type AnalyticsEventProps = {
       | "verification";
   };
   confidence_badge_clicked: { category: string; level: string };
+  result_viewed: {
+    total_anchor_mode?: string;
+    calibration_version?: string;
+    has_course_rating: boolean;
+    has_slope_rating: boolean;
+  };
+  reconciliation_applied: {
+    scale_factor: number;
+    flags: string;
+  };
 };
 
 type RequiredKeys<T extends object> = {

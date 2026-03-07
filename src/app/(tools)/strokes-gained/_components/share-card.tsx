@@ -54,6 +54,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </h2>
               <p className="mt-1 text-sm text-brand-100">
                 Shot {score} &middot; vs {bracketLabel}
+                {result.totalAnchorMode === "course_adjusted" && " \u00b7 Course-Adjusted"}
+                {result.totalAnchorMode === "course_neutral" && " \u00b7 Course-Neutral"}
               </p>
               {benchmarkMeta && (
                 <p className="mt-0.5 text-xs italic text-brand-100/70">

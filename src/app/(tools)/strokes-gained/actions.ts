@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { SupabaseConfigError } from "@/lib/supabase/errors";
 import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
+import { calculateStrokesGainedV3 } from "@/lib/golf/strokes-gained-v3";
 import { checkRateLimit, extractClientIp } from "@/lib/rate-limit";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
 import { assessRoundTrust } from "@/lib/golf/round-trust";
@@ -56,6 +57,19 @@ function isMissingTrustSchemaError(error: SupabaseInsertError | null): boolean {
     /trust_(status|reasons|scored_at)/.test(error.message ?? "")
   );
 }
+
+function isMissingPhase2SchemaError(error: SupabaseInsertError | null): boolean {
+  return (
+    error?.code === "PGRST204" &&
+    /(calibration_version|total_anchor_mode|total_anchor_value|reconciliation_scale_factor|reconciliation_flags)/.test(
+      error.message ?? ""
+    )
+  );
+}
+
+import { getSgPhase2Mode } from "@/lib/golf/phase2-mode";
+export type { SgPhase2Mode } from "@/lib/golf/phase2-mode";
+export { getSgPhase2Mode };
 
 export async function saveRound(
   input: RoundInput,
@@ -117,7 +131,12 @@ export async function saveRound(
     // Recalculate SG server-side — never trust client-supplied values
     const validatedInput = parsed.data as RoundInput;
     const benchmark = getInterpolatedBenchmark(validatedInput.handicapIndex);
-    const sg = calculateStrokesGained(validatedInput, benchmark);
+    const phase2Mode = getSgPhase2Mode();
+
+    const sgV1 = calculateStrokesGained(validatedInput, benchmark);
+    const sg = phase2Mode === "full"
+      ? calculateStrokesGainedV3(validatedInput, benchmark)
+      : sgV1;
     const trust = assessRoundTrust(validatedInput);
 
     const supabase = createAdminClient();
@@ -134,13 +153,28 @@ export async function saveRound(
 
     let { error } = await supabase.from("rounds").insert(insertWithTrust);
 
-    // Temporary backward-compatibility for production while the trust-field migration
-    // is being applied. Once the schema catches up, the first insert path succeeds.
+    // Backward-compat: retry without trust columns if schema is behind
     if (isMissingTrustSchemaError(error)) {
       console.warn(
         "[saveRound] Retrying insert without trust metadata because the DB schema is behind app code"
       );
       ({ error } = await supabase.from("rounds").insert(baseInsert));
+    }
+
+    // Backward-compat: retry without Phase 2 columns if schema is behind
+    if (isMissingPhase2SchemaError(error)) {
+      console.warn(
+        "[saveRound] Retrying insert without Phase 2 columns because the DB schema is behind app code"
+      );
+      const {
+        calibration_version: _cv,
+        total_anchor_mode: _tam,
+        total_anchor_value: _tav,
+        reconciliation_scale_factor: _rsf,
+        reconciliation_flags: _rf,
+        ...baseWithoutPhase2
+      } = insertWithTrust;
+      ({ error } = await supabase.from("rounds").insert(baseWithoutPhase2));
     }
 
     if (error) {
@@ -150,6 +184,34 @@ export async function saveRound(
         code: "DB_ERROR",
       });
       return fail("DB_ERROR", DB_ERROR_MESSAGE);
+    }
+
+    // Shadow mode: compute V3, persist comparison record, log delta
+    if (phase2Mode === "shadow") {
+      try {
+        const sgV3 = calculateStrokesGainedV3(validatedInput, benchmark);
+        await supabase.from("sg_shadow_comparisons").insert({
+          v1_total: sgV1.total,
+          v3_total: sgV3.total,
+          v1_categories: sgV1.categories,
+          v3_categories: sgV3.categories,
+          anchor_mode: sgV3.totalAnchorMode ?? null,
+          reconciliation_scale_factor: sgV3.reconciliationScaleFactor ?? null,
+          calibration_version: sgV3.calibrationVersion ?? null,
+          methodology_v1: sgV1.methodologyVersion,
+          methodology_v3: sgV3.methodologyVersion,
+        });
+        console.log("[saveRound] Shadow comparison", {
+          v1Total: sgV1.total.toFixed(2),
+          v3Total: sgV3.total.toFixed(2),
+          delta: (sgV3.total - sgV1.total).toFixed(2),
+          anchorMode: sgV3.totalAnchorMode,
+          scaleFactor: sgV3.reconciliationScaleFactor?.toFixed(4),
+        });
+      } catch (shadowErr) {
+        // Shadow mode is best-effort — never block the save
+        console.warn("[saveRound] Shadow comparison failed:", shadowErr);
+      }
     }
 
     return { success: true };

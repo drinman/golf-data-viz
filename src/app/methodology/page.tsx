@@ -5,8 +5,15 @@ import {
   getCitationStatus,
 } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
+import { calculateStrokesGainedV3 } from "@/lib/golf/strokes-gained-v3";
 import { CITATION_METRIC_KEYS } from "@/lib/golf/types";
 import type { CitationMetricKey } from "@/lib/golf/types";
+import {
+  METHODOLOGY_VERSION,
+  METHODOLOGY_VERSION_V3,
+  CALIBRATION_VERSION,
+} from "@/lib/golf/constants";
+import { getSgPhase2Mode } from "@/lib/golf/phase2-mode";
 
 export const metadata: Metadata = {
   title: "Methodology",
@@ -15,7 +22,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/methodology" },
 };
 
-/** Sanity-check fixture rounds for the calibration table. */
+/** Directional fixture rounds for the fixture check table. */
 const CALIBRATION_FIXTURES = [
   {
     label: "Scratch good round",
@@ -135,9 +142,12 @@ const CALIBRATION_FIXTURES = [
 ] as const;
 
 function computeCalibrationRows() {
+  const phase2Mode = getSgPhase2Mode();
   return CALIBRATION_FIXTURES.map((fixture) => {
     const benchmark = getInterpolatedBenchmark(fixture.input.handicapIndex);
-    const result = calculateStrokesGained(fixture.input, benchmark);
+    const result = phase2Mode === "full"
+      ? calculateStrokesGainedV3(fixture.input, benchmark)
+      : calculateStrokesGained(fixture.input, benchmark);
     return {
       label: fixture.label,
       hcp: fixture.input.handicapIndex,
@@ -161,6 +171,9 @@ export default function MethodologyPage() {
     (status) => status === "pending"
   ).length;
 
+  const phase2Mode = getSgPhase2Mode();
+  const activeMethodology = phase2Mode === "full" ? METHODOLOGY_VERSION_V3 : METHODOLOGY_VERSION;
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">Methodology</h1>
@@ -170,6 +183,21 @@ export default function MethodologyPage() {
         shot-level tracking. This page explains the formulas, sources,
         confidence levels, and limitations.
       </p>
+
+      {/* M10: Active versions */}
+      <div className="mt-4 flex flex-wrap gap-3">
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">
+          Methodology v{activeMethodology}
+        </span>
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">
+          Benchmarks v{meta.version}
+        </span>
+        {phase2Mode === "full" && (
+          <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">
+            Calibration {CALIBRATION_VERSION}
+          </span>
+        )}
+      </div>
 
       {/* Section 1: Not True SG */}
       <section className="mt-8">
@@ -181,11 +209,15 @@ export default function MethodologyPage() {
         </p>
       </section>
 
-      {/* Section 2: SG Formulas */}
+      {/* M1: Section 2: SG Formulas — renamed header + framing note */}
       <section className="mt-10">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
-          SG Category Formulas
+          Current Production Proxy SG Formulas (v{activeMethodology})
         </h2>
+        <p className="mt-2 text-sm text-neutral-600">
+          These formulas reflect the current production methodology version.
+          Coefficients may change in future releases as the model is recalibrated.
+        </p>
         <div className="mt-4 overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm">
             <thead>
@@ -241,16 +273,143 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* Section 3: Metric-Level Citations (dynamic from JSON) */}
+      {/* M3: Total Anchor (NEW section) */}
+      {phase2Mode === "full" && (
+        <section className="mt-10">
+          <h2 className="font-display text-xl tracking-tight text-neutral-950">
+            Total Anchor
+          </h2>
+          <p className="mt-2 text-sm text-neutral-600">
+            Total Proxy SG is anchored to a peer expectation so that
+            category values sum to a coherent total. Two modes exist:
+          </p>
+          <div className="mt-4 space-y-4">
+            <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+              <p className="text-sm font-medium text-brand-800">
+                Course-Adjusted (preferred)
+              </p>
+              <p className="mt-1 text-sm text-neutral-600">
+                When course rating and slope are available, total Proxy SG is
+                anchored to a course-adjusted peer expectation:
+              </p>
+              <p className="mt-2 font-mono text-xs text-neutral-700">
+                peerExpectation = courseRating + (handicapIndex &times; slopeRating / 113)
+              </p>
+              <p className="font-mono text-xs text-neutral-700">
+                totalSG = peerExpectation &minus; actualScore
+              </p>
+              <p className="mt-2 text-xs text-neutral-500">
+                Based on the standard USGA expected score formula.
+                Positive = played better than expected.
+              </p>
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm font-medium text-amber-800">
+                Course-Neutral (fallback)
+              </p>
+              <p className="mt-1 text-sm text-neutral-600">
+                When course metadata is missing or invalid, the tool falls back
+                to a course-neutral estimate and labels it accordingly:
+              </p>
+              <p className="mt-2 font-mono text-xs text-neutral-700">
+                totalSG = benchmark.averageScore &minus; actualScore
+              </p>
+              <p className="mt-2 text-xs text-neutral-500">
+                Course-neutral mode activates when course rating is 0 or slope
+                is outside the valid 55–155 range.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* M4: Calibration (NEW section) */}
+      {phase2Mode === "full" && (
+        <section className="mt-10">
+          <h2 className="font-display text-xl tracking-tight text-neutral-950">
+            Calibration
+          </h2>
+          <p className="mt-2 text-sm text-neutral-600">
+            Raw stat deltas (e.g., FIR% difference, GIR difference) are
+            multiplied by calibrated coefficients to produce category SG
+            values. Coefficients are versioned separately
+            ({CALIBRATION_VERSION}) and may be updated independently of the
+            methodology version.
+          </p>
+          <div className="mt-4 space-y-2 text-sm text-neutral-600">
+            <p>
+              <strong>Input paths:</strong> Coefficients vary by the data
+              available for each round:
+            </p>
+            <ul className="list-disc space-y-1 pl-6">
+              <li>
+                <strong>Full</strong> — GIR provided and up-and-down data
+                available (or no missed greens)
+              </li>
+              <li>
+                <strong>GIR-estimated</strong> — GIR not provided by the user,
+                estimated from scoring distribution
+              </li>
+              <li>
+                <strong>ATG-fallback</strong> — GIR provided but no
+                up-and-down data with missed greens
+              </li>
+            </ul>
+            <p className="text-xs italic text-neutral-500">
+              Coefficients are model artifacts, not hardcoded truths. The
+              current seed coefficients ({CALIBRATION_VERSION}) are derived
+              from Phase 1 heuristic weights and will be empirically
+              recalibrated from shadow-mode production data.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* M5: Reconciliation (NEW section) */}
+      {phase2Mode === "full" && (
+        <section className="mt-10">
+          <h2 className="font-display text-xl tracking-tight text-neutral-950">
+            Reconciliation
+          </h2>
+          <p className="mt-2 text-sm text-neutral-600">
+            After calibration, per-category values may not sum exactly to the
+            total anchor. Reconciliation scales categories so they sum to the
+            anchor value.
+          </p>
+          <div className="mt-4 space-y-2 text-sm text-neutral-600">
+            <p>
+              <strong>Confidence-weighted scaling:</strong> Lower-confidence
+              categories absorb more of the adjustment. A category rated
+              &ldquo;Low&rdquo; confidence will shift more than one rated
+              &ldquo;High.&rdquo;
+            </p>
+            <p>
+              <strong>Scale factor:</strong> The maximum proportional change
+              applied to any category. A scale factor near 0 means strong
+              alignment between the calibrated sum and the anchor. A factor
+              above 0.5 triggers an &ldquo;excessive scaling&rdquo; flag.
+            </p>
+            <p className="text-xs italic text-neutral-500">
+              Skipped categories (value = 0) are excluded from reconciliation.
+              Final categories sum to the total anchor within &plusmn;0.1.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* M2: Section 3: Metric-Level Citations (dynamic from JSON) */}
       <section className="mt-10" data-testid="citations-section">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Data Sources &amp; Citations
         </h2>
         <p className="mt-2 text-sm text-neutral-600">
+          All benchmark metrics used in the live Proxy SG calculation are
+          source-locked and versioned.{" "}
           {coveredMetricCount} of {CITATION_METRIC_KEYS.length} tracked metrics
-          {" "}have published-source coverage for some brackets.{" "}
-          {unsourcedMetricCount} remain unsourced, and the benchmark is still
-          provisional.
+          have published-source coverage for some brackets.{" "}
+          {unsourcedMetricCount > 0 && (
+            <>{unsourcedMetricCount} remain unsourced.</>
+          )}
         </p>
         <div className="mt-4 overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm" data-testid="citations-table">
@@ -331,7 +490,7 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* Section 4: Assumptions & Limitations */}
+      {/* M7: Section 4: Assumptions & Limitations — updated language */}
       <section className="mt-10">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Assumptions &amp; Limitations
@@ -346,12 +505,20 @@ export default function MethodologyPage() {
             public reports, not a single sampled dataset
           </li>
           <li>
-            <strong>Provisional</strong> — sample sizes per bracket not yet
-            available
+            <strong>Weights</strong> — seed coefficients ({CALIBRATION_VERSION})
+            derived from Phase 1 heuristics, subject to empirical calibration
+            from shadow-mode data
           </li>
           <li>
-            <strong>Weights</strong> — heuristic starting values (6.0, 8.0, 5.0,
-            4.0), subject to calibration
+            <strong>OTT&rarr;Approach attribution</strong> — in scorecard-based
+            proxy models, some tee-shot value can appear in Approach when longer
+            or more playable drives create shorter approach shots. This is a
+            known limitation without shot-level distance and lie data.
+          </li>
+          <li>
+            <strong>Scoring distribution</strong> — scoring-derived logic is
+            used only in specific fallback paths where direct inputs are
+            unavailable
           </li>
         </ul>
       </section>
@@ -381,14 +548,16 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* Section 6: Confidence Levels */}
+      {/* M8: Section 6: Confidence Levels — added per-category note */}
       <section className="mt-10">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           Confidence Levels
         </h2>
         <p className="mt-2 text-sm text-neutral-600">
-          Each category displays a confidence badge reflecting the quality of data
-          available for that estimate.
+          Confidence is assigned separately for each category based on the
+          calculation path used for that category, not as an overall rating
+          of the full round. Each category displays a confidence badge
+          reflecting the quality of data available for that estimate.
         </p>
         <div className="mt-4 overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm">
@@ -441,15 +610,15 @@ export default function MethodologyPage() {
         </p>
       </section>
 
-      {/* Section 8: Calibration */}
+      {/* M6: Section 8: Directional Fixture Check — renamed + caveat */}
       <section className="mt-10">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
-          Calibration Sanity Check
+          Directional Fixture Check
         </h2>
         <p className="mt-2 text-sm text-neutral-600">
-          Weights are heuristic, pending calibration against a validation
-          dataset. The table below shows computed SG totals for representative
-          fixture rounds to verify directional correctness.
+          These examples validate that the model behaves sensibly. They are not
+          proof of perfect calibration and should not be interpreted as reference
+          benchmarks for all rounds.
         </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
@@ -490,7 +659,7 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* Section 6: Changelog (dynamic from JSON) */}
+      {/* Section 9: Changelog (dynamic from JSON) */}
       <section className="mt-10" data-testid="changelog-section">
         <h2 className="font-display text-xl tracking-tight text-neutral-950">Changelog</h2>
         <ul className="mt-4 list-disc space-y-1 pl-6 text-sm text-neutral-600">
@@ -505,12 +674,16 @@ export default function MethodologyPage() {
         </ul>
       </section>
 
-      {/* Reddit-ready footer */}
+      {/* M9: Updated footer */}
       <footer className="mt-12 border-t border-neutral-200 pt-6">
         <p className="text-xs italic text-neutral-400">
-          Benchmarks v{meta.version} (updated {meta.updatedAt}), based on
-          USGA/Arccos/Shot Scope/Stagner. This is a peer-compared SG proxy, not
-          true shot-level Strokes Gained. Full methodology linked.
+          Benchmarks v{meta.version} (updated {meta.updatedAt}) use a
+          version-locked canonical benchmark source for all production values.
+          The broader methodology is informed by public handicapping and
+          strokes-gained research, but benchmark values are sourced and
+          versioned independently. Methodology v{activeMethodology}
+          {phase2Mode === "full" && <>, Calibration {CALIBRATION_VERSION}</>}.
+          This is a peer-compared SG proxy, not true shot-level Strokes Gained.
         </p>
       </footer>
     </main>

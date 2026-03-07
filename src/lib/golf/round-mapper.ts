@@ -48,5 +48,12 @@ export function toRoundInsert(
     methodology_version: sg.methodologyVersion,
     benchmark_version: sg.benchmarkVersion,
     benchmark_handicap: sg.benchmarkHandicap,
+
+    // Phase 2 fields
+    calibration_version: sg.calibrationVersion ?? null,
+    total_anchor_mode: sg.totalAnchorMode ?? null,
+    total_anchor_value: sg.totalAnchorValue ?? null,
+    reconciliation_scale_factor: sg.reconciliationScaleFactor ?? null,
+    reconciliation_flags: sg.reconciliationFlags ?? [],
   };
 }

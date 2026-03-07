@@ -41,6 +41,7 @@ export type Database = {
           benchmark_version: string | null
           birdies: number
           bogeys: number
+          calibration_version: string | null
           course_name: string
           course_rating: number
           created_at: string
@@ -55,6 +56,8 @@ export type Database = {
           pars: number
           penalty_strokes: number
           played_at: string
+          reconciliation_flags: string[]
+          reconciliation_scale_factor: number | null
           sand_save_attempts: number | null
           sand_saves: number | null
           score: number
@@ -65,6 +68,8 @@ export type Database = {
           sg_total: number | null
           slope_rating: number
           three_putts: number | null
+          total_anchor_mode: string | null
+          total_anchor_value: number | null
           total_putts: number
           triple_plus: number
           trust_reasons: string[]
@@ -80,6 +85,7 @@ export type Database = {
           benchmark_version?: string | null
           birdies: number
           bogeys: number
+          calibration_version?: string | null
           course_name: string
           course_rating: number
           created_at?: string
@@ -94,6 +100,8 @@ export type Database = {
           pars: number
           penalty_strokes: number
           played_at: string
+          reconciliation_flags?: string[]
+          reconciliation_scale_factor?: number | null
           sand_save_attempts?: number | null
           sand_saves?: number | null
           score: number
@@ -104,6 +112,8 @@ export type Database = {
           sg_total?: number | null
           slope_rating: number
           three_putts?: number | null
+          total_anchor_mode?: string | null
+          total_anchor_value?: number | null
           total_putts: number
           triple_plus: number
           trust_reasons?: string[]
@@ -119,6 +129,7 @@ export type Database = {
           benchmark_version?: string | null
           birdies?: number
           bogeys?: number
+          calibration_version?: string | null
           course_name?: string
           course_rating?: number
           created_at?: string
@@ -133,6 +144,8 @@ export type Database = {
           pars?: number
           penalty_strokes?: number
           played_at?: string
+          reconciliation_flags?: string[]
+          reconciliation_scale_factor?: number | null
           sand_save_attempts?: number | null
           sand_saves?: number | null
           score?: number
@@ -143,6 +156,8 @@ export type Database = {
           sg_total?: number | null
           slope_rating?: number
           three_putts?: number | null
+          total_anchor_mode?: string | null
+          total_anchor_value?: number | null
           total_putts?: number
           triple_plus?: number
           trust_reasons?: string[]
@@ -153,6 +168,59 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      sg_shadow_comparisons: {
+        Row: {
+          anchor_mode: string | null
+          calibration_version: string | null
+          created_at: string
+          id: string
+          methodology_v1: string | null
+          methodology_v3: string | null
+          reconciliation_scale_factor: number | null
+          round_id: string | null
+          v1_categories: Json | null
+          v1_total: number | null
+          v3_categories: Json | null
+          v3_total: number | null
+        }
+        Insert: {
+          anchor_mode?: string | null
+          calibration_version?: string | null
+          created_at?: string
+          id?: string
+          methodology_v1?: string | null
+          methodology_v3?: string | null
+          reconciliation_scale_factor?: number | null
+          round_id?: string | null
+          v1_categories?: Json | null
+          v1_total?: number | null
+          v3_categories?: Json | null
+          v3_total?: number | null
+        }
+        Update: {
+          anchor_mode?: string | null
+          calibration_version?: string | null
+          created_at?: string
+          id?: string
+          methodology_v1?: string | null
+          methodology_v3?: string | null
+          reconciliation_scale_factor?: number | null
+          round_id?: string | null
+          v1_categories?: Json | null
+          v1_total?: number | null
+          v3_categories?: Json | null
+          v3_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sg_shadow_comparisons_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

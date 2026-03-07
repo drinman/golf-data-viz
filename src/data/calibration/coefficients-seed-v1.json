@@ -1,0 +1,12 @@
+{
+  "version": "seed-1.0.0",
+  "updatedAt": "2026-03-06",
+  "status": "seeded",
+  "statusNote": "Seeded from Phase 1 heuristic weights. Not yet empirically calibrated. Serves as initial baseline for shadow-mode validation.",
+  "profiles": {
+    "full": { "ottFir": 6.0, "ottPenalty": 0.8, "approach": 8.0, "aroundTheGreen": 5.0, "putting": 4.0 },
+    "gir-estimated": { "ottFir": 6.0, "ottPenalty": 0.8, "approach": 6.5, "aroundTheGreen": 4.0, "putting": 4.0 },
+    "atg-fallback": { "ottFir": 6.0, "ottPenalty": 0.8, "approach": 8.0, "aroundTheGreen": 3.5, "putting": 4.0 }
+  },
+  "bounds": { "min": 0.1, "max": 15.0 }
+}
