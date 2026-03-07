@@ -6,14 +6,24 @@ import {
 } from "./helpers/round-form";
 
 test.describe("Strokes Gained Benchmarker", () => {
-  test("sample preview is visible on SG page with radar chart", async ({
-    page,
-  }) => {
+  test("compact sample preview is visible on SG page", async ({ page }) => {
     await page.goto("/strokes-gained");
-    const preview = page.getByTestId("sample-result-preview");
+    const preview = page.getByTestId("compact-sample-preview");
     await expect(preview).toBeVisible();
-    await expect(preview.locator("svg").first()).toBeVisible();
     await expect(preview.getByText("Torrey Pines South")).toBeVisible();
+    // Verify category labels are shown
+    await expect(preview.getByText("Off the Tee")).toBeVisible();
+    await expect(preview.getByText("Putting")).toBeVisible();
+    // Verify real sample output is rendered (not just headings)
+    await expect(preview.getByText("Total SG")).toBeVisible();
+    await expect(preview.getByText(/[+-]\d+\.\d{2}/).first()).toBeVisible();
+    // Confirm no SVG chart in compact version
+    await expect(preview.locator("svg")).toHaveCount(0);
+    // Confirm compact preview appears before the trust panel
+    const previewBox = await preview.boundingBox();
+    const trustPanel = page.locator('section[aria-label="What this is"]');
+    const trustBox = await trustPanel.boundingBox();
+    expect(previewBox!.y).toBeLessThan(trustBox!.y);
   });
 
   test("course info row stays in a two-column desktop layout", async ({

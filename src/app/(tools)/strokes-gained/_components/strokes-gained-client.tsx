@@ -32,7 +32,7 @@ import {
 } from "@/components/security/turnstile-widget";
 import { saveRound } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
-import { SampleResultPreview } from "@/components/sample-result-preview";
+import { CompactSamplePreview } from "@/components/compact-sample-preview";
 
 function getClientPhase2Mode(): SgPhase2Mode {
   const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
@@ -449,8 +449,8 @@ export default function StrokesGainedClient({
       </p>
 
       {samplePreview && (
-        <div className="mt-8">
-          <SampleResultPreview {...samplePreview} />
+        <div className="mt-6">
+          <CompactSamplePreview {...samplePreview} />
         </div>
       )}
 
