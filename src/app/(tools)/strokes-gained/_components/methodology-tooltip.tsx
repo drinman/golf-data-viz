@@ -70,11 +70,11 @@ export function MethodologyTooltip({
 
   const close = useCallback(() => {
     if (controlled) {
-      onToggle?.();
+      if (open) onToggle?.();
     } else {
       setInternalOpen(false);
     }
-  }, [controlled, onToggle]);
+  }, [controlled, open, onToggle]);
 
   // Escape key dismisses
   useEffect(() => {
@@ -126,7 +126,8 @@ export function MethodologyTooltip({
       {open && (
         <div
           id={popoverId}
-          aria-labelledby={popoverId}
+          role="dialog"
+          aria-label={`Methodology info for ${category}`}
           className="absolute left-0 top-full z-10 mt-2 w-64 rounded-lg border border-cream-200 bg-white p-3 text-left text-xs leading-relaxed text-neutral-600 shadow-lg"
         >
           <p>

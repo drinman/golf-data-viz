@@ -58,11 +58,11 @@ export function ConfidenceBadge({
 
   const close = useCallback(() => {
     if (controlled) {
-      onToggle?.();
+      if (open) onToggle?.();
     } else {
       setInternalOpen(false);
     }
-  }, [controlled, onToggle]);
+  }, [controlled, open, onToggle]);
 
   // Escape key dismisses
   useEffect(() => {
