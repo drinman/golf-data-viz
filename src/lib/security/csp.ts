@@ -15,7 +15,7 @@ function sentryReportUri(dsn: string | undefined): string | null {
   }
 }
 
-const reportUri = sentryReportUri(process.env.NEXT_PUBLIC_SENTRY_DSN);
+export const reportUri = sentryReportUri(process.env.NEXT_PUBLIC_SENTRY_DSN);
 
 const cspDirectives = [
   "default-src 'self'",
@@ -29,7 +29,9 @@ const cspDirectives = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  ...(reportUri ? [`report-uri ${reportUri}`] : []),
+  ...(reportUri
+    ? [`report-uri ${reportUri}`, "report-to csp-endpoint"]
+    : []),
 ];
 
 export const csp = cspDirectives.join("; ");

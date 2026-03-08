@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
-import { csp } from "./src/lib/security/csp";
+import { csp, reportUri } from "./src/lib/security/csp";
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -12,6 +12,9 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=()",
   },
   { key: "Content-Security-Policy", value: csp },
+  ...(reportUri
+    ? [{ key: "Reporting-Endpoints", value: `csp-endpoint="${reportUri}"` }]
+    : []),
 ];
 
 const nextConfig: NextConfig = {
