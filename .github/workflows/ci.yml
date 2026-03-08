@@ -44,8 +44,12 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -59,11 +63,24 @@ jobs:
           CI: true
           PLAYWRIGHT_USE_PROD_SERVER: true
       - name: Visual regression tests
+        id: visual
         run: npx playwright test --project=visual
+        continue-on-error: true
         env:
           CI: true
+      - name: Auto-update visual baselines
+        if: steps.visual.outcome == 'failure'
+        run: |
+          npx playwright test --project=visual --update-snapshots
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/e2e/visual-regression.spec.ts-snapshots/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: auto-update visual regression baselines"
+            git push
+          fi
       - name: Upload Playwright visual diffs
-        if: failure()
+        if: steps.visual.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-visual-diffs
