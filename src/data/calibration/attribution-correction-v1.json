@@ -1,0 +1,13 @@
+{
+  "version": "ac-1.0.0",
+  "updatedAt": "2026-03-08",
+  "strokesPerDivergencePoint": 0.6,
+  "maxCorrection": 0.5,
+  "divergenceDeadzone": 0.05,
+  "opportunityShrinkageBase": 14,
+  "enabledPaths": ["full", "gir-estimated"],
+  "pathStrengthMultipliers": {
+    "full": 1.0,
+    "gir-estimated": 0.5
+  }
+}

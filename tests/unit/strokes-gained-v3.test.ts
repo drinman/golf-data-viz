@@ -259,6 +259,96 @@ describe("calculateStrokesGainedV3", () => {
     });
   });
 
+  describe("attribution correction integration", () => {
+    it("correction enabled by default: diagnostics populated", () => {
+      const round = makeRound({
+        handicapIndex: 14.3,
+        fairwaysHit: 4,     // low FIR
+        fairwayAttempts: 14,
+        greensInRegulation: 10, // high GIR
+        upAndDownAttempts: 5,
+        upAndDownConverted: 3,
+      });
+      const benchmark = getInterpolatedBenchmark(round.handicapIndex);
+      const result = calculateStrokesGainedV3(round, benchmark);
+
+      expect(result.attributionCorrectionEnabled).toBe(true);
+      expect(result.attributionCorrectionVersion).toBe("ac-1.0.0");
+      expect(result.diagnostics.attributionCorrection).toBeDefined();
+      expect(result.diagnostics.attributionCorrection!.applied).toBe(true);
+    });
+
+    it("correction disabled via env var: no attributionCorrection in diagnostics", () => {
+      process.env.NEXT_PUBLIC_ATTRIBUTION_CORRECTION = "off";
+      try {
+        const benchmark = getInterpolatedBenchmark(14.3);
+        const result = calculateStrokesGainedV3(makeRound(), benchmark);
+        expect(result.attributionCorrectionEnabled).toBe(false);
+        expect(result.attributionCorrectionVersion).toBeUndefined();
+        expect(result.diagnostics.attributionCorrection).toBeUndefined();
+      } finally {
+        delete process.env.NEXT_PUBLIC_ATTRIBUTION_CORRECTION;
+      }
+    });
+
+    it("total still equals anchor regardless of correction", () => {
+      const round = makeRound({
+        handicapIndex: 14.3,
+        fairwaysHit: 4,
+        fairwayAttempts: 14,
+        greensInRegulation: 10,
+        upAndDownAttempts: 5,
+        upAndDownConverted: 3,
+      });
+      const benchmark = getInterpolatedBenchmark(round.handicapIndex);
+      const result = calculateStrokesGainedV3(round, benchmark);
+      expect(result.total).toBe(result.totalAnchorValue);
+    });
+
+    it("categories still sum to total within tolerance with correction", () => {
+      const round = makeRound({
+        handicapIndex: 14.3,
+        fairwaysHit: 4,
+        fairwayAttempts: 14,
+        greensInRegulation: 10,
+        upAndDownAttempts: 5,
+        upAndDownConverted: 3,
+      });
+      const benchmark = getInterpolatedBenchmark(round.handicapIndex);
+      const result = calculateStrokesGainedV3(round, benchmark);
+      const sum =
+        result.categories["off-the-tee"] +
+        result.categories["approach"] +
+        result.categories["around-the-green"] +
+        result.categories["putting"];
+      expect(sum).toBeCloseTo(result.total, 1);
+    });
+
+    it("long hitter pattern: OTT improves vs uncorrected provisionals", () => {
+      const round = makeRound({
+        handicapIndex: 14.3,
+        fairwaysHit: 3,     // very low FIR — long/wild driver
+        fairwayAttempts: 14,
+        greensInRegulation: 11, // high GIR — easy approaches from power
+        upAndDownAttempts: 4,
+        upAndDownConverted: 3,
+      });
+      const benchmark = getInterpolatedBenchmark(round.handicapIndex);
+      const result = calculateStrokesGainedV3(round, benchmark);
+
+      const diag = result.diagnostics;
+      expect(diag.attributionCorrection).toBeDefined();
+      expect(diag.attributionCorrection!.applied).toBe(true);
+      // OTT should be higher after correction (credit shifted from Approach)
+      expect(diag.attributionCorrection!.postCorrectionOTT).toBeGreaterThan(
+        diag.attributionCorrection!.preCorrectionOTT
+      );
+      expect(diag.attributionCorrection!.postCorrectionApproach).toBeLessThan(
+        diag.attributionCorrection!.preCorrectionApproach
+      );
+    });
+  });
+
   describe("V1 parity with full-path coefficients", () => {
     it("V3 categories are close to V1 when anchor is close to category sum", () => {
       // With standard course (slope=113, CR close to expected), the anchor

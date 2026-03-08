@@ -17,6 +17,7 @@ import type {
   StrokesGainedResult,
   StrokesGainedCategory,
   ConfidenceLevel,
+  AttributionCorrectionResult,
 } from "./types";
 import { METHODOLOGY_VERSION_V3 } from "./constants";
 import { getBenchmarkVersion } from "./benchmarks";
@@ -35,6 +36,12 @@ import {
   getCalibrationVersion,
 } from "./calibration";
 import { reconcileCategories } from "./reconciliation";
+import {
+  isAttributionCorrectionEnabled,
+  computeAttributionCorrection,
+  applyAttributionCorrection,
+  getAttributionCorrectionVersion,
+} from "./attribution-correction";
 
 export function calculateStrokesGainedV3(
   input: RoundInput,
@@ -104,9 +111,27 @@ export function calculateStrokesGainedV3(
     putting: "high",
   };
 
+  // ── Layer 4.5: Attribution Correction ──
+  const correctionEnabled = isAttributionCorrectionEnabled();
+  let correctedCategoryValues = provisionalCategoryValues;
+  let attributionCorrectionDiag: AttributionCorrectionResult | undefined;
+
+  if (correctionEnabled) {
+    const correctionResult = computeAttributionCorrection(
+      provisionalCategoryValues, effectiveInput, benchmark, confidence, inputPath
+    );
+    attributionCorrectionDiag = correctionResult;
+
+    if (correctionResult.applied) {
+      correctedCategoryValues = applyAttributionCorrection(
+        provisionalCategoryValues, correctionResult.correctionAmount
+      );
+    }
+  }
+
   // ── Layer 5: Reconciliation ──
   const reconciliation = reconcileCategories(
-    provisionalCategoryValues,
+    correctedCategoryValues,
     anchor.value,
     confidence,
     skippedCategories
@@ -137,6 +162,7 @@ export function calculateStrokesGainedV3(
       threePuttImpact,
       rawCategoryValues,
       provisionalCategoryValues,
+      attributionCorrection: attributionCorrectionDiag,
     },
     // Phase 2 fields
     calibrationVersion: getCalibrationVersion(),
@@ -145,5 +171,7 @@ export function calculateStrokesGainedV3(
     inputPath,
     reconciliationScaleFactor: reconciliation.scaleFactor,
     reconciliationFlags: reconciliation.flags,
+    attributionCorrectionVersion: correctionEnabled ? getAttributionCorrectionVersion() : undefined,
+    attributionCorrectionEnabled: correctionEnabled,
   };
 }

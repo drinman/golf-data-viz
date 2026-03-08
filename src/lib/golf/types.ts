@@ -44,6 +44,7 @@ export interface SGDiagnostics {
   // Phase 2 optional diagnostics
   rawCategoryValues?: Record<StrokesGainedCategory, number>;
   provisionalCategoryValues?: Record<StrokesGainedCategory, number>;
+  attributionCorrection?: AttributionCorrectionResult;
 }
 
 /** Raw round stats as entered by the user */
@@ -107,6 +108,8 @@ export interface StrokesGainedResult {
   inputPath?: CalibrationInputPath;
   reconciliationScaleFactor?: number;
   reconciliationFlags?: string[];
+  attributionCorrectionVersion?: string;
+  attributionCorrectionEnabled?: boolean;
 }
 
 /** Benchmark data for a single handicap bracket */
@@ -177,6 +180,31 @@ export interface BenchmarkMeta {
   sources: string[];
   citations: Record<CitationMetricKey, MetricCitation[]>;
   changelog: ChangelogEntry[];
+}
+
+// ── Attribution Correction types ──
+
+export interface AttributionCorrectionConfig {
+  version: string;
+  updatedAt: string;
+  strokesPerDivergencePoint: number;
+  maxCorrection: number;
+  divergenceDeadzone: number;
+  opportunityShrinkageBase: number;
+  enabledPaths: CalibrationInputPath[];
+  pathStrengthMultipliers: Partial<Record<CalibrationInputPath, number>>;
+}
+
+export interface AttributionCorrectionResult {
+  applied: boolean;
+  divergence: number;
+  correctionAmount: number;
+  reason: string;
+  preCorrectionOTT: number;
+  preCorrectionApproach: number;
+  postCorrectionOTT: number;
+  postCorrectionApproach: number;
+  confidenceGating: string[];
 }
 
 // ── Phase 2 types ──
