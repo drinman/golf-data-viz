@@ -126,8 +126,8 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
           enableGridY
           gridYValues={yTicks}
           axisBottom={{
-            tickSize: 0,
-            tickPadding: 8,
+            tickSize: 5,
+            tickPadding: 12,
             tickRotation: rounds.length > 10 ? -45 : 0,
           }}
           axisLeft={{
