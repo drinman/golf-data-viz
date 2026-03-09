@@ -1,4 +1,4 @@
-import type { StrokesGainedCategory } from "@/lib/golf/types";
+import type { StrokesGainedCategory, StrokesGainedResult } from "@/lib/golf/types";
 import type { TroubleCause } from "@/lib/golf/trouble-context";
 
 export type AnalyticsEvent =
@@ -84,12 +84,12 @@ export type AnalyticsEventProps = {
   plus_handicap_submitted: {
     normalized_value: number;
     is_plus_handicap: true;
-    benchmark_interpolation_mode: "scratch_clamped" | "extrapolated";
+    benchmark_interpolation_mode: NonNullable<StrokesGainedResult["benchmarkInterpolationMode"]>;
   };
   plus_handicap_results_viewed: {
     normalized_value: number;
     is_plus_handicap: true;
-    benchmark_interpolation_mode: "standard" | "scratch_clamped" | "extrapolated" | "elite_interpolated" | "elite_clamped";
+    benchmark_interpolation_mode: NonNullable<StrokesGainedResult["benchmarkInterpolationMode"]>;
   };
   trouble_context_prompt_viewed: EmptyPayload;
   trouble_context_prompt_dismissed: EmptyPayload;
