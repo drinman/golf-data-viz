@@ -2,7 +2,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { SgTrendChart } from "@/app/(tools)/strokes-gained/history/_components/sg-trend-chart";
-import type { TrendSeries, RoundSgSnapshot } from "@/lib/golf/trends";
+import type { TrendSeries } from "@/lib/golf/trends";
+import { makeRoundSnapshot } from "../fixtures/factories";
 
 vi.mock("@/lib/analytics/client", () => ({
   trackEvent: vi.fn(),
@@ -13,31 +14,11 @@ vi.mock("@nivo/line", () => ({
   ResponsiveLine: () => <div data-testid="nivo-line-mock" />,
 }));
 
-function makeSnapshot(
-  overrides: Partial<RoundSgSnapshot> = {}
-): RoundSgSnapshot {
-  return {
-    roundId: "r1",
-    playedAt: "2026-03-01",
-    courseName: "Test Course",
-    score: 87,
-    handicapIndex: 14.3,
-    sgTotal: -1.5,
-    sgOffTheTee: 0.3,
-    sgApproach: -0.8,
-    sgAroundTheGreen: -0.5,
-    sgPutting: -0.5,
-    methodologyVersion: "2.0.0",
-    benchmarkBracket: "10-15",
-    ...overrides,
-  };
-}
-
 describe("SgTrendChart", () => {
   afterEach(cleanup);
 
   it("shows minimum rounds message when fewer than 3 rounds", () => {
-    const rounds = [makeSnapshot(), makeSnapshot({ roundId: "r2" })];
+    const rounds = [makeRoundSnapshot(), makeRoundSnapshot({ roundId: "r2" })];
 
     render(<SgTrendChart series={[]} rounds={rounds} />);
 
@@ -49,9 +30,9 @@ describe("SgTrendChart", () => {
 
   it("renders chart when 3+ rounds provided", () => {
     const rounds = [
-      makeSnapshot({ roundId: "r1", playedAt: "2026-03-01" }),
-      makeSnapshot({ roundId: "r2", playedAt: "2026-03-08" }),
-      makeSnapshot({ roundId: "r3", playedAt: "2026-03-15" }),
+      makeRoundSnapshot({ roundId: "r1", playedAt: "2026-03-01" }),
+      makeRoundSnapshot({ roundId: "r2", playedAt: "2026-03-08" }),
+      makeRoundSnapshot({ roundId: "r3", playedAt: "2026-03-15" }),
     ];
     const series: TrendSeries[] = [
       {

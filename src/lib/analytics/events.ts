@@ -34,8 +34,7 @@ export type AnalyticsEvent =
   | "history_page_viewed"
   | "trend_chart_viewed"
   | "biggest_mover_viewed"
-  | "auth_modal_opened"
-  | "auth_completed";
+  | "auth_modal_opened";
 
 type EmptyPayload = Record<never, never>;
 
@@ -108,7 +107,6 @@ export type AnalyticsEventProps = {
   trend_chart_viewed: { round_count: number };
   biggest_mover_viewed: { category: string; direction: string; confidence: string };
   auth_modal_opened: { surface: string };
-  auth_completed: { method: string; surface: string };
 };
 
 type RequiredKeys<T extends object> = {
