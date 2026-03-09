@@ -68,7 +68,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const ga4Id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+  const ga4Id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim();
 
   return (
     <html lang="en">
