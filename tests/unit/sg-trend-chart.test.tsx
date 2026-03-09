@@ -39,9 +39,9 @@ describe("SgTrendChart", () => {
         id: "Off the Tee",
         color: "#2563eb",
         data: [
-          { x: "Round 1", y: 0.3 },
-          { x: "Round 2", y: 0.5 },
-          { x: "Round 3", y: 0.2 },
+          { x: "1", y: 0.3 },
+          { x: "2", y: 0.5 },
+          { x: "3", y: 0.2 },
         ],
       },
     ];
@@ -63,9 +63,9 @@ describe("SgTrendChart", () => {
         id: "Off the Tee",
         color: "#2563eb",
         data: [
-          { x: "Round 1", y: 0.3 },
-          { x: "Round 2", y: 0.5 },
-          { x: "Round 3", y: 0.2 },
+          { x: "1", y: 0.3 },
+          { x: "2", y: 0.5 },
+          { x: "3", y: 0.2 },
         ],
       },
     ];

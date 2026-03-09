@@ -22,7 +22,7 @@ describe("toTrendSeries", () => {
     expect(series).toHaveLength(4);
     for (const s of series) {
       expect(s.data).toHaveLength(1);
-      expect(s.data[0].x).toBe("Round 1");
+      expect(s.data[0].x).toBe("1");
     }
   });
 
@@ -37,9 +37,9 @@ describe("toTrendSeries", () => {
     const ottSeries = series.find((s) => s.id === "Off the Tee")!;
 
     expect(ottSeries.data).toEqual([
-      { x: "Round 1", y: 0.2 },
-      { x: "Round 2", y: 0.5 },
-      { x: "Round 3", y: 1.0 },
+      { x: "1", y: 0.2 },
+      { x: "2", y: 0.5 },
+      { x: "3", y: 1.0 },
     ]);
   });
 

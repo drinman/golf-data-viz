@@ -49,7 +49,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
       { date: string; courseName: string; values: Record<string, number> }
     >();
     sorted.forEach((r, i) => {
-      const label = `Round ${i + 1}`;
+      const label = String(i + 1);
       map.set(label, {
         date: new Date(r.playedAt + "T00:00:00").toLocaleDateString("en-US", {
           month: "short",
@@ -128,7 +128,12 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
           axisBottom={{
             tickSize: 5,
             tickPadding: 12,
-            tickRotation: rounds.length > 10 ? -45 : 0,
+            format: (v) => {
+              const n = Number(v);
+              // Show every label ≤10 rounds, every 2nd for 11-20, every 5th for 20+
+              const step = rounds.length <= 10 ? 1 : rounds.length <= 20 ? 2 : 5;
+              return n % step === 0 || n === 1 ? `R${n}` : "";
+            },
           }}
           axisLeft={{
             tickSize: 0,

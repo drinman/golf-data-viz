@@ -101,7 +101,7 @@ export function toTrendSeries(rounds: RoundSgSnapshot[]): TrendSeries[] {
     id: CATEGORY_LABELS[category],
     color: TREND_CATEGORY_COLORS[category],
     data: sorted.map((round, i) => ({
-      x: `Round ${i + 1}`,
+      x: String(i + 1),
       y: getSgValue(round, category),
     })),
   }));
