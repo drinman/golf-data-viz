@@ -18,6 +18,14 @@ vi.mock("@/lib/analytics/client", () => ({
   trackEvent: mockTrackEvent,
 }));
 
+vi.mock("@/lib/supabase/auth-client", () => ({
+  useSupabaseUser: () => ({ user: null, loading: false }),
+}));
+
+vi.mock("@/components/auth/auth-modal", () => ({
+  AuthModal: () => null,
+}));
+
 const mockBracket = {
   bracket: "10-15" as const,
   averageScore: 87,

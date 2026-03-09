@@ -37,10 +37,12 @@ import {
   TurnstileWidget,
   type TurnstileWidgetHandle,
 } from "@/components/security/turnstile-widget";
-import { saveRound, saveTroubleContext, clearTroubleContext } from "../actions";
+import { saveRound, saveTroubleContext, clearTroubleContext, claimRound } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { CompactSamplePreview } from "@/components/compact-sample-preview";
 import type { SamplePreviewData } from "@/lib/golf/sample-round";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { useSupabaseUser } from "@/lib/supabase/auth-client";
 
 function getClientPhase2Mode(): SgPhase2Mode {
   const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
@@ -110,6 +112,10 @@ export default function StrokesGainedClient({
   const [troubleModalOpen, setTroubleModalOpen] = useState(false);
   const [troublePromptDismissed, setTroublePromptDismissed] = useState(false);
   const [savedRoundId, setSavedRoundId] = useState<string | null>(null);
+  const [savedClaimToken, setSavedClaimToken] = useState<string | null>(null);
+  const [claimAuthModalOpen, setClaimAuthModalOpen] = useState(false);
+  const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "failed">("idle");
+  const { user } = useSupabaseUser();
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
@@ -206,6 +212,8 @@ export default function StrokesGainedClient({
     setTroubleModalOpen(false);
     setTroublePromptDismissed(false);
     setSavedRoundId(null);
+    setSavedClaimToken(null);
+    setClaimStatus("idle");
     if (saveSuccessTimerRef.current)
       clearTimeout(saveSuccessTimerRef.current);
 
@@ -320,6 +328,16 @@ export default function StrokesGainedClient({
                 () => setSaveSuccess(false),
                 3000
               );
+              // Store claim token for anonymous round claiming
+              if (res.claimToken && !user) {
+                setSavedClaimToken(res.claimToken);
+                try {
+                  localStorage.setItem(
+                    `claim:${res.roundId}`,
+                    JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })
+                  );
+                } catch { /* localStorage unavailable */ }
+              }
             } else if (res.code === "SAVE_DISABLED") {
               trackEvent("round_save_failed", { error_type: "config" });
               setSaveError({
@@ -434,6 +452,30 @@ export default function StrokesGainedClient({
     }
   }, []);
 
+  // After auth success, claim the saved round
+  const handleClaimAuthSuccess = useCallback(async () => {
+    if (!savedRoundId || !savedClaimToken) return;
+    setClaimAuthModalOpen(false);
+    setClaimStatus("claiming");
+    try {
+      const result = await claimRound(savedRoundId, savedClaimToken);
+      if (result.success) {
+        setClaimStatus("claimed");
+        setSavedClaimToken(null);
+        trackEvent("round_claimed");
+        try {
+          localStorage.removeItem(`claim:${savedRoundId}`);
+        } catch { /* localStorage unavailable */ }
+      } else {
+        setClaimStatus("failed");
+        trackEvent("round_claim_failed", { reason: result.code });
+      }
+    } catch {
+      setClaimStatus("failed");
+      trackEvent("round_claim_failed", { reason: "network_error" });
+    }
+  }, [savedRoundId, savedClaimToken]);
+
   const copyButtonText = copyFailed
     ? "Failed to copy"
     : copied
@@ -530,6 +572,75 @@ export default function StrokesGainedClient({
           Round saved.
         </div>
       )}
+
+      {/* Post-save claim CTA — shown for anonymous saves */}
+      {savedRoundId && savedClaimToken && !user && claimStatus === "idle" && (
+        <div
+          data-testid="claim-cta"
+          className="mt-6 rounded-xl border border-brand-200 bg-brand-50/50 px-5 py-4"
+        >
+          <p className="text-sm font-medium text-neutral-900">
+            Create a free account to track your progress over time.
+          </p>
+          <p className="mt-1 text-xs text-neutral-600">
+            Your round will be saved to your profile so you can see trends across rounds.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setClaimAuthModalOpen(true);
+              trackEvent("auth_modal_opened", { surface: "post_save_claim_cta" });
+            }}
+            data-testid="claim-cta-btn"
+            className="mt-3 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+          >
+            Create account
+          </button>
+        </div>
+      )}
+
+      {claimStatus === "claiming" && (
+        <div
+          data-testid="claim-pending"
+          role="status"
+          className="mt-6 rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
+        >
+          Linking round to your account...
+        </div>
+      )}
+
+      {claimStatus === "claimed" && (
+        <div
+          data-testid="claim-success"
+          className="mt-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+        >
+          <p className="text-sm font-medium text-green-800">
+            Round linked to your account!
+          </p>
+          <Link
+            href="/strokes-gained/history"
+            className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+          >
+            View your round history &rarr;
+          </Link>
+        </div>
+      )}
+
+      {claimStatus === "failed" && (
+        <div
+          data-testid="claim-error"
+          role="alert"
+          className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          Could not link round to your account. Your results are still saved.
+        </div>
+      )}
+
+      <AuthModal
+        open={claimAuthModalOpen}
+        onClose={() => setClaimAuthModalOpen(false)}
+        onSuccess={handleClaimAuthSuccess}
+      />
 
       {saveError && (
         <div

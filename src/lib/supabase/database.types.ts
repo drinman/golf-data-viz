@@ -56,6 +56,8 @@ export type Database = {
           birdies: number
           bogeys: number
           calibration_version: string | null
+          claim_token_expires_at: string | null
+          claim_token_hash: string | null
           course_name: string
           course_rating: number
           created_at: string
@@ -109,6 +111,8 @@ export type Database = {
           birdies: number
           bogeys: number
           calibration_version?: string | null
+          claim_token_expires_at?: string | null
+          claim_token_hash?: string | null
           course_name: string
           course_rating: number
           created_at?: string
@@ -162,6 +166,8 @@ export type Database = {
           birdies?: number
           bogeys?: number
           calibration_version?: string | null
+          claim_token_expires_at?: string | null
+          claim_token_hash?: string | null
           course_name?: string
           course_rating?: number
           created_at?: string

@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
+import { useSupabaseUser } from "@/lib/supabase/auth-client";
+import { UserMenu } from "@/components/auth/user-menu";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const { user, loading } = useSupabaseUser();
 
   useEffect(() => {
     function onScroll() {
@@ -34,20 +37,29 @@ export function SiteHeader() {
             Golf Data Viz
           </span>
         </Link>
-        <nav aria-label="Main" className="flex gap-4">
-          <Link
-            href="/strokes-gained"
-            className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
-          >
-            SG Benchmarker
-          </Link>
-          <Link
-            href="/methodology"
-            className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
-          >
-            Methodology
-          </Link>
-        </nav>
+        <div className="flex items-center gap-4">
+          <nav aria-label="Main" className="flex gap-4">
+            <Link
+              href="/strokes-gained"
+              className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+            >
+              SG Benchmarker
+            </Link>
+            <Link
+              href="/strokes-gained/history"
+              className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+            >
+              History
+            </Link>
+            <Link
+              href="/methodology"
+              className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+            >
+              Methodology
+            </Link>
+          </nav>
+          {!loading && user && <UserMenu user={user} />}
+        </div>
       </div>
     </header>
   );

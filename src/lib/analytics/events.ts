@@ -28,7 +28,14 @@ export type AnalyticsEvent =
   | "trouble_narrative_viewed"
   | "trouble_context_saved_with_round"
   | "trouble_context_save_failed"
-  | "trouble_context_removed";
+  | "trouble_context_removed"
+  | "round_claimed"
+  | "round_claim_failed"
+  | "history_page_viewed"
+  | "trend_chart_viewed"
+  | "biggest_mover_viewed"
+  | "auth_modal_opened"
+  | "auth_completed";
 
 type EmptyPayload = Record<never, never>;
 
@@ -95,6 +102,13 @@ export type AnalyticsEventProps = {
     error_type: "config" | "runtime" | "network";
   };
   trouble_context_removed: EmptyPayload;
+  round_claimed: EmptyPayload;
+  round_claim_failed: { reason: string };
+  history_page_viewed: { round_count: number };
+  trend_chart_viewed: { round_count: number };
+  biggest_mover_viewed: { category: string; direction: string; confidence: string };
+  auth_modal_opened: { surface: string };
+  auth_completed: { method: string; surface: string };
 };
 
 type RequiredKeys<T extends object> = {

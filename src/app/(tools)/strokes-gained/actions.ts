@@ -20,6 +20,9 @@ import {
   type RoundTroubleContext,
   type TroubleHoleInput,
 } from "@/lib/golf/trouble-context";
+import { generateClaimToken, hashClaimToken } from "@/lib/security/claim-token";
+import { getUser } from "@/lib/supabase/auth";
+import { timingSafeEqual } from "crypto";
 import { headers } from "next/headers";
 
 export type SaveRoundErrorCode =
@@ -32,7 +35,7 @@ export type SaveRoundErrorCode =
   | "UNEXPECTED";
 
 export type SaveRoundResult =
-  | { success: true; roundId: string }
+  | { success: true; roundId: string; claimToken: string }
   | { success: false; code: SaveRoundErrorCode; message: string };
 
 const SAVE_DISABLED_MESSAGE =
@@ -240,7 +243,25 @@ export async function saveRound(
       }
     }
 
-    return { success: true, roundId };
+    // Generate claim token for anonymous round claiming (best-effort)
+    let claimToken = "";
+    try {
+      const claim = await generateClaimToken();
+      claimToken = claim.rawToken;
+
+      await supabase
+        .from("rounds")
+        .update({
+          claim_token_hash: claim.hash,
+          claim_token_expires_at: claim.expiresAt,
+        })
+        .eq("id", roundId);
+    } catch (claimErr) {
+      // Claim token is best-effort — never block the save
+      console.warn("[saveRound] Claim token generation failed:", claimErr);
+    }
+
+    return { success: true, roundId, claimToken };
   } catch (err) {
     if (err instanceof SupabaseConfigError) {
       console.error("[saveRound] Supabase config error:", err.message);
@@ -398,5 +419,138 @@ export async function clearTroubleContext(
     console.error("[clearTroubleContext] Unexpected error:", err);
     captureMonitoringException(err, { source: "clearTroubleContext" });
     return { success: false };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Round claiming
+// ---------------------------------------------------------------------------
+
+export type ClaimFailureReason =
+  | "unauthenticated"
+  | "round_not_found"
+  | "already_claimed"
+  | "token_mismatch"
+  | "token_expired";
+
+export type ClaimRoundResult =
+  | { success: true; claimedRoundId: string }
+  | { success: false; code: ClaimFailureReason; message: string };
+
+function constantTimeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return timingSafeEqual(bufA, bufB);
+}
+
+export async function claimRound(
+  roundId: string,
+  claimToken: string
+): Promise<ClaimRoundResult> {
+  // 1. Verify authentication
+  const user = await getUser();
+  if (!user) {
+    return {
+      success: false,
+      code: "unauthenticated",
+      message: "Please sign in to claim this round.",
+    };
+  }
+
+  // 2. Validate roundId format
+  if (!UUID_RE.test(roundId)) {
+    return {
+      success: false,
+      code: "round_not_found",
+      message: "Invalid round ID.",
+    };
+  }
+
+  try {
+    const supabase = createAdminClient();
+
+    // 3. Fetch round with claim metadata
+    const { data: rows, error: fetchError } = await supabase
+      .from("rounds")
+      .select("id, user_id, claim_token_hash, claim_token_expires_at")
+      .eq("id", roundId);
+
+    if (fetchError || !rows || rows.length === 0) {
+      return {
+        success: false,
+        code: "round_not_found",
+        message: "Round not found.",
+      };
+    }
+
+    const round = rows[0];
+
+    // 4. Check already claimed
+    if (round.user_id !== null) {
+      return {
+        success: false,
+        code: "already_claimed",
+        message: "This round has already been claimed.",
+      };
+    }
+
+    // 5. Check expiry
+    if (
+      !round.claim_token_expires_at ||
+      new Date(round.claim_token_expires_at).getTime() < Date.now()
+    ) {
+      return {
+        success: false,
+        code: "token_expired",
+        message: "Claim token has expired.",
+      };
+    }
+
+    // 6. Hash provided token and compare with stored hash
+    const providedHash = await hashClaimToken(claimToken);
+
+    if (
+      !round.claim_token_hash ||
+      !constantTimeCompare(providedHash, round.claim_token_hash)
+    ) {
+      return {
+        success: false,
+        code: "token_mismatch",
+        message: "Invalid claim token.",
+      };
+    }
+
+    // 7. Claim the round: assign user, clear token fields
+    const { error: updateError } = await supabase
+      .from("rounds")
+      .update({
+        user_id: user.id,
+        claim_token_hash: null,
+        claim_token_expires_at: null,
+      })
+      .eq("id", roundId);
+
+    if (updateError) {
+      console.error("[claimRound] Update error:", updateError.message);
+      captureMonitoringException(new Error(updateError.message), {
+        source: "claimRound",
+      });
+      return {
+        success: false,
+        code: "round_not_found",
+        message: "Failed to claim round.",
+      };
+    }
+
+    return { success: true, claimedRoundId: roundId };
+  } catch (err) {
+    console.error("[claimRound] Unexpected error:", err);
+    captureMonitoringException(err, { source: "claimRound" });
+    return {
+      success: false,
+      code: "round_not_found",
+      message: "An unexpected error occurred.",
+    };
   }
 }
