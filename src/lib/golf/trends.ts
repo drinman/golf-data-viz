@@ -6,7 +6,7 @@
  */
 
 import type { StrokesGainedCategory } from "./types";
-import { CATEGORY_LABELS, CATEGORY_ORDER } from "./constants";
+import { CATEGORY_LABELS, CATEGORY_ORDER, getMajorVersion } from "./constants";
 
 // ── Types ──
 
@@ -98,7 +98,7 @@ export function toTrendSeries(rounds: RoundSgSnapshot[]): TrendSeries[] {
   );
 
   return CATEGORY_ORDER.map((category) => ({
-    id: category,
+    id: CATEGORY_LABELS[category],
     color: TREND_CATEGORY_COLORS[category],
     data: sorted.map((round, i) => ({
       x: `Round ${i + 1}`,
@@ -209,10 +209,10 @@ export function computeYDomain(series: TrendSeries[]): { min: number; max: numbe
  * Returns true only if there are 2+ distinct non-null methodologyVersion values.
  */
 export function hasMethodologyMix(rounds: RoundSgSnapshot[]): boolean {
-  const versions = new Set(
+  const majors = new Set(
     rounds
-      .map((r) => r.methodologyVersion)
+      .map((r) => getMajorVersion(r.methodologyVersion))
       .filter((v): v is string => v !== null)
   );
-  return versions.size > 1;
+  return majors.size > 1;
 }

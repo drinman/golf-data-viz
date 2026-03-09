@@ -7,7 +7,8 @@ import {
   computeYDomain,
   TREND_CATEGORY_COLORS,
 } from "@/lib/golf/trends";
-import { CATEGORY_ORDER } from "@/lib/golf/constants";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/golf/constants";
+import { getMajorVersion } from "@/lib/golf/constants";
 
 describe("toTrendSeries", () => {
   it("returns empty array for empty input", () => {
@@ -33,7 +34,7 @@ describe("toTrendSeries", () => {
     ];
 
     const series = toTrendSeries(rounds);
-    const ottSeries = series.find((s) => s.id === "off-the-tee")!;
+    const ottSeries = series.find((s) => s.id === "Off the Tee")!;
 
     expect(ottSeries.data).toEqual([
       { x: "Round 1", y: 0.2 },
@@ -46,19 +47,17 @@ describe("toTrendSeries", () => {
     const rounds = [makeRoundSnapshot()];
     const series = toTrendSeries(rounds);
 
-    for (const s of series) {
-      expect(s.color).toBe(
-        TREND_CATEGORY_COLORS[s.id as keyof typeof TREND_CATEGORY_COLORS]
-      );
+    for (const [i, s] of series.entries()) {
+      expect(s.color).toBe(TREND_CATEGORY_COLORS[CATEGORY_ORDER[i]]);
     }
   });
 
-  it("uses category slugs as series ids in CATEGORY_ORDER", () => {
+  it("uses display labels as series ids", () => {
     const rounds = [makeRoundSnapshot()];
     const series = toTrendSeries(rounds);
     const ids = series.map((s) => s.id);
 
-    expect(ids).toEqual(CATEGORY_ORDER);
+    expect(ids).toEqual(CATEGORY_ORDER.map((c) => CATEGORY_LABELS[c]));
   });
 
   it("maps correct SG values per category", () => {
@@ -73,10 +72,10 @@ describe("toTrendSeries", () => {
 
     const series = toTrendSeries(rounds);
 
-    expect(series.find((s) => s.id === "off-the-tee")!.data[0].y).toBe(0.3);
-    expect(series.find((s) => s.id === "approach")!.data[0].y).toBe(-0.8);
-    expect(series.find((s) => s.id === "around-the-green")!.data[0].y).toBe(-0.5);
-    expect(series.find((s) => s.id === "putting")!.data[0].y).toBe(-0.5);
+    expect(series.find((s) => s.id === "Off the Tee")!.data[0].y).toBe(0.3);
+    expect(series.find((s) => s.id === "Approach")!.data[0].y).toBe(-0.8);
+    expect(series.find((s) => s.id === "Around the Green")!.data[0].y).toBe(-0.5);
+    expect(series.find((s) => s.id === "Putting")!.data[0].y).toBe(-0.5);
   });
 });
 
@@ -246,12 +245,30 @@ describe("calculateBiggestMover", () => {
   });
 });
 
+describe("getMajorVersion", () => {
+  it("extracts major from a semver string", () => {
+    expect(getMajorVersion("3.1.0")).toBe("3");
+  });
+
+  it("returns null for null input", () => {
+    expect(getMajorVersion(null)).toBeNull();
+  });
+
+  it("returns null for malformed input", () => {
+    expect(getMajorVersion("bad")).toBeNull();
+  });
+
+  it("returns null for empty string", () => {
+    expect(getMajorVersion("")).toBeNull();
+  });
+});
+
 describe("hasMethodologyMix", () => {
   it("returns false for empty array", () => {
     expect(hasMethodologyMix([])).toBe(false);
   });
 
-  it("returns false when all rounds have the same version", () => {
+  it("returns false when all rounds have the same major version", () => {
     const rounds = [
       makeRoundSnapshot({ methodologyVersion: "2.0.0" }),
       makeRoundSnapshot({ methodologyVersion: "2.0.0" }),
@@ -259,10 +276,18 @@ describe("hasMethodologyMix", () => {
     expect(hasMethodologyMix(rounds)).toBe(false);
   });
 
-  it("returns true when rounds have different versions", () => {
+  it("returns false for same major, different minor", () => {
+    const rounds = [
+      makeRoundSnapshot({ methodologyVersion: "3.0.0" }),
+      makeRoundSnapshot({ methodologyVersion: "3.1.0" }),
+    ];
+    expect(hasMethodologyMix(rounds)).toBe(false);
+  });
+
+  it("returns true for different major versions", () => {
     const rounds = [
       makeRoundSnapshot({ methodologyVersion: "2.0.0" }),
-      makeRoundSnapshot({ methodologyVersion: "3.0.0" }),
+      makeRoundSnapshot({ methodologyVersion: "3.1.0" }),
     ];
     expect(hasMethodologyMix(rounds)).toBe(true);
   });
@@ -275,7 +300,7 @@ describe("hasMethodologyMix", () => {
     expect(hasMethodologyMix(rounds)).toBe(false);
   });
 
-  it("returns false for one non-null and rest null (only one unique non-null)", () => {
+  it("returns false for one non-null and rest null", () => {
     const rounds = [
       makeRoundSnapshot({ methodologyVersion: "2.0.0" }),
       makeRoundSnapshot({ methodologyVersion: null }),
@@ -284,13 +309,29 @@ describe("hasMethodologyMix", () => {
     expect(hasMethodologyMix(rounds)).toBe(false);
   });
 
-  it("returns true for two different non-null versions even with nulls", () => {
+  it("returns true for two different majors with nulls", () => {
     const rounds = [
       makeRoundSnapshot({ methodologyVersion: "2.0.0" }),
       makeRoundSnapshot({ methodologyVersion: null }),
       makeRoundSnapshot({ methodologyVersion: "3.0.0" }),
     ];
     expect(hasMethodologyMix(rounds)).toBe(true);
+  });
+
+  it("returns false for malformed + valid (malformed filtered out)", () => {
+    const rounds = [
+      makeRoundSnapshot({ methodologyVersion: "bad" }),
+      makeRoundSnapshot({ methodologyVersion: "3.1.0" }),
+    ];
+    expect(hasMethodologyMix(rounds)).toBe(false);
+  });
+
+  it("returns false for null + valid (null filtered out)", () => {
+    const rounds = [
+      makeRoundSnapshot({ methodologyVersion: null }),
+      makeRoundSnapshot({ methodologyVersion: "3.1.0" }),
+    ];
+    expect(hasMethodologyMix(rounds)).toBe(false);
   });
 });
 

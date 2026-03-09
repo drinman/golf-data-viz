@@ -1,5 +1,4 @@
 import type { RoundSgSnapshot } from "@/lib/golf/trends";
-import { METHODOLOGY_VERSION_V3 } from "@/lib/golf/constants";
 import { RoundHistoryCard } from "./round-history-card";
 
 interface RoundHistoryListProps {
@@ -16,7 +15,6 @@ export function RoundHistoryList({ rounds }: RoundHistoryListProps) {
         <RoundHistoryCard
           key={round.roundId}
           round={round}
-          currentMethodologyVersion={METHODOLOGY_VERSION_V3}
           style={i < 6 ? { animationDelay: `${(i + 1) * 80}ms` } : undefined}
           className={i < 6 ? "animate-fade-up" : undefined}
         />

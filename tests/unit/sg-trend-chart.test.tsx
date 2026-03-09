@@ -36,7 +36,7 @@ describe("SgTrendChart", () => {
     ];
     const series: TrendSeries[] = [
       {
-        id: "off-the-tee",
+        id: "Off the Tee",
         color: "#2563eb",
         data: [
           { x: "Round 1", y: 0.3 },
@@ -60,7 +60,7 @@ describe("SgTrendChart", () => {
     ];
     const series: TrendSeries[] = [
       {
-        id: "off-the-tee",
+        id: "Off the Tee",
         color: "#2563eb",
         data: [
           { x: "Round 1", y: 0.3 },

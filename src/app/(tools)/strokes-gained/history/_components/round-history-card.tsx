@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 
 interface RoundHistoryCardProps {
   round: RoundSgSnapshot;
-  currentMethodologyVersion?: string;
   className?: string;
   style?: CSSProperties;
 }
@@ -51,15 +50,9 @@ const CATEGORY_SG_KEYS: Record<
 
 export function RoundHistoryCard({
   round,
-  currentMethodologyVersion,
   className,
   style,
 }: RoundHistoryCardProps) {
-  const showVersionBadge =
-    currentMethodologyVersion &&
-    round.methodologyVersion &&
-    round.methodologyVersion !== currentMethodologyVersion;
-
   // Shared scale across all 4 categories for proportional comparison within a round
   const categoryValues = CATEGORY_ORDER.map((cat) => round[CATEGORY_SG_KEYS[cat]]);
   // Floor at 0.5 so a round with all tiny SG values (e.g. ±0.1) doesn't fill half the bar
@@ -96,11 +89,6 @@ export function RoundHistoryCard({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {showVersionBadge && (
-                <span className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-400">
-                  v{round.methodologyVersion}
-                </span>
-              )}
               <span
                 className={`font-mono text-lg font-semibold ${sgColor(round.sgTotal)}`}
               >
@@ -134,7 +122,7 @@ export function RoundHistoryCard({
                   <div className="relative mt-0.5 h-1.5 w-full rounded-full bg-neutral-100">
                     {/* Center line */}
                     <div
-                      className="absolute left-1/2 top-0 h-full w-px bg-neutral-300"
+                      className="absolute left-1/2 top-0 h-full w-px bg-neutral-400"
                       aria-hidden="true"
                     />
                     {/* Value bar */}

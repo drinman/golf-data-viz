@@ -5,7 +5,6 @@ import { ResponsiveLine } from "@nivo/line";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import type { TrendSeries, RoundSgSnapshot } from "@/lib/golf/trends";
 import { computeYDomain } from "@/lib/golf/trends";
-import { CATEGORY_LABELS } from "@/lib/golf/constants";
 import { trackEvent } from "@/lib/analytics/client";
 
 interface SgTrendChartProps {
@@ -105,7 +104,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
       <div data-testid="sg-trend-chart" style={{ height: 360 }}>
         <ResponsiveLine
           data={series}
-          margin={{ top: 20, right: 140, bottom: 50, left: 50 }}
+          margin={{ top: 20, right: 140, bottom: 60, left: 50 }}
           xScale={{ type: "point" }}
           yScale={{ type: "linear", stacked: false, min: yDomain.min, max: yDomain.max }}
           curve="linear"
@@ -159,11 +158,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
           tooltip={({ point }) => {
             const roundLabel = point.data.xFormatted as string;
             const info = tooltipData.get(roundLabel);
-            const categoryId = point.seriesId as string;
-            const categoryLabel =
-              CATEGORY_LABELS[
-                categoryId as keyof typeof CATEGORY_LABELS
-              ] ?? categoryId;
+            const categoryLabel = point.seriesId as string;
             const value = point.data.y as number;
 
             return (

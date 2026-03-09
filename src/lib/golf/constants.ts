@@ -58,6 +58,13 @@ export const CONFIDENCE_COLORS_HEX: Record<ConfidenceLevel, { bg: string; text: 
   low: { bg: "#f5f5f4", text: "#a8a29e" },
 };
 
+/** Extract major version from a semver string. Returns null if missing/malformed. */
+export function getMajorVersion(version: string | null): string | null {
+  if (!version) return null;
+  const major = version.split(".")[0];
+  return major && /^\d+$/.test(major) ? major : null;
+}
+
 /** SG values within ±threshold are considered effectively zero. */
 export const SG_NEAR_ZERO_THRESHOLD = 0.05 as const;
 
