@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
-import { GA4Bootstrap } from "@/lib/analytics/ga4-bootstrap";
 import { GA4PageView } from "@/lib/analytics/ga4-pageview";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -84,7 +83,11 @@ export default function RootLayout({
         <Analytics />
         {ga4Id && (
           <>
-            <GA4Bootstrap measurementId={ga4Id} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4Id}',{send_page_view:false});`,
+              }}
+            />
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}
               strategy="afterInteractive"

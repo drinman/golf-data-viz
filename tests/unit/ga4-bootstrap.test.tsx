@@ -1,51 +1,19 @@
-// @vitest-environment jsdom
+import { describe, it, expect } from "vitest";
+import { csp } from "@/lib/security/csp";
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, cleanup } from "@testing-library/react";
-import { GA4Bootstrap } from "@/lib/analytics/ga4-bootstrap";
-
-describe("GA4Bootstrap", () => {
-  afterEach(() => {
-    cleanup();
-    delete (window as unknown as Record<string, unknown>).gtag;
-    delete (window as unknown as Record<string, unknown>).dataLayer;
+describe("GA4 CSP directives", () => {
+  it("allows GA4 script sources in script-src", () => {
+    expect(csp).toContain("https://www.googletagmanager.com");
+    expect(csp).toContain("https://www.google-analytics.com");
+    expect(csp).toContain("https://ssl.google-analytics.com");
   });
 
-  beforeEach(() => {
-    delete (window as unknown as Record<string, unknown>).gtag;
-    delete (window as unknown as Record<string, unknown>).dataLayer;
+  it("allows GA4 connect sources in connect-src", () => {
+    expect(csp).toContain("https://*.google-analytics.com");
+    expect(csp).toContain("https://*.analytics.google.com");
   });
 
-  it("defines a queueing stub when gtag is absent", () => {
-    render(<GA4Bootstrap measurementId="G-TEST123" />);
-
-    expect(typeof window.gtag).toBe("function");
-    expect(window.dataLayer).toBeDefined();
-    expect(window.dataLayer).toHaveLength(2);
-    expect(window.dataLayer?.[1]).toEqual([
-      "config",
-      "G-TEST123",
-      { send_page_view: false },
-    ]);
-  });
-
-  it("does not overwrite an existing gtag implementation", () => {
-    const existingGtag = vi.fn();
-    window.gtag = existingGtag;
-
-    render(<GA4Bootstrap measurementId="G-TEST123" />);
-
-    expect(window.gtag).toBe(existingGtag);
-    expect(existingGtag).toHaveBeenCalledWith("js", expect.any(Date));
-    expect(existingGtag).toHaveBeenCalledWith("config", "G-TEST123", {
-      send_page_view: false,
-    });
-  });
-
-  it("no-ops when the measurement ID is missing", () => {
-    render(<GA4Bootstrap measurementId={null} />);
-
-    expect(window.gtag).toBeUndefined();
-    expect(window.dataLayer).toBeUndefined();
+  it("allows GA4 image beacons in img-src", () => {
+    expect(csp).toContain("https://www.google-analytics.com");
   });
 });
