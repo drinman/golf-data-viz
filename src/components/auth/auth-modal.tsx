@@ -32,6 +32,7 @@ function AuthModalContent({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -82,8 +83,7 @@ function AuthModalContent({
         setPassword("");
         setLoading(false);
         setMode("signin");
-        // Show a success-like message via error field (temporary)
-        setError("Check your email to confirm your account, then sign in.");
+        setInfo("Check your email to confirm your account, then sign in.");
         return;
       }
 
@@ -120,12 +120,25 @@ function AuthModalContent({
       >
         <div className="px-6 pb-6 pt-5">
           {/* Header */}
-          <h2
-            data-testid="auth-modal-title"
-            className="font-display text-xl tracking-tight text-neutral-950"
-          >
-            {mode === "signin" ? "Welcome back" : "Create your account"}
-          </h2>
+          <div className="flex items-start justify-between">
+            <h2
+              data-testid="auth-modal-title"
+              className="font-display text-xl tracking-tight text-neutral-950"
+            >
+              {mode === "signin" ? "Welcome back" : "Create your account"}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              data-testid="auth-modal-close"
+              aria-label="Close"
+              className="rounded-md p-1 text-neutral-400 transition-colors hover:bg-cream-100 hover:text-neutral-600"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+              </svg>
+            </button>
+          </div>
           <p className="mt-1 text-sm text-neutral-600">
             {mode === "signin"
               ? "Sign in to track your rounds and view trends."
@@ -212,6 +225,16 @@ function AuthModalContent({
                 />
               </div>
             </div>
+
+            {/* Info display */}
+            {info && (
+              <p
+                data-testid="auth-info"
+                className="mt-3 text-sm text-green-700"
+              >
+                {info}
+              </p>
+            )}
 
             {/* Error display */}
             {error && (

@@ -94,7 +94,7 @@ export function toTrendSeries(rounds: RoundSgSnapshot[]): TrendSeries[] {
   if (rounds.length === 0) return [];
 
   const sorted = [...rounds].sort(
-    (a, b) => a.playedAt.localeCompare(b.playedAt)
+    (a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime()
   );
 
   return CATEGORY_ORDER.map((category) => ({
@@ -121,7 +121,7 @@ export function calculateBiggestMover(
   if (rounds.length < 3) return null;
 
   const sorted = [...rounds].sort(
-    (a, b) => a.playedAt.localeCompare(b.playedAt)
+    (a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime()
   );
 
   const isLargeSet = sorted.length >= 5;

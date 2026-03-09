@@ -33,11 +33,12 @@ describe("getUserRounds", () => {
   });
 
   function setupMockReturn(data: unknown[] | null, error: unknown = null) {
-    const mockOrder = vi.fn().mockResolvedValue({ data, error });
+    const mockLimit = vi.fn().mockResolvedValue({ data, error });
+    const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
     const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
-    return { mockSelect, mockEq, mockOrder };
+    return { mockSelect, mockEq, mockOrder, mockLimit };
   }
 
   it("returns empty array when no rounds exist", async () => {

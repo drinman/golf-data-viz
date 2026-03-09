@@ -98,9 +98,12 @@ let selectData: { data: unknown[] | null; error: unknown | null };
 let updateFn: ReturnType<typeof vi.fn>;
 
 function setupAdminMock() {
-  updateFn = vi.fn().mockReturnValue({
-    eq: vi.fn().mockResolvedValue({ error: null }),
-  });
+  // The atomic update chain: update().eq("id").is("user_id", null).eq("claim_token_hash").select("id")
+  const mockUpdateSelect = vi.fn().mockResolvedValue({ data: [{ id: VALID_ROUND_ID }], error: null });
+  const mockUpdateEqHash = vi.fn().mockReturnValue({ select: mockUpdateSelect });
+  const mockUpdateIs = vi.fn().mockReturnValue({ eq: mockUpdateEqHash });
+  const mockUpdateEqId = vi.fn().mockReturnValue({ is: mockUpdateIs });
+  updateFn = vi.fn().mockReturnValue({ eq: mockUpdateEqId });
 
   mockCreateAdminClient.mockReturnValue({
     from: vi.fn(() => ({

@@ -24,7 +24,8 @@ export async function getUserRounds(
       "id, played_at, course_name, score, handicap_index, sg_total, sg_off_the_tee, sg_approach, sg_around_the_green, sg_putting, methodology_version, benchmark_bracket"
     )
     .eq("user_id", userId)
-    .order("played_at", { ascending: false });
+    .order("played_at", { ascending: false })
+    .limit(200);
 
   if (error) throw error;
   if (!data) return [];

@@ -1,35 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { createClient } from "./client";
-import type { User } from "@supabase/supabase-js";
 
-export function useSupabaseUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
-      setUser(u);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  return { user, loading };
-}
+// Re-export the shared context hook — components should use this
+// instead of creating per-mount Supabase clients.
+export { useSupabaseUser } from "./auth-context";
 
 export async function signInWithEmail(email: string, password: string) {
   const supabase = createClient();

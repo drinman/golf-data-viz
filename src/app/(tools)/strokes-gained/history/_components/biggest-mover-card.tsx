@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import type { BiggestMover } from "@/lib/golf/trends";
 import { trackEvent } from "@/lib/analytics/client";
@@ -10,8 +10,11 @@ interface BiggestMoverCardProps {
 }
 
 export function BiggestMoverCard({ mover }: BiggestMoverCardProps) {
+  const trackedCategoryRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (mover) {
+    if (mover && trackedCategoryRef.current !== mover.category) {
+      trackedCategoryRef.current = mover.category;
       trackEvent("biggest_mover_viewed", {
         category: mover.category,
         direction: mover.direction,

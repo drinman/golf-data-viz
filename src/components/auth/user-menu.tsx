@@ -47,6 +47,7 @@ export function UserMenu({ user }: UserMenuProps) {
   async function handleSignOut() {
     await signOut();
     setOpen(false);
+    // Full page reload to clear all client-side auth state (intentional)
     window.location.href = "/";
   }
 

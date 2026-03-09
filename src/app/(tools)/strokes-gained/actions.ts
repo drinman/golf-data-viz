@@ -243,22 +243,25 @@ export async function saveRound(
       }
     }
 
-    // Generate claim token for anonymous round claiming (best-effort)
+    // Generate claim token for anonymous round claiming (best-effort).
+    // Only needed for anonymous saves — authenticated users already have user_id set.
     let claimToken = "";
-    try {
-      const claim = await generateClaimToken();
-      claimToken = claim.rawToken;
+    if (!baseInsert.user_id) {
+      try {
+        const claim = await generateClaimToken();
+        claimToken = claim.rawToken;
 
-      await supabase
-        .from("rounds")
-        .update({
-          claim_token_hash: claim.hash,
-          claim_token_expires_at: claim.expiresAt,
-        })
-        .eq("id", roundId);
-    } catch (claimErr) {
-      // Claim token is best-effort — never block the save
-      console.warn("[saveRound] Claim token generation failed:", claimErr);
+        await supabase
+          .from("rounds")
+          .update({
+            claim_token_hash: claim.hash,
+            claim_token_expires_at: claim.expiresAt,
+          })
+          .eq("id", roundId);
+      } catch (claimErr) {
+        // Claim token is best-effort — never block the save
+        console.warn("[saveRound] Claim token generation failed:", claimErr);
+      }
     }
 
     return { success: true, roundId, claimToken };
@@ -521,15 +524,19 @@ export async function claimRound(
       };
     }
 
-    // 7. Claim the round: assign user, clear token fields
-    const { error: updateError } = await supabase
+    // 7. Atomic claim: UPDATE with WHERE guards to prevent TOCTOU race.
+    //    Only claims if user_id is still NULL and token hash still matches.
+    const { data: updatedRows, error: updateError } = await supabase
       .from("rounds")
       .update({
         user_id: user.id,
         claim_token_hash: null,
         claim_token_expires_at: null,
       })
-      .eq("id", roundId);
+      .eq("id", roundId)
+      .is("user_id", null)
+      .eq("claim_token_hash", round.claim_token_hash)
+      .select("id");
 
     if (updateError) {
       console.error("[claimRound] Update error:", updateError.message);
@@ -540,6 +547,15 @@ export async function claimRound(
         success: false,
         code: "round_not_found",
         message: "Failed to claim round.",
+      };
+    }
+
+    // If no rows were updated, a concurrent claim won the race
+    if (!updatedRows || updatedRows.length === 0) {
+      return {
+        success: false,
+        code: "already_claimed",
+        message: "This round was claimed by another request.",
       };
     }
 
