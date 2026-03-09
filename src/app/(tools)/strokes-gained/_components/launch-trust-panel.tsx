@@ -8,7 +8,7 @@ export function LaunchTrustPanel() {
   return (
     <section
       aria-label="What this is"
-      className="mt-4 max-w-2xl rounded-xl border border-cream-200 bg-cream-50 px-4 py-4 text-sm text-neutral-700"
+      className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-5 text-sm text-neutral-700"
     >
       <ul className="space-y-2">
         <li>

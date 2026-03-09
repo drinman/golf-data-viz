@@ -41,6 +41,7 @@ import {
 import { saveRound, saveTroubleContext, clearTroubleContext, claimRound } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { CompactSamplePreview } from "@/components/compact-sample-preview";
+import { ContourBg } from "@/components/contour-bg";
 import type { SamplePreviewData } from "@/lib/golf/sample-round";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useSupabaseUser } from "@/lib/supabase/auth-client";
@@ -495,31 +496,40 @@ export default function StrokesGainedClient({
     : false;
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="font-display text-3xl tracking-tight text-neutral-950">
-        Strokes Gained Benchmarker
-      </h1>
-      <p className="mt-2 text-neutral-600">
-        A proxy strokes gained benchmark built from scorecard stats amateurs already track.
-      </p>
-      <p className="mt-1 max-w-lg text-sm text-neutral-500">
-        See where you gain and lose strokes compared to golfers at your handicap
-        level. No sensors needed.{" "}
-        <Link href="/methodology" className="underline hover:text-neutral-700">
-          See full methodology &rarr;
-        </Link>
-      </p>
+    <main>
+      <section className="relative overflow-hidden px-4 pb-8 pt-12 sm:pb-10 sm:pt-16">
+        <ContourBg className="text-brand-900" />
+        <div className="relative mx-auto max-w-3xl">
+          <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.22em] text-brand-800">
+            Free post-round benchmark
+          </p>
+          <h1 className="animate-fade-up [animation-delay:100ms] mt-4 font-display text-4xl tracking-tight text-neutral-950 sm:text-5xl">
+            Strokes Gained Benchmarker
+          </h1>
+          <p className="animate-fade-up [animation-delay:200ms] mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
+            A proxy strokes gained benchmark built from scorecard stats amateurs already track.
+          </p>
+          <p className="animate-fade-up [animation-delay:200ms] mt-2 max-w-lg text-sm text-neutral-500">
+            See where you gain and lose strokes compared to golfers at your handicap
+            level. No sensors needed.{" "}
+            <Link href="/methodology" className="text-brand-800 underline transition-colors hover:text-brand-700">
+              See full methodology &rarr;
+            </Link>
+          </p>
 
-      {samplePreview && (
-        <div className="mt-6">
-          <CompactSamplePreview {...samplePreview} />
+          {samplePreview && (
+            <div className="mt-8">
+              <CompactSamplePreview {...samplePreview} />
+            </div>
+          )}
+
+          <LaunchTrustPanel />
         </div>
-      )}
-
-      <LaunchTrustPanel />
+      </section>
+      <div className="mx-auto max-w-3xl px-4 pb-10 sm:pb-14">
 
       <div
-        className="mt-8 rounded-xl border border-card-border bg-card p-6 shadow-sm"
+        className="mt-10 rounded-xl border border-cream-200 bg-white p-6 shadow-md sm:p-8"
         data-testid="form-wrapper"
         onFocusCapture={() => {
           if (!formStartedRef.current) {
@@ -684,13 +694,18 @@ export default function StrokesGainedClient({
         <div
           ref={resultsRef}
           data-testid="sg-results"
-          className="mt-12 space-y-8"
+          className="mt-16 space-y-8"
         >
-          <h2 className="font-display text-2xl tracking-tight text-neutral-950">
-            Your Proxy SG Breakdown
-          </h2>
-          <details className="mt-2 text-sm text-neutral-500">
-            <summary className="cursor-pointer font-medium text-neutral-600">
+          <div className="animate-fade-up">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-brand-800">
+              Results
+            </p>
+            <h2 className="mt-2 font-display text-3xl tracking-tight text-neutral-950 sm:text-4xl">
+              Your Proxy SG Breakdown
+            </h2>
+          </div>
+          <details className="animate-fade-up [animation-delay:100ms] rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-500">
+            <summary className="cursor-pointer font-medium text-neutral-800">
               How to read these results
             </summary>
             <div className="mt-2 space-y-1 border-l-2 border-cream-200 pl-4">
@@ -700,11 +715,13 @@ export default function StrokesGainedClient({
               <p>Confidence badges (High/Med/Low) show how much data each category uses. See the methodology page for details.</p>
             </div>
           </details>
-          <div style={{ height: 400 }}>
-            <RadarChart
-              data={chartData}
-              bracketLabel={BRACKET_LABELS[result.benchmarkBracket]}
-            />
+          <div className="animate-fade-up [animation-delay:200ms] rounded-xl border border-cream-200 bg-white p-4 shadow-sm sm:p-6">
+            <div style={{ height: 400 }}>
+              <RadarChart
+                data={chartData}
+                bracketLabel={BRACKET_LABELS[result.benchmarkBracket]}
+              />
+            </div>
           </div>
           <ResultsSummary
             result={result}
@@ -759,7 +776,7 @@ export default function StrokesGainedClient({
           )}
 
           {/* Share actions */}
-          <div className="flex gap-3">
+          <div className="animate-fade-up [animation-delay:400ms] flex gap-3">
             <button
               type="button"
               data-testid="download-png"
@@ -799,6 +816,7 @@ export default function StrokesGainedClient({
           </div>
         </div>
       )}
+      </div>
     </main>
   );
 }

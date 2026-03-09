@@ -96,13 +96,15 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
     <div className="w-full max-w-lg space-y-6">
       {/* Total SG — hero card */}
       <div
-        className={`rounded-xl px-6 py-5 ${
-          result.total >= 0 ? "bg-brand-50" : "bg-red-50"
+        className={`animate-fade-up rounded-xl border px-6 py-6 ${
+          result.total >= 0 ? "border-brand-100 bg-brand-50" : "border-red-100 bg-red-50"
         }`}
       >
-        <p className="text-sm font-medium text-neutral-600">Total Proxy SG</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+          Total Proxy SG
+        </p>
         <p
-          className={`font-display text-4xl tracking-tight ${
+          className={`mt-1 font-display text-4xl tracking-tight sm:text-5xl ${
             result.total >= 0 ? "text-data-positive" : "text-data-negative"
           }`}
         >
@@ -221,10 +223,11 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
 
       {/* Per-category breakdown */}
       <ul className="space-y-3">
-        {entries.map(({ key, label, description, value, skipped }) => (
+        {entries.map(({ key, label, description, value, skipped }, index) => (
           <li
             key={key}
-            className="relative flex items-center justify-between rounded-lg border border-card-border"
+            className="animate-fade-up relative flex items-center justify-between rounded-lg border border-card-border"
+            style={{ animationDelay: `${(index + 2) * 100}ms` }}
           >
             {/* Colored left bar */}
             {!skipped && (
@@ -285,7 +288,7 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
       {/* Strength & Weakness callouts (need at least 2 non-estimated, non-skipped categories) */}
       {strength && weakness && calloutEntries.length >= 2 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="rounded-lg bg-brand-50 px-4 py-3">
+          <div className="rounded-lg border border-brand-100 bg-brand-50 px-4 py-3">
             <div className="flex items-center gap-1.5">
               <TrendingUp className="h-3.5 w-3.5 text-data-positive" />
               <p className="text-xs font-medium uppercase tracking-wide text-data-positive">
@@ -300,7 +303,7 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
             </p>
             <p className="font-mono text-sm tabular-nums text-data-positive">{formatSG(strength.value)}</p>
           </div>
-          <div className="rounded-lg bg-red-50 px-4 py-3">
+          <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3">
             <div className="flex items-center gap-1.5">
               <TrendingDown className="h-3.5 w-3.5 text-data-negative" />
               <p className="text-xs font-medium uppercase tracking-wide text-data-negative">

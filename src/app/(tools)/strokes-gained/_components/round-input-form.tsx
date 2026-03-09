@@ -4,6 +4,7 @@
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { roundInputSchema, type RoundInputFormData } from "@/lib/golf/schemas";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
@@ -48,7 +49,7 @@ function FormField({
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 text-base font-semibold tracking-wide text-neutral-950">
+    <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.15em] text-neutral-600">
       <span className="h-4 w-0.5 rounded-full bg-brand-800" />
       {children}
     </h2>
@@ -93,10 +94,6 @@ export function RoundInputForm({
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       })(),
       fairwayAttempts: 14,
-      penaltyStrokes: 0,
-      eagles: 0,
-      doubleBogeys: 0,
-      triplePlus: 0,
       ...initialValues,
       // Rehydration: show absolute value when plus handicap
       ...(initialValues?.handicapIndex != null && initialValues.handicapIndex < 0
@@ -146,7 +143,7 @@ export function RoundInputForm({
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-10"
+      className="space-y-8"
       noValidate
     >
       {/* Section 1: Handicap + Bracket */}
@@ -194,6 +191,8 @@ export function RoundInputForm({
         </div>
       </div>
 
+      <hr className="border-cream-200" />
+
       {/* Section 2: Course Info */}
       <div className="space-y-4">
         <SectionHeading>Course Info</SectionHeading>
@@ -240,6 +239,8 @@ export function RoundInputForm({
           </FormField>
         </div>
       </div>
+
+      <hr className="border-cream-200" />
 
       {/* Section 3: Core Stats */}
       <div className="space-y-4">
@@ -314,10 +315,13 @@ export function RoundInputForm({
             type="number"
             inputMode="numeric"
             className={inputClass}
+            placeholder="0"
             {...register("penaltyStrokes")}
           />
         </FormField>
       </div>
+
+      <hr className="border-cream-200" />
 
       {/* Section 4: Scoring Distribution */}
       <div className="space-y-4">
@@ -342,6 +346,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               className={inputClass}
+              placeholder="0"
               {...register("eagles")}
             />
           </FormField>
@@ -374,6 +379,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               className={inputClass}
+              placeholder="0"
               {...register("doubleBogeys")}
             />
           </FormField>
@@ -382,19 +388,23 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               className={inputClass}
+              placeholder="0"
               {...register("triplePlus")}
             />
           </FormField>
         </div>
       </div>
 
+      <hr className="border-cream-200" />
+
       {/* Section 5: Optional Stats (Progressive Disclosure) */}
       <div className="space-y-4">
         <button
           type="button"
           onClick={() => setShowOptional(!showOptional)}
-          className="text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+          className="flex items-center gap-1.5 text-sm font-medium text-brand-800 transition-colors hover:text-brand-700"
         >
+          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showOptional ? "rotate-180" : ""}`} />
           {showOptional ? "Hide" : "Show"} More Stats
         </button>
         {showOptional && (
@@ -511,7 +521,7 @@ export function RoundInputForm({
       <button
         type="submit"
         disabled={isCalculating}
-        className="w-full rounded-lg bg-brand-800 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-brand-800 px-4 py-3.5 text-base font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isCalculating ? "Calculating..." : "See My Strokes Gained"}
       </button>
