@@ -275,10 +275,9 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Methodology page renders with key content
     await expect(page.locator("h1")).toContainText("Methodology");
-    // Scope to SG formulas table to avoid strict-mode duplicates
-    const formulasTable = page.locator("table").first();
-    await expect(formulasTable.getByText("Off the Tee")).toBeVisible();
-    await expect(formulasTable.getByText("Putting")).toBeVisible();
+    // SG formulas section uses card layout with h3 headings
+    await expect(page.getByRole("heading", { name: "Off the Tee", level: 3 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Putting", level: 3 })).toBeVisible();
     await expect(page.getByText(/proxy model/i).first()).toBeVisible();
   });
 

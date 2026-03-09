@@ -4,16 +4,20 @@ import { makeRound } from "../fixtures/factories";
 
 const {
   mockInsert,
+  mockUpdate,
   mockCreateAdminClient,
   mockCheckRateLimit,
   mockCaptureMonitoringException,
   mockVerifyTurnstileToken,
+  mockGenerateClaimToken,
 } = vi.hoisted(() => ({
   mockInsert: vi.fn(),
+  mockUpdate: vi.fn(),
   mockCreateAdminClient: vi.fn(),
   mockCheckRateLimit: vi.fn(),
   mockCaptureMonitoringException: vi.fn(),
   mockVerifyTurnstileToken: vi.fn(),
+  mockGenerateClaimToken: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
@@ -33,6 +37,15 @@ vi.mock("@/lib/security/turnstile", () => ({
   verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
 
+vi.mock("@/lib/security/claim-token", () => ({
+  generateClaimToken: mockGenerateClaimToken,
+  hashClaimToken: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/auth", () => ({
+  getUser: vi.fn().mockResolvedValue(null),
+}));
+
 vi.mock("next/headers", () => ({
   headers: vi.fn(
     async () => new Map([
@@ -48,6 +61,10 @@ import { saveRound } from "@/app/(tools)/strokes-gained/actions";
 const verification = {
   turnstileToken: "turnstile-token",
 };
+
+const FAKE_CLAIM_TOKEN = "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
+const FAKE_CLAIM_HASH = "hashedvalue01234567890abcdef1234567890abcdef1234567890abcdef1234";
+const FAKE_CLAIM_EXPIRES = "2026-04-08T00:00:00.000Z";
 
 describe("saveRound server action", () => {
   beforeEach(() => {
@@ -68,10 +85,27 @@ describe("saveRound server action", () => {
         hostname: "golfdataviz.com",
       },
     });
+    mockGenerateClaimToken.mockResolvedValue({
+      rawToken: FAKE_CLAIM_TOKEN,
+      hash: FAKE_CLAIM_HASH,
+      expiresAt: FAKE_CLAIM_EXPIRES,
+    });
+    mockUpdate.mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
     mockCreateAdminClient.mockReturnValue({
-      from: vi.fn(() => ({
-        insert: mockInsert,
-      })),
+      from: vi.fn((table: string) => {
+        if (table === "rounds") {
+          return {
+            insert: mockInsert,
+            update: mockUpdate,
+          };
+        }
+        // sg_shadow_comparisons
+        return {
+          insert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }),
     });
     mockInsert.mockReturnValue({
       select: vi.fn().mockResolvedValue({ error: null, data: [{ id: "test-round-id" }] }),
@@ -97,10 +131,23 @@ describe("saveRound server action", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
-  it("returns success with roundId on successful admin insert", async () => {
+  it("returns success with roundId and claimToken on successful admin insert", async () => {
     const result = await saveRound(makeRound(), verification);
-    expect(result).toEqual({ success: true, roundId: "test-round-id" });
+    expect(result).toEqual({
+      success: true,
+      roundId: "test-round-id",
+      claimToken: FAKE_CLAIM_TOKEN,
+    });
     expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
+  });
+
+  it("stores claim_token_hash (not raw token) via update after insert", async () => {
+    await saveRound(makeRound(), verification);
+
+    expect(mockUpdate).toHaveBeenCalledWith({
+      claim_token_hash: FAKE_CLAIM_HASH,
+      claim_token_expires_at: FAKE_CLAIM_EXPIRES,
+    });
   });
 
   it("returns DB_ERROR when Supabase insert reports an error", async () => {
@@ -138,7 +185,11 @@ describe("saveRound server action", () => {
 
     const result = await saveRound(makeRound(), verification);
 
-    expect(result).toEqual({ success: true, roundId: "test-round-id" });
+    expect(result).toEqual({
+      success: true,
+      roundId: "test-round-id",
+      claimToken: FAKE_CLAIM_TOKEN,
+    });
     expect(mockInsert).toHaveBeenCalledTimes(2);
     expect(mockInsert.mock.calls[0][0]).toEqual(
       expect.objectContaining({
@@ -390,5 +441,17 @@ describe("saveRound server action", () => {
       message: "Bot check failed. Please try again.",
     });
     expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("still returns success if claim token generation fails (best-effort)", async () => {
+    mockGenerateClaimToken.mockRejectedValue(new Error("Crypto unavailable"));
+
+    const result = await saveRound(makeRound(), verification);
+
+    expect(result).toEqual({
+      success: true,
+      roundId: "test-round-id",
+      claimToken: "",
+    });
   });
 });

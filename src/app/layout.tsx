@@ -6,6 +6,7 @@ import { GA4Bootstrap } from "@/lib/analytics/ga4-bootstrap";
 import { GA4PageView } from "@/lib/analytics/ga4-pageview";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { AuthProvider } from "@/lib/supabase/auth-context";
 import "./globals.css";
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -63,21 +64,23 @@ export const metadata: Metadata = {
   },
 };
 
-const ga4Id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const ga4Id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+
   return (
     <html lang="en">
       <body
         className={`${dmSerifDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <AuthProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </AuthProvider>
         <Analytics />
         {ga4Id && (
           <>
@@ -86,9 +89,9 @@ export default function RootLayout({
               src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}
               strategy="afterInteractive"
             />
+            <GA4PageView />
           </>
         )}
-        <GA4PageView />
       </body>
     </html>
   );

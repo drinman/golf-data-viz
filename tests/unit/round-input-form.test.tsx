@@ -63,7 +63,7 @@ describe("RoundInputForm save consent", () => {
     render(<RoundInputForm onSubmit={onSubmit} saveEnabled />);
 
     expect(
-      screen.getByLabelText("Save this round anonymously to improve future benchmarks.")
+      screen.getByLabelText("Save this round to track over time")
     ).toBeVisible();
   });
 
@@ -71,7 +71,7 @@ describe("RoundInputForm save consent", () => {
     render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} />);
 
     expect(
-      screen.queryByLabelText("Save this round anonymously to improve future benchmarks.")
+      screen.queryByLabelText("Save this round to track over time")
     ).toBeNull();
   });
 
@@ -81,17 +81,20 @@ describe("RoundInputForm save consent", () => {
     render(<RoundInputForm onSubmit={onSubmit} saveEnabled />);
 
     expect(
-      screen.queryByText(/Cloudflare Turnstile to distinguish humans from bots/i)
+      screen.queryByText(/create a free account to claim it/i)
     ).toBeNull();
 
     await user.click(
       screen.getByLabelText(
-        "Save this round anonymously to improve future benchmarks."
+        "Save this round to track over time"
       )
     );
 
     expect(
-      screen.getByText(/Cloudflare Turnstile to distinguish humans from bots/i)
+      screen.getByText(/Save this round now, then create a free account to claim it and track your SG trends over time/i)
+    ).toBeVisible();
+    expect(
+      screen.getByText(/Cloudflare Turnstile verifies you're human/i)
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Privacy Policy" })
@@ -100,6 +103,23 @@ describe("RoundInputForm save consent", () => {
       "href",
       "https://www.cloudflare.com/website-terms/"
     );
+  });
+
+  it("shows authenticated disclosure when user is signed in", async () => {
+    const user = userEvent.setup();
+
+    render(<RoundInputForm onSubmit={onSubmit} saveEnabled isAuthenticated />);
+
+    await user.click(
+      screen.getByLabelText("Save this round to track over time")
+    );
+
+    expect(
+      screen.getByText(/This round will be added to your history/i)
+    ).toBeVisible();
+    expect(
+      screen.queryByText(/create a free account/i)
+    ).toBeNull();
   });
 
   it("reports the save opt-in state upward as the checkbox changes", async () => {
@@ -118,7 +138,7 @@ describe("RoundInputForm save consent", () => {
 
     await user.click(
       screen.getByLabelText(
-        "Save this round anonymously to improve future benchmarks."
+        "Save this round to track over time"
       )
     );
 

@@ -21,6 +21,16 @@ vi.mock("@/lib/analytics/client", () => ({
   trackEvent: mockTrackEvent,
 }));
 
+const mockUser = vi.hoisted(() => ({ current: null as { id: string; email: string } | null }));
+
+vi.mock("@/lib/supabase/auth-client", () => ({
+  useSupabaseUser: () => ({ user: mockUser.current, loading: false }),
+}));
+
+vi.mock("@/components/auth/auth-modal", () => ({
+  AuthModal: () => null,
+}));
+
 const mockBracket = {
   bracket: "10-15" as const,
   averageScore: 87,
@@ -230,6 +240,7 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     mockSaveRound.mockClear();
     mockTurnstileExecute.mockClear();
     mockInitialSavePreference.current = true;
+    mockUser.current = null;
     mockSaveRound.mockResolvedValue({ success: true });
     mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi
@@ -401,6 +412,7 @@ describe("Copy Link error handling", () => {
 
   beforeEach(() => {
     mockTrackEvent.mockClear();
+    mockUser.current = null;
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
   });
 
@@ -460,6 +472,7 @@ describe("Save feedback", () => {
     mockTrackEvent.mockClear();
     mockSaveRound.mockClear();
     mockTurnstileExecute.mockClear();
+    mockUser.current = null;
     mockSaveRound.mockResolvedValue({ success: true });
     mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
@@ -658,5 +671,97 @@ describe("Save feedback", () => {
 
     expect(screen.getByTestId("save-success")).toBeInTheDocument();
     expect(screen.queryByTestId("save-error")).not.toBeInTheDocument();
+  });
+});
+
+describe("Claim CTA copy", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    mockTrackEvent.mockClear();
+    mockSaveRound.mockClear();
+    mockTurnstileExecute.mockClear();
+    mockUser.current = null;
+    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1", claimToken: "ct-1" });
+    mockTurnstileExecute.mockResolvedValue("turnstile-token");
+    vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+  });
+
+  it("shows updated claim CTA headline and body for anonymous saves", async () => {
+    renderClient();
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("claim-cta")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText("Keep this round and track what changes")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Create a free account to keep this round and see your SG trends, biggest mover, and round history over time/)
+    ).toBeInTheDocument();
+  });
+});
+
+describe("Post-save confirmation for signed-in users", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    mockTrackEvent.mockClear();
+    mockSaveRound.mockClear();
+    mockTurnstileExecute.mockClear();
+    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1" });
+    mockTurnstileExecute.mockResolvedValue("turnstile-token");
+    vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+  });
+
+  it("shows persistent card with history link when signed-in user saves", async () => {
+    mockUser.current = { id: "user-1", email: "test@example.com" };
+    renderClient();
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-success-authed")).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText("Round added to your history.")
+    ).toBeInTheDocument();
+    const link = screen.getByText(/View your trends/);
+    expect(link.closest("a")).toHaveAttribute("href", "/strokes-gained/history");
+  });
+
+  it("shows auto-dismiss toast when anonymous user saves", async () => {
+    mockUser.current = null;
+    renderClient();
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-success")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("save-success")).toHaveTextContent("Round saved.");
+    expect(screen.queryByTestId("save-success-authed")).not.toBeInTheDocument();
+  });
+
+  it("fires history_link_clicked event when View your trends link is clicked", async () => {
+    mockUser.current = { id: "user-1", email: "test@example.com" };
+    renderClient();
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-success-authed")).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText(/View your trends/));
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("history_link_clicked", {
+      surface: "post_save_confirmation",
+    });
   });
 });

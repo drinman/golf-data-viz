@@ -1,4 +1,5 @@
 import type { RoundInput, StrokesGainedResult } from "@/lib/golf/types";
+import type { RoundSgSnapshot } from "@/lib/golf/trends";
 
 export function makeRound(overrides: Partial<RoundInput> = {}): RoundInput {
   return {
@@ -19,6 +20,26 @@ export function makeRound(overrides: Partial<RoundInput> = {}): RoundInput {
     bogeys: 7,
     doubleBogeys: 2,
     triplePlus: 1,
+    ...overrides,
+  };
+}
+
+export function makeRoundSnapshot(
+  overrides: Partial<RoundSgSnapshot> = {}
+): RoundSgSnapshot {
+  return {
+    roundId: "test-round-1",
+    playedAt: "2026-03-01",
+    courseName: "Test Course",
+    score: 87,
+    handicapIndex: 14.3,
+    sgTotal: -1.5,
+    sgOffTheTee: 0.3,
+    sgApproach: -0.8,
+    sgAroundTheGreen: -0.5,
+    sgPutting: -0.5,
+    methodologyVersion: "2.0.0",
+    benchmarkBracket: "10-15",
     ...overrides,
   };
 }

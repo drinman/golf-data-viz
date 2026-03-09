@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
+import { useSupabaseUser } from "@/lib/supabase/auth-client";
+import { UserMenu } from "@/components/auth/user-menu";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { trackEvent } from "@/lib/analytics/client";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const { user, loading } = useSupabaseUser();
 
   useEffect(() => {
     function onScroll() {
@@ -16,39 +22,72 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header
-      data-testid="site-header"
-      className={`sticky top-0 z-50 border-b transition-all duration-200 ${
-        scrolled
-          ? "border-cream-200 bg-white/90 shadow-sm backdrop-blur-md"
-          : "border-cream-200 bg-cream-50/80 backdrop-blur-sm"
-      }`}
-    >
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-neutral-950"
-        >
-          <Logo size={28} variant="mark" />
-          <span className="font-display text-lg tracking-tight">
-            Golf Data Viz
-          </span>
-        </Link>
-        <nav aria-label="Main" className="flex gap-4">
+    <>
+      <header
+        data-testid="site-header"
+        className={`sticky top-0 z-50 border-b transition-all duration-200 ${
+          scrolled
+            ? "border-cream-200 bg-white/90 shadow-sm backdrop-blur-md"
+            : "border-cream-200 bg-cream-50/80 backdrop-blur-sm"
+        }`}
+      >
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <Link
-            href="/strokes-gained"
-            className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+            href="/"
+            className="flex items-center gap-2 text-neutral-950"
           >
-            SG Benchmarker
+            <Logo size={28} variant="mark" />
+            <span className="font-display text-lg tracking-tight">
+              Golf Data Viz
+            </span>
           </Link>
-          <Link
-            href="/methodology"
-            className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
-          >
-            Methodology
-          </Link>
-        </nav>
-      </div>
-    </header>
+          <div className="flex items-center gap-4">
+            <nav aria-label="Main" className="flex gap-4">
+              <Link
+                href="/strokes-gained"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+              >
+                SG Benchmarker
+              </Link>
+              <Link
+                href="/strokes-gained/history"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+              >
+                History
+              </Link>
+              <Link
+                href="/methodology"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+              >
+                Methodology
+              </Link>
+            </nav>
+            {!loading && user && <UserMenu user={user} />}
+            {!loading && !user && (
+              <button
+                data-testid="header-sign-in"
+                onClick={() => {
+                  setAuthOpen(true);
+                  trackEvent("auth_modal_opened", { surface: "header_sign_in" });
+                }}
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+              >
+                Sign in
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+      {authOpen && (
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          onSuccess={() => {
+            setAuthOpen(false);
+            window.location.reload();
+          }}
+        />
+      )}
+    </>
   );
 }
