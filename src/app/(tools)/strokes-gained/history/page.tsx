@@ -20,7 +20,7 @@ export default async function HistoryPage() {
   const rounds = await getUserRounds(user.id);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <main className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="font-display text-3xl tracking-tight text-neutral-950">
         Round History
       </h1>

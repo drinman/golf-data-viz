@@ -29,16 +29,6 @@ function ZeroLine({ yScale, innerWidth }: LineCustomSvgLayerProps<TrendSeries>) 
         strokeDasharray="6 4"
         opacity={0.6}
       />
-      <text
-        x={innerWidth + 4}
-        y={y}
-        fill="#94a3b8"
-        fontSize={10}
-        dominantBaseline="middle"
-        fontFamily="system-ui, sans-serif"
-      >
-        Peer Avg
-      </text>
     </g>
   );
 }
@@ -97,7 +87,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
     return (
       <div
         data-testid="trend-chart-min-rounds"
-        className="rounded-xl border border-card-border bg-card p-8 text-center shadow-sm"
+        className="p-8 text-center"
       >
         <p className="text-neutral-600">
           Enter a few more rounds to see trends.
@@ -115,7 +105,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
       <div data-testid="sg-trend-chart" style={{ height: 360 }}>
         <ResponsiveLine
           data={series}
-          margin={{ top: 20, right: 90, bottom: 50, left: 50 }}
+          margin={{ top: 20, right: 140, bottom: 50, left: 50 }}
           xScale={{ type: "point" }}
           yScale={{ type: "linear", stacked: false, min: yDomain.min, max: yDomain.max }}
           curve="linear"
@@ -158,8 +148,8 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
             {
               anchor: "right",
               direction: "column",
-              translateX: 85,
-              itemWidth: 80,
+              translateX: 135,
+              itemWidth: 130,
               itemHeight: 20,
               itemTextColor: "#64748b",
               symbolSize: 10,

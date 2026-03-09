@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { RoundHistoryList } from "@/app/(tools)/strokes-gained/history/_components/round-history-list";
+import { METHODOLOGY_VERSION_V3 } from "@/lib/golf/constants";
 import { makeRoundSnapshot } from "../fixtures/factories";
 
 vi.mock("@/lib/analytics/client", () => ({
@@ -26,7 +27,7 @@ describe("RoundHistoryList", () => {
 
   it("renders heading", () => {
     render(<RoundHistoryList rounds={[makeRoundSnapshot()]} />);
-    expect(screen.getByText("Round History")).toBeInTheDocument();
+    expect(screen.getByText("Your Rounds")).toBeInTheDocument();
   });
 
   it("displays course name and score in cards", () => {
@@ -52,5 +53,34 @@ describe("RoundHistoryList", () => {
     );
     // The format is "-1.5" (toFixed(1))
     expect(screen.getByText("-1.5")).toBeInTheDocument();
+  });
+
+  it("does NOT show version badge for current methodology version", () => {
+    render(
+      <RoundHistoryList
+        rounds={[
+          makeRoundSnapshot({
+            roundId: "current",
+            methodologyVersion: METHODOLOGY_VERSION_V3,
+          }),
+        ]}
+      />
+    );
+    // No version badge should be rendered
+    expect(screen.queryByText(`v${METHODOLOGY_VERSION_V3}`)).not.toBeInTheDocument();
+  });
+
+  it("shows version badge for old methodology version", () => {
+    render(
+      <RoundHistoryList
+        rounds={[
+          makeRoundSnapshot({
+            roundId: "old",
+            methodologyVersion: "2.0.0",
+          }),
+        ]}
+      />
+    );
+    expect(screen.getByText("v2.0.0")).toBeInTheDocument();
   });
 });

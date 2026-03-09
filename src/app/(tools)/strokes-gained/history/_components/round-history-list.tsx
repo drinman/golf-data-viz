@@ -1,5 +1,5 @@
 import type { RoundSgSnapshot } from "@/lib/golf/trends";
-import { METHODOLOGY_VERSION } from "@/lib/golf/constants";
+import { METHODOLOGY_VERSION_V3 } from "@/lib/golf/constants";
 import { RoundHistoryCard } from "./round-history-card";
 
 interface RoundHistoryListProps {
@@ -10,13 +10,15 @@ export function RoundHistoryList({ rounds }: RoundHistoryListProps) {
   return (
     <div data-testid="round-history-list" className="space-y-3">
       <h2 className="font-display text-xl tracking-tight text-neutral-950">
-        Round History
+        Your Rounds
       </h2>
-      {rounds.map((round) => (
+      {rounds.map((round, i) => (
         <RoundHistoryCard
           key={round.roundId}
           round={round}
-          currentMethodologyVersion={METHODOLOGY_VERSION}
+          currentMethodologyVersion={METHODOLOGY_VERSION_V3}
+          style={i < 6 ? { animationDelay: `${(i + 1) * 80}ms` } : undefined}
+          className={i < 6 ? "animate-fade-up" : undefined}
         />
       ))}
     </div>

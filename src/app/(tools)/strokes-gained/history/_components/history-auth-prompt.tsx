@@ -30,7 +30,7 @@ export function HistoryAuthPrompt() {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="text-center">
         <h1 className="font-display text-3xl tracking-tight text-neutral-950">
           Round History
