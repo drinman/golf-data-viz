@@ -27,6 +27,7 @@ const features = [
 
 export function HistoryAuthPrompt() {
   const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -66,7 +67,7 @@ export function HistoryAuthPrompt() {
         <button
           type="button"
           data-testid="auth-prompt-sign-in"
-          onClick={() => setAuthOpen(true)}
+          onClick={() => { setAuthMode("signup"); setAuthOpen(true); }}
           className="rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
         >
           Create free account to start tracking
@@ -76,7 +77,7 @@ export function HistoryAuthPrompt() {
           <button
             type="button"
             data-testid="auth-prompt-sign-in-link"
-            onClick={() => setAuthOpen(true)}
+            onClick={() => { setAuthMode("signin"); setAuthOpen(true); }}
             className="underline hover:text-neutral-700"
           >
             Sign in
@@ -87,6 +88,7 @@ export function HistoryAuthPrompt() {
       {authOpen && (
         <AuthModal
           open={authOpen}
+          initialMode={authMode}
           onClose={() => setAuthOpen(false)}
           onSuccess={() => {
             setAuthOpen(false);

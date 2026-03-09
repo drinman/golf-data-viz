@@ -13,13 +13,14 @@ interface AuthModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialMode?: AuthMode;
 }
 
-export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
+export function AuthModal({ open, onClose, onSuccess, initialMode = "signin" }: AuthModalProps) {
   if (!open) return null;
 
   return (
-    <AuthModalContent onClose={onClose} onSuccess={onSuccess} />
+    <AuthModalContent onClose={onClose} onSuccess={onSuccess} initialMode={initialMode} />
   );
 }
 
@@ -27,8 +28,9 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
 function AuthModalContent({
   onClose,
   onSuccess,
+  initialMode = "signin",
 }: Omit<AuthModalProps, "open">) {
-  const [mode, setMode] = useState<AuthMode>("signin");
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +127,7 @@ function AuthModalContent({
               data-testid="auth-modal-title"
               className="font-display text-xl tracking-tight text-neutral-950"
             >
-              {mode === "signin" ? "Welcome back" : "Create your account"}
+              {mode === "signin" ? "Welcome back" : "Create your free account"}
             </h2>
             <button
               type="button"
@@ -142,7 +144,7 @@ function AuthModalContent({
           <p className="mt-1 text-sm text-neutral-600">
             {mode === "signin"
               ? "Sign in to track your rounds and view trends."
-              : "Start tracking your strokes gained over time."}
+              : "Keep your saved rounds and track SG trends over time."}
           </p>
 
           {/* Google OAuth */}
@@ -260,6 +262,13 @@ function AuthModalContent({
                   : "Create account"}
             </button>
           </form>
+
+          {/* Trust line — signup mode only */}
+          {mode === "signup" && (
+            <p className="mt-3 text-center text-xs text-neutral-500">
+              No subscription. Free round history.
+            </p>
+          )}
 
           {/* Mode toggle */}
           <p className="mt-4 text-center text-sm text-neutral-600">

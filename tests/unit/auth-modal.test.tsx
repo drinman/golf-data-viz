@@ -62,7 +62,7 @@ describe("AuthModal", () => {
     // Toggle to sign-up
     await user.click(screen.getByTestId("auth-toggle-mode"));
     expect(screen.getByTestId("auth-modal-title")).toHaveTextContent(
-      "Create your account"
+      "Create your free account"
     );
     expect(screen.getByTestId("auth-submit-btn")).toHaveTextContent(
       "Create account"
