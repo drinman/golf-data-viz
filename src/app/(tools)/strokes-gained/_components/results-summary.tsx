@@ -137,7 +137,10 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
               <strong>Plus-handicap note:</strong> Your category benchmarks are
               estimated below scratch using extrapolated peer data. FIR% uses
               the scratch benchmark; other categories are projected for your
-              handicap level. Total SG still reflects your entered plus handicap.
+              handicap level.{" "}
+              {result.totalAnchorMode === "course_neutral"
+                ? "Total SG uses an extrapolated average score for your handicap level."
+                : "Total SG still reflects your entered plus handicap."}
             </p>
           ) : (
             <p>
