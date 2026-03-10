@@ -1,5 +1,6 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 
 const SUPABASE_URL = "http://127.0.0.1:54321";
 const SERVICE_ROLE_KEY =
@@ -8,10 +9,10 @@ const ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
 
 describe("premium/report schema (local Supabase)", () => {
-  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+  const admin = createClient<Database>(SUPABASE_URL, SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
-  const anon = createClient(SUPABASE_URL, ANON_KEY, {
+  const anon = createClient<Database>(SUPABASE_URL, ANON_KEY, {
     auth: { persistSession: false },
   });
 
@@ -159,7 +160,7 @@ describe("premium/report schema (local Supabase)", () => {
 
     expect(insertError).toBeNull();
 
-    const cleanupResult = await (admin as any).rpc("cleanup_stripe_webhook_events");
+    const cleanupResult = await admin.rpc("cleanup_stripe_webhook_events");
 
     expect(cleanupResult.error).toBeNull();
     expect(cleanupResult.data).toBe(1);
