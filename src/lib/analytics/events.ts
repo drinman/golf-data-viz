@@ -35,7 +35,13 @@ export type AnalyticsEvent =
   | "history_link_clicked"
   | "trend_chart_viewed"
   | "biggest_mover_viewed"
-  | "auth_modal_opened";
+  | "auth_modal_opened"
+  | "round_detail_viewed"
+  | "history_card_clicked"
+  | "share_token_created"
+  | "share_link_copied"
+  | "saved_round_png_downloaded"
+  | "shared_saved_round_viewed";
 
 type EmptyPayload = Record<never, never>;
 
@@ -109,6 +115,15 @@ export type AnalyticsEventProps = {
   trend_chart_viewed: { round_count: number };
   biggest_mover_viewed: { category: string; direction: string; confidence: string };
   auth_modal_opened: { surface: string };
+  round_detail_viewed: {
+    round_id: string;
+    methodology_version: string | null;
+  };
+  history_card_clicked: { round_id: string };
+  share_token_created: { round_id: string };
+  share_link_copied: { round_id: string; surface: "round_detail" };
+  saved_round_png_downloaded: { round_id: string; surface: "round_detail" | "shared_page" };
+  shared_saved_round_viewed: { referrer: string };
 };
 
 type RequiredKeys<T extends object> = {

@@ -1,4 +1,4 @@
-import type { RoundInput, StrokesGainedResult } from "@/lib/golf/types";
+import type { RoundInput, RoundDetailSnapshot, StrokesGainedResult } from "@/lib/golf/types";
 import type { RoundSgSnapshot } from "@/lib/golf/trends";
 
 export function makeRound(overrides: Partial<RoundInput> = {}): RoundInput {
@@ -40,6 +40,42 @@ export function makeRoundSnapshot(
     sgPutting: -0.5,
     methodologyVersion: "2.0.0",
     benchmarkBracket: "10-15",
+    ...overrides,
+  };
+}
+
+export function makeDetailSnapshot(
+  overrides: Partial<RoundDetailSnapshot> = {}
+): RoundDetailSnapshot {
+  return {
+    roundId: "test-round-1",
+    playedAt: "2026-03-08",
+    courseName: "Pine Valley GC",
+    score: 82,
+    handicapIndex: 14.2,
+    sgTotal: 1.52,
+    sgOffTheTee: 0.8,
+    sgApproach: 0.3,
+    sgAroundTheGreen: -0.1,
+    sgPutting: 0.52,
+    methodologyVersion: "2.0.0",
+    benchmarkBracket: "10-15",
+    benchmarkVersion: "1.0.0",
+    benchmarkHandicap: 14.2,
+    benchmarkInterpolationMode: "standard",
+    calibrationVersion: null,
+    totalAnchorMode: null,
+    confidenceOffTheTee: "medium",
+    confidenceApproach: "high",
+    confidenceAroundTheGreen: "medium",
+    confidencePutting: "high",
+    estimatedCategories: [],
+    skippedCategories: [],
+    fairwaysHit: 8,
+    fairwayAttempts: 14,
+    greensInRegulation: 9,
+    upAndDownAttempts: null,
+    upAndDownConverted: null,
     ...overrides,
   };
 }

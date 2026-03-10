@@ -1,7 +1,12 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import type { RoundSgSnapshot } from "@/lib/golf/trends";
 import { CATEGORY_ORDER, CATEGORY_LABELS, SG_NEAR_ZERO_THRESHOLD } from "@/lib/golf/constants";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics/client";
 
 interface RoundHistoryCardProps {
   round: RoundSgSnapshot;
@@ -62,10 +67,12 @@ export function RoundHistoryCard({
   );
 
   return (
-    <div
+    <Link
+      href={`/strokes-gained/rounds/${round.roundId}`}
       data-testid="round-history-card"
-      className={cn("rounded-xl border border-card-border bg-card shadow-sm transition-shadow hover:shadow-md", className)}
+      className={cn("group block cursor-pointer rounded-xl border border-card-border bg-card shadow-sm transition-shadow hover:shadow-md", className)}
       style={style}
+      onClick={() => trackEvent("history_card_clicked", { round_id: round.roundId })}
     >
       <div className="flex items-start gap-4 p-4">
         {/* Left accent bar — color reflects overall SG */}
@@ -94,6 +101,7 @@ export function RoundHistoryCard({
               >
                 {sgSign(round.sgTotal)}
               </span>
+              <ChevronRight className="h-4 w-4 text-neutral-400 transition-colors group-hover:text-neutral-600" />
             </div>
           </div>
 
@@ -149,6 +157,6 @@ export function RoundHistoryCard({
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

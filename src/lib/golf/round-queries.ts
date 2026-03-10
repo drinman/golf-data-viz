@@ -2,11 +2,15 @@
  * Server-side queries for user round history.
  *
  * Fetches rounds from Supabase and maps DB rows to
- * domain-level RoundSgSnapshot objects.
+ * domain-level RoundSgSnapshot and RoundDetailSnapshot objects.
  */
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { RoundSgSnapshot } from "./trends";
+import type { ConfidenceLevel, RoundDetailSnapshot, StrokesGainedCategory } from "./types";
+import { deriveConfidence } from "./round-detail-adapter";
 
 /**
  * Fetch all rounds for a given user, ordered by most recent first.
@@ -45,3 +49,126 @@ export async function getUserRounds(
     benchmarkBracket: row.benchmark_bracket,
   }));
 }
+
+// Expanded column set for the detail page
+const DETAIL_COLUMNS = `
+  id, played_at, course_name, score, handicap_index,
+  sg_total, sg_off_the_tee, sg_approach, sg_around_the_green, sg_putting,
+  methodology_version, benchmark_bracket, benchmark_version,
+  benchmark_handicap, benchmark_interpolation_mode,
+  calibration_version, total_anchor_mode,
+  confidence_off_the_tee, confidence_approach,
+  confidence_around_the_green, confidence_putting,
+  estimated_categories, skipped_categories,
+  fairways_hit, fairway_attempts, greens_in_regulation,
+  up_and_down_attempts, up_and_down_converted
+`.replace(/\s+/g, " ").trim();
+
+function mapRowToDetailSnapshot(row: Record<string, unknown>): RoundDetailSnapshot {
+  // Derive confidence if stored columns are null (pre-migration rounds)
+  const storedConfidence = {
+    offTheTee: row.confidence_off_the_tee as ConfidenceLevel | null,
+    approach: row.confidence_approach as ConfidenceLevel | null,
+    aroundTheGreen: row.confidence_around_the_green as ConfidenceLevel | null,
+    putting: row.confidence_putting as ConfidenceLevel | null,
+  };
+
+  const rawInputs = {
+    fairwaysHit: row.fairways_hit as number | null,
+    fairwayAttempts: row.fairway_attempts as number | null,
+    greensInRegulation: row.greens_in_regulation as number | null,
+    upAndDownAttempts: row.up_and_down_attempts as number | null,
+    upAndDownConverted: row.up_and_down_converted as number | null,
+  };
+
+  // If stored confidence is null, derive it
+  const needsDerivation =
+    storedConfidence.offTheTee == null ||
+    storedConfidence.approach == null ||
+    storedConfidence.aroundTheGreen == null ||
+    storedConfidence.putting == null;
+
+  const derived = needsDerivation ? deriveConfidence(rawInputs) : null;
+
+  return {
+    roundId: row.id as string,
+    playedAt: row.played_at as string,
+    courseName: row.course_name as string,
+    score: row.score as number,
+    handicapIndex: row.handicap_index as number,
+    sgTotal: (row.sg_total as number | null) ?? 0,
+    sgOffTheTee: (row.sg_off_the_tee as number | null) ?? 0,
+    sgApproach: (row.sg_approach as number | null) ?? 0,
+    sgAroundTheGreen: (row.sg_around_the_green as number | null) ?? 0,
+    sgPutting: (row.sg_putting as number | null) ?? 0,
+    methodologyVersion: row.methodology_version as string | null,
+    benchmarkBracket: row.benchmark_bracket as string | null,
+    benchmarkVersion: row.benchmark_version as string | null,
+    benchmarkHandicap: row.benchmark_handicap as number | null,
+    benchmarkInterpolationMode: row.benchmark_interpolation_mode as string | null,
+    calibrationVersion: row.calibration_version as string | null,
+    totalAnchorMode: row.total_anchor_mode as string | null,
+    confidenceOffTheTee: storedConfidence.offTheTee ?? derived?.["off-the-tee"] ?? null,
+    confidenceApproach: storedConfidence.approach ?? derived?.approach ?? null,
+    confidenceAroundTheGreen: storedConfidence.aroundTheGreen ?? derived?.["around-the-green"] ?? null,
+    confidencePutting: storedConfidence.putting ?? derived?.putting ?? null,
+    estimatedCategories: (row.estimated_categories as StrokesGainedCategory[] | null) ?? [],
+    skippedCategories: (row.skipped_categories as StrokesGainedCategory[] | null) ?? [],
+    ...rawInputs,
+  };
+}
+
+/**
+ * Fetch a single round with expanded detail for the detail page.
+ * Uses the RLS-protected server client — user must own the round.
+ * Wrapped with React cache() to deduplicate generateMetadata + page calls.
+ */
+export const getRoundDetail = cache(async function getRoundDetail(
+  roundId: string,
+  userId: string
+): Promise<RoundDetailSnapshot | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("rounds")
+    .select(DETAIL_COLUMNS)
+    .eq("id", roundId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) return null;
+
+  return mapRowToDetailSnapshot(data as unknown as Record<string, unknown>);
+});
+
+/**
+ * Fetch a round by share token via the admin client (privileged path).
+ * The token IS the authorization — no additional auth checks needed.
+ * Server-side only.
+ * Wrapped with React cache() to deduplicate generateMetadata + page calls.
+ */
+export const getRoundByShareToken = cache(async function getRoundByShareToken(
+  token: string
+): Promise<RoundDetailSnapshot | null> {
+  const supabase = createAdminClient();
+
+  // Look up the share token
+  const { data: share, error: shareError } = await supabase
+    .from("round_shares")
+    .select("round_id")
+    .eq("token", token)
+    .single();
+
+  if (shareError || !share) return null;
+
+  // Fetch the round data via admin client (bypasses RLS)
+  const { data, error } = await supabase
+    .from("rounds")
+    .select(DETAIL_COLUMNS)
+    .eq("id", share.round_id)
+    .single();
+
+  if (error || !data) return null;
+
+  return mapRowToDetailSnapshot(data as unknown as Record<string, unknown>);
+});

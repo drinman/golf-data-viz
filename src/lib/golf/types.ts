@@ -243,6 +243,44 @@ export interface CalibrationConfig {
   bounds: { min: number; max: number };
 }
 
+/**
+ * Extended snapshot for the round detail page.
+ * Contains everything in RoundSgSnapshot plus confidence,
+ * estimation metadata, and raw inputs for confidence derivation fallback.
+ */
+export interface RoundDetailSnapshot {
+  roundId: string;
+  playedAt: string;
+  courseName: string;
+  score: number;
+  handicapIndex: number;
+  sgTotal: number;
+  sgOffTheTee: number;
+  sgApproach: number;
+  sgAroundTheGreen: number;
+  sgPutting: number;
+  methodologyVersion: string | null;
+  benchmarkBracket: string | null;
+  benchmarkVersion: string | null;
+  benchmarkHandicap: number | null;
+  benchmarkInterpolationMode: string | null;
+  calibrationVersion: string | null;
+  totalAnchorMode: string | null;
+  /** Confidence per category — null for pre-migration rounds (derived at read time) */
+  confidenceOffTheTee: ConfidenceLevel | null;
+  confidenceApproach: ConfidenceLevel | null;
+  confidenceAroundTheGreen: ConfidenceLevel | null;
+  confidencePutting: ConfidenceLevel | null;
+  estimatedCategories: StrokesGainedCategory[];
+  skippedCategories: StrokesGainedCategory[];
+  /** Raw input fields needed for confidence derivation fallback on pre-migration rounds */
+  fairwaysHit: number | null;
+  fairwayAttempts: number | null;
+  greensInRegulation: number | null;
+  upAndDownAttempts: number | null;
+  upAndDownConverted: number | null;
+}
+
 /** Chart-ready data shape for Nivo radar chart */
 export interface RadarChartDatum {
   category: string;

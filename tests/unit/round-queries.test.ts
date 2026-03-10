@@ -21,6 +21,10 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: mockCreateClient,
 }));
 
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: vi.fn(),
+}));
+
 import { getUserRounds } from "@/lib/golf/round-queries";
 
 describe("getUserRounds", () => {

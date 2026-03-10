@@ -46,6 +46,38 @@ export type Database = {
           },
         ]
       }
+      round_shares: {
+        Row: {
+          id: string
+          round_id: string
+          owner_id: string
+          token: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          round_id: string
+          owner_id: string
+          token: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          round_id?: string
+          owner_id?: string
+          token?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_shares_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: true
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rounds: {
         Row: {
           attribution_version: string | null
@@ -56,6 +88,12 @@ export type Database = {
           birdies: number
           bogeys: number
           calibration_version: string | null
+          confidence_off_the_tee: string | null
+          confidence_approach: string | null
+          confidence_around_the_green: string | null
+          confidence_putting: string | null
+          estimated_categories: string[]
+          skipped_categories: string[]
           claim_token_expires_at: string | null
           claim_token_hash: string | null
           course_name: string
@@ -111,6 +149,12 @@ export type Database = {
           birdies: number
           bogeys: number
           calibration_version?: string | null
+          confidence_off_the_tee?: string | null
+          confidence_approach?: string | null
+          confidence_around_the_green?: string | null
+          confidence_putting?: string | null
+          estimated_categories?: string[]
+          skipped_categories?: string[]
           claim_token_expires_at?: string | null
           claim_token_hash?: string | null
           course_name: string
@@ -166,6 +210,12 @@ export type Database = {
           birdies?: number
           bogeys?: number
           calibration_version?: string | null
+          confidence_off_the_tee?: string | null
+          confidence_approach?: string | null
+          confidence_around_the_green?: string | null
+          confidence_putting?: string | null
+          estimated_categories?: string[]
+          skipped_categories?: string[]
           claim_token_expires_at?: string | null
           claim_token_hash?: string | null
           course_name?: string

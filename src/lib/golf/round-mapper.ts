@@ -44,6 +44,14 @@ export function toRoundInsert(
     sg_putting: sg.categories["putting"],
     benchmark_bracket: sg.benchmarkBracket,
 
+    // Confidence metadata (stamp-forward for detail page)
+    confidence_off_the_tee: sg.confidence["off-the-tee"],
+    confidence_approach: sg.confidence["approach"],
+    confidence_around_the_green: sg.confidence["around-the-green"],
+    confidence_putting: sg.confidence["putting"],
+    estimated_categories: sg.estimatedCategories,
+    skipped_categories: sg.skippedCategories,
+
     // Methodology tracking
     methodology_version: sg.methodologyVersion,
     benchmark_version: sg.benchmarkVersion,

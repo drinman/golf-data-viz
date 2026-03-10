@@ -4,6 +4,7 @@ import type { RoundInput } from "@/lib/golf/types";
 import { toRoundInsert } from "@/lib/golf/round-mapper";
 import { roundInputSchema } from "@/lib/golf/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { SupabaseConfigError } from "@/lib/supabase/errors";
 import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
@@ -476,6 +477,88 @@ export async function clearTroubleContext(
     captureMonitoringException(err, { source: "clearTroubleContext" });
     return { success: false };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Share token creation
+// ---------------------------------------------------------------------------
+
+export type CreateShareTokenResult =
+  | { success: true; token: string; shareUrl: string; created: boolean }
+  | { success: false; message: string };
+
+/**
+ * Create a share token for a saved round.
+ * Idempotent: returns existing token if the round is already shared.
+ * Only the round owner can create a share token.
+ */
+export async function createShareToken(
+  roundId: string
+): Promise<CreateShareTokenResult> {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, message: "Sign in to share rounds." };
+    }
+
+    if (!UUID_RE.test(roundId)) {
+      return { success: false, message: "Invalid round ID." };
+    }
+
+    const supabase = await createClient();
+
+    // Check if share already exists (idempotent)
+    const { data: existing } = await supabase
+      .from("round_shares")
+      .select("token")
+      .eq("round_id", roundId)
+      .single();
+
+    if (existing?.token) {
+      const shareUrl = buildShareUrl(existing.token);
+      return { success: true, token: existing.token, shareUrl, created: false };
+    }
+
+    // Verify ownership: round must belong to this user
+    const { data: round } = await supabase
+      .from("rounds")
+      .select("id")
+      .eq("id", roundId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!round) {
+      return { success: false, message: "Round not found." };
+    }
+
+    // Create share token
+    const token = crypto.randomUUID();
+    const { error } = await supabase.from("round_shares").insert({
+      round_id: roundId,
+      owner_id: user.id,
+      token,
+    });
+
+    if (error) {
+      console.error("[createShareToken] Insert error:", error.message);
+      captureMonitoringException(new Error(error.message), {
+        source: "createShareToken",
+      });
+      return { success: false, message: "Could not create share link." };
+    }
+
+    const shareUrl = buildShareUrl(token);
+    return { success: true, token, shareUrl, created: true };
+  } catch (err) {
+    console.error("[createShareToken] Unexpected error:", err);
+    captureMonitoringException(err, { source: "createShareToken" });
+    return { success: false, message: "An unexpected error occurred." };
+  }
+}
+
+function buildShareUrl(token: string): string {
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://golfdataviz.com";
+  return `${base}/strokes-gained/shared/round/${token}`;
 }
 
 // ---------------------------------------------------------------------------
