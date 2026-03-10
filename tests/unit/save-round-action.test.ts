@@ -167,6 +167,27 @@ describe("saveRound server action", () => {
     });
   });
 
+  it("returns DUPLICATE_ROUND when unique constraint violation (23505) occurs", async () => {
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        error: {
+          message: 'duplicate key value violates unique constraint "rounds_dedup_idx"',
+          code: "23505",
+        },
+        data: null,
+      }),
+    });
+
+    const result = await saveRound(makeRound(), verification);
+
+    expect(result).toEqual({
+      success: false,
+      code: "DUPLICATE_ROUND",
+      message: "This round was already saved.",
+    });
+    expect(mockCaptureMonitoringException).not.toHaveBeenCalled();
+  });
+
   it("retries without trust metadata when production schema is behind app code", async () => {
     mockInsert
       .mockReturnValueOnce({

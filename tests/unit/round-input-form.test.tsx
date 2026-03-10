@@ -56,6 +56,31 @@ describe("RoundInputForm plus handicap toggle", () => {
   });
 });
 
+describe("RoundInputForm isSaving prop", () => {
+  const onSubmit = vi.fn();
+
+  it("disables submit button when isSaving is true", () => {
+    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isSaving />);
+    const button = screen.getByRole("button", { name: "Saving..." });
+    expect(button).toBeDisabled();
+  });
+
+  it("shows 'Saving...' text when isSaving is true", () => {
+    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isSaving />);
+    expect(screen.getByRole("button", { name: "Saving..." })).toBeVisible();
+  });
+
+  it("shows default text when isSaving is false", () => {
+    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isSaving={false} />);
+    expect(screen.getByRole("button", { name: "See My Strokes Gained" })).not.toBeDisabled();
+  });
+
+  it("isCalculating takes priority over isSaving for button text", () => {
+    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isCalculating isSaving />);
+    expect(screen.getByRole("button", { name: "Calculating..." })).toBeDisabled();
+  });
+});
+
 describe("RoundInputForm save consent", () => {
   const onSubmit = vi.fn();
 

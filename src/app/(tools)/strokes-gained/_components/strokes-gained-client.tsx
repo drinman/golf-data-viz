@@ -343,6 +343,16 @@ export default function StrokesGainedClient({
                   );
                 } catch { /* localStorage unavailable */ }
               }
+            } else if (res.code === "DUPLICATE_ROUND") {
+              // Round already exists — treat as success (not an error)
+              trackEvent("round_saved");
+              setSaveSuccess(true);
+              if (!user) {
+                saveSuccessTimerRef.current = setTimeout(
+                  () => setSaveSuccess(false),
+                  3000
+                );
+              }
             } else if (res.code === "SAVE_DISABLED") {
               trackEvent("round_save_failed", { error_type: "config" });
               setSaveError({
@@ -545,6 +555,7 @@ export default function StrokesGainedClient({
           onSavePreferenceChange={setSaveOptInSelected}
           initialValues={initialInput}
           isCalculating={isCalculating}
+          isSaving={savePhase !== null}
           saveEnabled={saveEnabled}
           isAuthenticated={!!user}
         />

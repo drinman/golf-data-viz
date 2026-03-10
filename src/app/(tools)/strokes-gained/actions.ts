@@ -33,6 +33,7 @@ export type SaveRoundErrorCode =
   | "VERIFICATION_FAILED"
   | "VALIDATION"
   | "DB_ERROR"
+  | "DUPLICATE_ROUND"
   | "UNEXPECTED";
 
 export type SaveRoundResult =
@@ -197,6 +198,11 @@ export async function saveRound(
     }
 
     if (error) {
+      // Unique constraint violation — the round was already saved (dedup)
+      if (error.code === "23505") {
+        console.warn("[saveRound] Duplicate round detected:", error.message);
+        return fail("DUPLICATE_ROUND", "This round was already saved.");
+      }
       console.error("[saveRound] Supabase error:", error.message);
       captureMonitoringException(new Error(error.message), {
         source: "saveRound",

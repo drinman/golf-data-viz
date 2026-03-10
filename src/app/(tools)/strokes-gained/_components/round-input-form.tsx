@@ -18,6 +18,7 @@ interface RoundInputFormProps {
   onSavePreferenceChange?: (saveToCloud: boolean) => void;
   initialValues?: Partial<RoundInput> | null;
   isCalculating?: boolean;
+  isSaving?: boolean;
   saveEnabled?: boolean;
   isAuthenticated?: boolean;
 }
@@ -64,6 +65,7 @@ export function RoundInputForm({
   onSavePreferenceChange,
   initialValues,
   isCalculating,
+  isSaving = false,
   saveEnabled = true,
   isAuthenticated = false,
 }: RoundInputFormProps) {
@@ -520,10 +522,10 @@ export function RoundInputForm({
       {/* Submit */}
       <button
         type="submit"
-        disabled={isCalculating}
+        disabled={isCalculating || isSaving}
         className="w-full rounded-lg bg-brand-800 px-4 py-3.5 text-base font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isCalculating ? "Calculating..." : "See My Strokes Gained"}
+        {isCalculating ? "Calculating..." : isSaving ? "Saving..." : "See My Strokes Gained"}
       </button>
     </form>
   );
