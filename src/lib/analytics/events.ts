@@ -41,7 +41,20 @@ export type AnalyticsEvent =
   | "share_token_created"
   | "share_link_copied"
   | "saved_round_png_downloaded"
-  | "shared_saved_round_viewed";
+  | "shared_saved_round_viewed"
+  | "premium_cta_viewed"
+  | "premium_cta_clicked"
+  | "premium_gate_hit"
+  | "checkout_started"
+  | "checkout_completed"
+  | "billing_portal_opened"
+  | "lesson_report_builder_viewed"
+  | "lesson_report_selection_changed"
+  | "lesson_report_generated"
+  | "lesson_report_regenerated"
+  | "lesson_report_share_token_created"
+  | "lesson_report_share_link_copied"
+  | "shared_lesson_report_viewed";
 
 type EmptyPayload = Record<never, never>;
 
@@ -124,6 +137,35 @@ export type AnalyticsEventProps = {
   share_link_copied: { round_id: string; surface: "round_detail" };
   saved_round_png_downloaded: { round_id: string; surface: "round_detail" | "shared_page" };
   shared_saved_round_viewed: { referrer: string };
+  premium_cta_viewed: {
+    surface: "history_dashboard" | "lesson_prep_builder";
+    premium_status: string;
+    round_count: number;
+  };
+  premium_cta_clicked: {
+    surface: "history_dashboard" | "lesson_prep_builder";
+    premium_status: string;
+    round_count: number;
+  };
+  premium_gate_hit: {
+    feature: "lesson_report_generation" | "lesson_report_view";
+    surface: "lesson_prep_builder" | "lesson_prep_owner";
+    premium_status: string;
+    round_count?: number;
+  };
+  checkout_started: { surface: "lesson_prep_builder" };
+  checkout_completed: { surface: "lesson_prep_builder" };
+  billing_portal_opened: { surface: "lesson_prep_builder" | "lesson_report_owner" };
+  lesson_report_builder_viewed: { round_count: number; premium_status: string };
+  lesson_report_selection_changed: { selected_count: number };
+  lesson_report_generated: { round_count: number };
+  lesson_report_regenerated: { round_count: number };
+  lesson_report_share_token_created: { report_id: string };
+  lesson_report_share_link_copied: {
+    report_id: string;
+    surface: "lesson_report_owner";
+  };
+  shared_lesson_report_viewed: { referrer: string };
 };
 
 type RequiredKeys<T extends object> = {

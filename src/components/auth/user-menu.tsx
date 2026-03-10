@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { ChevronDown, LogOut, History } from "lucide-react";
+import { ChevronDown, LogOut, History, Presentation } from "lucide-react";
 import { signOut } from "@/lib/supabase/auth-client";
 import type { User } from "@supabase/supabase-js";
 
@@ -78,6 +78,15 @@ export function UserMenu({ user }: UserMenuProps) {
           >
             <History className="h-4 w-4" />
             History
+          </Link>
+          <Link
+            href="/strokes-gained/lesson-prep"
+            onClick={() => setOpen(false)}
+            data-testid="user-menu-lesson-prep"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-cream-50 hover:text-neutral-950"
+          >
+            <Presentation className="h-4 w-4" />
+            Lesson Prep
           </Link>
           <div className="mx-3 my-1 border-t border-cream-200" />
           <button

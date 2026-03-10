@@ -9,6 +9,7 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { RoundSgSnapshot } from "./trends";
+import type { LessonReportData } from "./lesson-report";
 import type { ConfidenceLevel, RoundDetailSnapshot, StrokesGainedCategory } from "./types";
 import { deriveConfidence } from "./round-detail-adapter";
 
@@ -118,6 +119,34 @@ function mapRowToDetailSnapshot(row: Record<string, unknown>): RoundDetailSnapsh
   };
 }
 
+export interface LessonReportSnapshot {
+  id: string;
+  userId: string;
+  selectedRoundIds: string[];
+  selectionHash: string;
+  roundCount: number;
+  reportVersion: string;
+  generatedAt: string;
+  regeneratedAt: string | null;
+  reportData: LessonReportData;
+}
+
+function mapRowToLessonReportSnapshot(
+  row: Record<string, unknown>
+): LessonReportSnapshot {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    selectedRoundIds: (row.selected_round_ids as string[] | null) ?? [],
+    selectionHash: row.selection_hash as string,
+    roundCount: row.round_count as number,
+    reportVersion: row.report_version as string,
+    generatedAt: row.generated_at as string,
+    regeneratedAt: (row.regenerated_at as string | null) ?? null,
+    reportData: row.report_data as LessonReportData,
+  };
+}
+
 /**
  * Fetch a single round with expanded detail for the detail page.
  * Uses the RLS-protected server client — user must own the round.
@@ -171,4 +200,94 @@ export const getRoundByShareToken = cache(async function getRoundByShareToken(
   if (error || !data) return null;
 
   return mapRowToDetailSnapshot(data as unknown as Record<string, unknown>);
+});
+
+/**
+ * Fetch a set of owner-only round detail snapshots for lesson report generation.
+ */
+export async function getRoundsForLessonReport(
+  userId: string,
+  roundIds: string[]
+): Promise<RoundDetailSnapshot[]> {
+  if (roundIds.length === 0) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("rounds")
+    .select(DETAIL_COLUMNS)
+    .eq("user_id", userId)
+    .in("id", roundIds)
+    .order("played_at", { ascending: true });
+
+  if (error) throw error;
+  if (!data) return [];
+
+  return data.map((row) =>
+    mapRowToDetailSnapshot(row as unknown as Record<string, unknown>)
+  );
+}
+
+export const getLessonReport = cache(async function getLessonReport(
+  reportId: string,
+  userId: string
+): Promise<LessonReportSnapshot | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("lesson_reports")
+    .select(
+      "id, user_id, selected_round_ids, selection_hash, round_count, report_version, generated_at, regenerated_at, report_data"
+    )
+    .eq("id", reportId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) return null;
+  return mapRowToLessonReportSnapshot(data as unknown as Record<string, unknown>);
+});
+
+export async function getLessonReportBySelection(
+  userId: string,
+  selectionHash: string
+): Promise<LessonReportSnapshot | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("lesson_reports")
+    .select(
+      "id, user_id, selected_round_ids, selection_hash, round_count, report_version, generated_at, regenerated_at, report_data"
+    )
+    .eq("user_id", userId)
+    .eq("selection_hash", selectionHash)
+    .single();
+
+  if (error || !data) return null;
+  return mapRowToLessonReportSnapshot(data as unknown as Record<string, unknown>);
+}
+
+/**
+ * Fetch a stored lesson report snapshot by explicit share token.
+ * Uses the admin client because the token itself is the authorization.
+ */
+export const getLessonReportByShareToken = cache(async function getLessonReportByShareToken(
+  token: string
+): Promise<LessonReportSnapshot | null> {
+  const supabase = createAdminClient();
+
+  const { data: share, error: shareError } = await supabase
+    .from("lesson_report_shares")
+    .select("report_id")
+    .eq("token", token)
+    .single();
+
+  if (shareError || !share) return null;
+
+  const { data, error } = await supabase
+    .from("lesson_reports")
+    .select(
+      "id, user_id, selected_round_ids, selection_hash, round_count, report_version, generated_at, regenerated_at, report_data"
+    )
+    .eq("id", share.report_id)
+    .single();
+
+  if (error || !data) return null;
+  return mapRowToLessonReportSnapshot(data as unknown as Record<string, unknown>);
 });

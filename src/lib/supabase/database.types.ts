@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      lesson_report_shares: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          report_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          report_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          report_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_report_shares_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "lesson_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_reports: {
+        Row: {
+          generated_at: string
+          id: string
+          regenerated_at: string | null
+          report_data: Json
+          report_version: string
+          round_count: number
+          selected_round_ids: string[]
+          selection_hash: string
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          regenerated_at?: string | null
+          report_data: Json
+          report_version: string
+          round_count: number
+          selected_round_ids: string[]
+          selection_hash: string
+          user_id: string
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          regenerated_at?: string | null
+          report_data?: Json
+          report_version?: string
+          round_count?: number
+          selected_round_ids?: string[]
+          selection_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       round_trouble_holes: {
         Row: {
           created_at: string
@@ -316,6 +384,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stripe_webhook_events: {
+        Row: {
+          event_type: string
+          received_at: string
+          stripe_event_id: string
+        }
+        Insert: {
+          event_type: string
+          received_at?: string
+          stripe_event_id: string
+        }
+        Update: {
+          event_type?: string
+          received_at?: string
+          stripe_event_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          last_stripe_event_created_at: string | null
+          premium_expires_at: string | null
+          premium_status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_stripe_event_created_at?: string | null
+          premium_expires_at?: string | null
+          premium_status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_stripe_event_created_at?: string | null
+          premium_expires_at?: string | null
+          premium_status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
