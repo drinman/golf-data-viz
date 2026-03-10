@@ -309,9 +309,11 @@ describe("StrokesGainedClient analytics instrumentation", () => {
 
     await userEvent.click(screen.getByTestId("download-png"));
 
-    expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
-      has_share_param: true,
-      utm_source: "reddit",
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
+        has_share_param: true,
+        utm_source: "reddit",
+      });
     });
   });
 
@@ -397,9 +399,11 @@ describe("StrokesGainedClient analytics instrumentation", () => {
       has_share_param: true,
       utm_source: "reddit",
     });
-    expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
-      has_share_param: true,
-      utm_source: "reddit",
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith("download_png_clicked", {
+        has_share_param: true,
+        utm_source: "reddit",
+      });
     });
   });
 });

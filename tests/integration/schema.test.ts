@@ -15,11 +15,15 @@ const SERVICE_ROLE_KEY =
 const ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
 
+let uniqueRoundCounter = 0;
+
 /** A valid round payload — all required fields with valid values. */
 function validRound(overrides: Record<string, unknown> = {}) {
+  uniqueRoundCounter += 1;
+
   return {
     played_at: "2025-06-15",
-    course_name: "Test Course",
+    course_name: `Test Course ${uniqueRoundCounter}`,
     score: 85,
     handicap_index: 14.0,
     course_rating: 72.1,

@@ -413,7 +413,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Verify disclosure text
     await expect(
-      sgResults.getByText(/Category benchmarks use scratch/)
+      sgResults.getByText(/estimated below scratch using extrapolated peer data/)
     ).toBeVisible();
 
     // Verify share URL round-trips
@@ -434,7 +434,9 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.locator('[data-testid="sg-results"]').getByText("Compared to Plus HCP")
     ).toBeVisible();
     await expect(
-      page.locator('[data-testid="sg-results"]').getByText(/Category benchmarks use scratch/)
+      page
+        .locator('[data-testid="sg-results"]')
+        .getByText(/estimated below scratch using extrapolated peer data/)
     ).toBeVisible();
   });
 

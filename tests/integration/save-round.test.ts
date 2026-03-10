@@ -24,6 +24,16 @@ describe("Round mapper → DB integration", () => {
     auth: { persistSession: false },
   });
   const insertedIds: string[] = [];
+  let uniqueRoundCounter = 0;
+
+  function makeUniqueRound(overrides: Parameters<typeof makeRound>[0] = {}) {
+    uniqueRoundCounter += 1;
+
+    return makeRound({
+      course: `Test Course ${uniqueRoundCounter}`,
+      ...overrides,
+    });
+  }
 
   afterAll(async () => {
     if (insertedIds.length > 0) {
@@ -32,7 +42,7 @@ describe("Round mapper → DB integration", () => {
   });
 
   it("mapped row with required fields inserts successfully", async () => {
-    const round = makeRound();
+    const round = makeUniqueRound();
     const benchmark = getBracketForHandicap(round.handicapIndex);
     const sg = calculateStrokesGained(round, benchmark);
     const row = toRoundInsert(round, sg);
@@ -49,7 +59,7 @@ describe("Round mapper → DB integration", () => {
   });
 
   it("mapped row with all optional fields inserts successfully", async () => {
-    const round = makeRound({
+    const round = makeUniqueRound({
       upAndDownAttempts: 8,
       upAndDownConverted: 4,
       sandSaveAttempts: 3,
@@ -72,7 +82,7 @@ describe("Round mapper → DB integration", () => {
   });
 
   it("mapped row with no optional fields (all null) inserts successfully", async () => {
-    const round = makeRound();
+    const round = makeUniqueRound();
     delete round.upAndDownAttempts;
     delete round.upAndDownConverted;
     delete round.sandSaves;
@@ -95,7 +105,7 @@ describe("Round mapper → DB integration", () => {
   });
 
   it("saves round with null fairways_hit and null greens_in_regulation", async () => {
-    const round = makeRound();
+    const round = makeUniqueRound();
     delete round.fairwaysHit;
     delete round.greensInRegulation;
 
@@ -117,7 +127,7 @@ describe("Round mapper → DB integration", () => {
   });
 
   it("stored SG values match calculated values", async () => {
-    const round = makeRound();
+    const round = makeUniqueRound();
     const benchmark = getBracketForHandicap(round.handicapIndex);
     const sg = calculateStrokesGained(round, benchmark);
     const row = toRoundInsert(round, sg);

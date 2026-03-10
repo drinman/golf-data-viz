@@ -68,6 +68,11 @@ function getUtmSource(): string | undefined {
   return new URLSearchParams(window.location.search).get("utm_source") ?? undefined;
 }
 
+async function waitForUiPaint(): Promise<void> {
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 export default function StrokesGainedClient({
   initialInput,
   saveEnabled = true,
@@ -414,6 +419,7 @@ export default function StrokesGainedClient({
   const handleDownloadPng = useCallback(async () => {
     if (!shareCardRef.current || downloading) return;
     setDownloading(true);
+    await waitForUiPaint();
     const start = Date.now();
     try {
       trackEvent("download_png_clicked", {
