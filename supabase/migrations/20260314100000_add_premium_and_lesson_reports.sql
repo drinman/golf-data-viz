@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
 );
 
 COMMENT ON TABLE public.stripe_webhook_events IS
-  'Stripe webhook idempotency ledger. Backlog: purge events older than 90 days via pg_cron or scheduled cleanup.';
+  'Stripe webhook idempotency ledger. Events older than 90 days are purged by a scheduled cleanup job.';
 
 CREATE TABLE IF NOT EXISTS public.lesson_reports (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

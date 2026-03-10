@@ -139,4 +139,37 @@ describe("premium/report schema (local Supabase)", () => {
     expect(shareError).toBeNull();
     expect(share?.report_id).toBe(report!.id);
   });
+
+  it("purges stale stripe webhook events while keeping recent ones", async () => {
+    const staleEventId = `evt-stale-${Date.now()}`;
+    const recentEventId = `evt-recent-${Date.now()}`;
+
+    const { error: insertError } = await admin.from("stripe_webhook_events").insert([
+      {
+        stripe_event_id: staleEventId,
+        event_type: "invoice.payment_succeeded",
+        received_at: "2025-11-01T00:00:00.000Z",
+      },
+      {
+        stripe_event_id: recentEventId,
+        event_type: "customer.subscription.updated",
+        received_at: new Date().toISOString(),
+      },
+    ]);
+
+    expect(insertError).toBeNull();
+
+    const cleanupResult = await (admin as any).rpc("cleanup_stripe_webhook_events");
+
+    expect(cleanupResult.error).toBeNull();
+    expect(cleanupResult.data).toBe(1);
+
+    const { data: remainingEvents, error: remainingError } = await admin
+      .from("stripe_webhook_events")
+      .select("stripe_event_id")
+      .in("stripe_event_id", [staleEventId, recentEventId]);
+
+    expect(remainingError).toBeNull();
+    expect(remainingEvents).toEqual([{ stripe_event_id: recentEventId }]);
+  });
 });

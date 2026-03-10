@@ -25,5 +25,6 @@ describe("premium/report migration", () => {
   it("documents webhook retention cleanup", () => {
     expect(sql).toMatch(/90 days/i);
     expect(sql).toMatch(/stripe_webhook_events/i);
+    expect(sql).toMatch(/scheduled cleanup job/i);
   });
 });
