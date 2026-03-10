@@ -21,7 +21,10 @@ const SIZE = { width: 1200, height: 630 };
 function loadFont(relativePath: string): Promise<ArrayBuffer> {
   return fetch(new URL(relativePath, import.meta.url))
     .then((res) => res.arrayBuffer())
-    .catch(() => new ArrayBuffer(0));
+    .catch((err) => {
+      console.warn(`[shared-og] Font load failed: ${relativePath}`, err);
+      return new ArrayBuffer(0);
+    });
 }
 
 const fontData = Promise.all([

@@ -5,6 +5,7 @@
  * domain-level RoundSgSnapshot and RoundDetailSnapshot objects.
  */
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { RoundSgSnapshot } from "./trends";
@@ -120,8 +121,9 @@ function mapRowToDetailSnapshot(row: Record<string, unknown>): RoundDetailSnapsh
 /**
  * Fetch a single round with expanded detail for the detail page.
  * Uses the RLS-protected server client — user must own the round.
+ * Wrapped with React cache() to deduplicate generateMetadata + page calls.
  */
-export async function getRoundDetail(
+export const getRoundDetail = cache(async function getRoundDetail(
   roundId: string,
   userId: string
 ): Promise<RoundDetailSnapshot | null> {
@@ -137,14 +139,15 @@ export async function getRoundDetail(
   if (error || !data) return null;
 
   return mapRowToDetailSnapshot(data as unknown as Record<string, unknown>);
-}
+});
 
 /**
  * Fetch a round by share token via the admin client (privileged path).
  * The token IS the authorization — no additional auth checks needed.
  * Server-side only.
+ * Wrapped with React cache() to deduplicate generateMetadata + page calls.
  */
-export async function getRoundByShareToken(
+export const getRoundByShareToken = cache(async function getRoundByShareToken(
   token: string
 ): Promise<RoundDetailSnapshot | null> {
   const supabase = createAdminClient();
@@ -168,4 +171,4 @@ export async function getRoundByShareToken(
   if (error || !data) return null;
 
   return mapRowToDetailSnapshot(data as unknown as Record<string, unknown>);
-}
+});

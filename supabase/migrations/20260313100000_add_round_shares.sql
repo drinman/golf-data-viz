@@ -12,7 +12,7 @@ CREATE TABLE round_shares (
   CONSTRAINT uq_round_shares_round UNIQUE (round_id)
 );
 
-CREATE INDEX idx_round_shares_token ON round_shares(token);
+-- No explicit index on token — the UNIQUE constraint already creates one.
 
 ALTER TABLE round_shares ENABLE ROW LEVEL SECURITY;
 

@@ -10,27 +10,13 @@ import {
 } from "@/lib/golf/round-detail-adapter";
 import { getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
-import { formatHandicap } from "@/lib/golf/format";
+import { formatHandicap, formatSG, formatDate } from "@/lib/golf/format";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ResultsSummary } from "@/app/(tools)/strokes-gained/_components/results-summary";
 import { ShareCard } from "@/app/(tools)/strokes-gained/_components/share-card";
 import { captureElementAsPng, downloadBlob } from "@/lib/capture";
 import { trackEvent } from "@/lib/analytics/client";
 import { createShareToken } from "@/app/(tools)/strokes-gained/actions";
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatSG(value: number): string {
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}`;
-}
 
 interface RoundDetailClientProps {
   snapshot: RoundDetailSnapshot;
@@ -76,9 +62,11 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
           round_id: snapshot.roundId,
           surface: "round_detail",
         });
-        trackEvent("share_token_created", {
-          round_id: snapshot.roundId,
-        });
+        if (result.created) {
+          trackEvent("share_token_created", {
+            round_id: snapshot.roundId,
+          });
+        }
       }
     });
   }

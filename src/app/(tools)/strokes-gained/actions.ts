@@ -484,7 +484,7 @@ export async function clearTroubleContext(
 // ---------------------------------------------------------------------------
 
 export type CreateShareTokenResult =
-  | { success: true; token: string; shareUrl: string }
+  | { success: true; token: string; shareUrl: string; created: boolean }
   | { success: false; message: string };
 
 /**
@@ -516,7 +516,7 @@ export async function createShareToken(
 
     if (existing?.token) {
       const shareUrl = buildShareUrl(existing.token);
-      return { success: true, token: existing.token, shareUrl };
+      return { success: true, token: existing.token, shareUrl, created: false };
     }
 
     // Verify ownership: round must belong to this user
@@ -548,7 +548,7 @@ export async function createShareToken(
     }
 
     const shareUrl = buildShareUrl(token);
-    return { success: true, token, shareUrl };
+    return { success: true, token, shareUrl, created: true };
   } catch (err) {
     console.error("[createShareToken] Unexpected error:", err);
     captureMonitoringException(err, { source: "createShareToken" });
