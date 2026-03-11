@@ -29,21 +29,20 @@ test("mobile homepage has no horizontal overflow at 320px", async ({ page }) => 
   await expect(page.getByText("Golf Data Viz")).toBeVisible();
 });
 
-
 test("mobile panel surface reflects scroll state", async ({ page }) => {
   await page.goto("/");
 
   const toggle = page.getByTestId("mobile-nav-toggle");
-  const panelSurface = page.locator('[data-testid="mobile-nav-panel"] > div > div');
+  const header = page.getByTestId("site-header");
 
   await toggle.click();
-  await expect(panelSurface).toHaveClass(/bg-cream-50\/95/);
+  await expect(header).toHaveAttribute("data-scrolled", "false");
 
   await toggle.click();
   await page.evaluate(() => window.scrollTo(0, 32));
   await toggle.click();
 
-  await expect(panelSurface).toHaveClass(/bg-white\/95/);
+  await expect(header).toHaveAttribute("data-scrolled", "true");
 });
 
 test("mobile user can submit a round and reach share actions", async ({

@@ -10,9 +10,12 @@ const mockUser = vi.hoisted(() => ({
 
 const mockPathname = vi.hoisted(() => ({ current: "/" }));
 const mockSignOut = vi.hoisted(() => vi.fn(async () => ({ error: null })));
+const mockPush = vi.hoisted(() => vi.fn());
+const mockRefresh = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname.current,
+  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
 }));
 
 // Mock useSupabaseUser since it depends on Supabase client
@@ -47,6 +50,8 @@ describe("SiteHeader", () => {
     mockPathname.current = "/";
     mockTrackEvent.mockClear();
     mockSignOut.mockClear();
+    mockPush.mockClear();
+    mockRefresh.mockClear();
   });
 
   it("renders logo and title", () => {

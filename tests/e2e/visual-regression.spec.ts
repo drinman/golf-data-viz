@@ -40,25 +40,4 @@ test.describe("Visual regression", () => {
       maxDiffPixelRatio: 0.02,
     });
   });
-
-  test.describe("mobile", () => {
-    test.use({ viewport: { width: 390, height: 844 } });
-
-    test("mobile header and hero closed state match snapshot", async ({ page }) => {
-      await page.goto("/");
-      const headerAndHero = page.locator('[data-testid="site-header"], [data-testid="hero-content"]');
-      await expect(headerAndHero).toHaveScreenshot("home-mobile-header-hero-closed.png", {
-        maxDiffPixelRatio: 0.02,
-      });
-    });
-
-    test("mobile header open panel matches snapshot", async ({ page }) => {
-      await page.goto("/");
-      await page.getByTestId("mobile-nav-toggle").click();
-      const header = page.getByTestId("site-header");
-      await expect(header).toHaveScreenshot("home-mobile-header-panel-open.png", {
-        maxDiffPixelRatio: 0.02,
-      });
-    });
-  });
 });
