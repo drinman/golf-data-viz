@@ -52,8 +52,12 @@ describe("LessonPrepBuilder", () => {
     );
 
     expect(screen.getByText("Lesson Prep Report")).toBeInTheDocument();
-    expect(screen.getByText("Save at least 3 rounds first. Single-round benchmark, saved detail, and saved-round sharing stay free.")).toBeInTheDocument();
-    expect(screen.getByText("1 rounds")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Save at least 3 rounds first. Single-round benchmark, saved detail, and saved-round sharing stay free."
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText("1 round")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Generate Report" })).not.toBeInTheDocument();
   });
 });

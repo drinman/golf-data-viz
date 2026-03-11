@@ -32,6 +32,10 @@ function orderSelection(rounds: RoundSgSnapshot[], roundIds: string[]): string[]
     .map((round) => round.roundId);
 }
 
+function formatRoundCountLabel(count: number): string {
+  return `${count} ${count === 1 ? "round" : "rounds"}`;
+}
+
 export function LessonPrepBuilder({
   rounds,
   entitlements,
@@ -234,7 +238,7 @@ export function LessonPrepBuilder({
               Current Selection
             </p>
             <h2 className="mt-2 font-display text-3xl tracking-tight text-neutral-950">
-              {selectedRoundIds.length} rounds
+              {formatRoundCountLabel(selectedRoundIds.length)}
             </h2>
             <p className="mt-2 text-sm text-neutral-600">{selectionDateRange}</p>
 

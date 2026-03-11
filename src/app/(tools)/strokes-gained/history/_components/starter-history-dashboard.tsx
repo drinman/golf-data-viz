@@ -124,8 +124,8 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
             {roundsNeeded === 1 ? "unlocks" : "unlock"} trends.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-neutral-500">
-            Once you reach 3 saved rounds, this section becomes the live strokes gained chart
-            with category lines over time.
+            Once you reach {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} saved rounds, this
+            section becomes the live strokes gained chart with category lines over time.
           </p>
 
           <div className="mt-5 grid grid-cols-3 gap-2">
