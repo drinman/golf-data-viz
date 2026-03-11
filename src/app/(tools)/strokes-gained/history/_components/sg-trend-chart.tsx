@@ -5,6 +5,7 @@ import { ResponsiveLine } from "@nivo/line";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import type { TrendSeries, RoundSgSnapshot } from "@/lib/golf/trends";
 import { computeYDomain } from "@/lib/golf/trends";
+import { MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS } from "@/lib/golf/constants";
 import { trackEvent } from "@/lib/analytics/client";
 
 interface SgTrendChartProps {
@@ -34,7 +35,7 @@ function ZeroLine({ yScale, innerWidth }: LineCustomSvgLayerProps<TrendSeries>) 
 
 export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
   useEffect(() => {
-    if (rounds.length >= 3) {
+    if (rounds.length >= MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS) {
       trackEvent("trend_chart_viewed", { round_count: rounds.length });
     }
   }, [rounds.length]);
@@ -88,7 +89,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
     [yTicks, yDomain.min]
   );
 
-  if (rounds.length < 3) {
+  if (rounds.length < MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS) {
     return (
       <div
         data-testid="trend-chart-min-rounds"
@@ -98,7 +99,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
           Enter a few more rounds to see trends.
         </p>
         <p className="mt-1 text-sm text-neutral-500">
-          Trends require at least 3 rounds.
+          Trends require at least {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds.
         </p>
       </div>
     );

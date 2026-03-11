@@ -68,6 +68,9 @@ export function getMajorVersion(version: string | null): string | null {
 /** SG values within ±threshold are considered effectively zero. */
 export const SG_NEAR_ZERO_THRESHOLD = 0.05 as const;
 
+/** Minimum saved rounds required before multi-round insights become meaningful. */
+export const MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS = 3 as const;
+
 /** Tailwind classes for confidence levels — for ConfidenceBadge component. */
 export const CONFIDENCE_COLORS_TW: Record<ConfidenceLevel, { bg: string; text: string }> = {
   high: { bg: "bg-brand-50", text: "text-data-positive" },

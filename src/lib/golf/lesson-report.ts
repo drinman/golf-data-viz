@@ -3,6 +3,7 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   getMajorVersion,
+  MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS,
 } from "@/lib/golf/constants";
 import { deriveConfidence } from "@/lib/golf/round-detail-adapter";
 import {
@@ -274,8 +275,10 @@ export function buildLessonReportData(
   snapshots: RoundDetailSnapshot[],
   options: { generatedAt?: string } = {}
 ): LessonReportData {
-  if (snapshots.length < 3) {
-    throw new Error("Lesson reports require at least 3 rounds.");
+  if (snapshots.length < MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS) {
+    throw new Error(
+      `Lesson reports require at least ${MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds.`
+    );
   }
 
   const sorted = [...snapshots].sort(

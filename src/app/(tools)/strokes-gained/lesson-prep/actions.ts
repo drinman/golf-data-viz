@@ -17,6 +17,7 @@ import {
   buildSelectionHash,
   LESSON_REPORT_VERSION,
 } from "@/lib/golf/lesson-report";
+import { MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS } from "@/lib/golf/constants";
 import type { Json } from "@/lib/supabase/database.types";
 import {
   getLessonReportBySelection,
@@ -78,8 +79,14 @@ export async function generateLessonReport(
     requirePremium(entitlements, "lesson_report_generation");
 
     const selectedRoundIds = normalizeSelection(roundIds);
-    if (selectedRoundIds.length < 3 || selectedRoundIds.length > 8) {
-      return fail("INVALID_SELECTION", "Select between 3 and 8 rounds.");
+    if (
+      selectedRoundIds.length < MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS ||
+      selectedRoundIds.length > 8
+    ) {
+      return fail(
+        "INVALID_SELECTION",
+        `Select between ${MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} and 8 rounds.`
+      );
     }
 
     const snapshots = await getRoundsForLessonReport(user.id, selectedRoundIds);

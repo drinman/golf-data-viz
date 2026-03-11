@@ -123,7 +123,10 @@ export type AnalyticsEventProps = {
   trouble_context_removed: EmptyPayload;
   round_claimed: EmptyPayload;
   round_claim_failed: { reason: string };
-  history_page_viewed: { round_count: number };
+  history_page_viewed: {
+    round_count: number;
+    dashboard_variant: "empty" | "starter" | "full";
+  };
   history_link_clicked: { surface: string };
   trend_chart_viewed: { round_count: number };
   biggest_mover_viewed: { category: string; direction: string; confidence: string };
