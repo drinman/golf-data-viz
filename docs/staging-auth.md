@@ -55,3 +55,4 @@ Use a dedicated non-admin user in the same Supabase project as the app.
 - Confirm the round auto-claims and appears in history.
 - Force a failed Google initiation and confirm `pending-oauth-claim` does not
   survive for a later visit.
+
