@@ -18,28 +18,28 @@ export default async function Home({ searchParams }: HomePageProps) {
   return (
     <main>
       {/* Hero */}
-      <section className="relative overflow-hidden px-4 py-24 sm:py-32">
+      <section className="relative overflow-hidden px-4 py-16 sm:py-24 md:py-32">
         <ContourBg className="text-brand-900" />
         <div
           data-testid="hero-content"
           className="relative mx-auto max-w-4xl"
         >
-          <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.22em] text-brand-800">
+          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.18em] text-brand-800 sm:text-sm sm:tracking-[0.22em]">
             Free post-round benchmark
           </p>
           <h1
             data-testid="hero-headline"
-            className="animate-fade-up mt-4 font-display text-5xl tracking-tight text-neutral-950 sm:text-6xl"
+            className="animate-fade-up mt-4 max-w-[10ch] font-display text-4xl leading-[0.95] tracking-tight text-neutral-950 sm:text-5xl md:text-6xl"
           >
             Know where your strokes go
           </h1>
-          <p className="animate-fade-up delay-1 mt-6 max-w-xl text-lg text-neutral-600">
+          <p className="animate-fade-up delay-1 mt-6 max-w-[22rem] text-base leading-relaxed text-neutral-600 sm:max-w-xl sm:text-lg">
             Use the scorecard stats you already track after a round to see
             where you gain and lose strokes compared to golfers at your
             handicap level. No sensors, no subscription, and no Tour-pro
             baseline.
           </p>
-          <div className="animate-fade-up delay-2 mt-10">
+          <div className="animate-fade-up delay-2 mt-8 sm:mt-10">
             <LandingCta utmSource={utmSource} />
           </div>
         </div>

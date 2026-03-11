@@ -2,6 +2,49 @@ import { test, expect, devices } from "@playwright/test";
 
 test.use({ ...devices["iPhone 13"] });
 
+test("mobile homepage nav opens and closes", async ({ page }) => {
+  await page.goto("/");
+
+  const toggle = page.getByTestId("mobile-nav-toggle");
+  const panel = page.getByTestId("mobile-nav-panel");
+
+  await expect(toggle).toBeVisible();
+  await expect(panel).toHaveAttribute("data-state", "closed");
+
+  await toggle.click();
+  await expect(panel).toHaveAttribute("data-state", "open");
+
+  await page.getByRole("link", { name: "History" }).click();
+  await expect(panel).toHaveAttribute("data-state", "closed");
+});
+
+test("mobile homepage has no horizontal overflow at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/");
+
+  const htmlWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
+
+  expect(htmlWidth).toBeLessThanOrEqual(viewportWidth);
+  await expect(page.getByText("Golf Data Viz")).toBeVisible();
+});
+
+test("mobile panel surface reflects scroll state", async ({ page }) => {
+  await page.goto("/");
+
+  const toggle = page.getByTestId("mobile-nav-toggle");
+  const header = page.getByTestId("site-header");
+
+  await toggle.click();
+  await expect(header).toHaveAttribute("data-scrolled", "false");
+
+  await toggle.click();
+  await page.evaluate(() => window.scrollTo(0, 32));
+  await toggle.click();
+
+  await expect(header).toHaveAttribute("data-scrolled", "true");
+});
+
 test("mobile user can submit a round and reach share actions", async ({
   page,
 }) => {
