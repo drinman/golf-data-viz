@@ -74,7 +74,8 @@ export type AnalyticsEventProps = {
       | "runtime"
       | "network"
       | "rate_limited"
-      | "verification";
+      | "verification"
+      | "duplicate";
   };
   confidence_badge_clicked: { category: string; level: string };
   methodology_tooltip_opened: { category: string; surface: "results_summary" };

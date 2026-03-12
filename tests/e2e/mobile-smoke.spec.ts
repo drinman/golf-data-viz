@@ -26,7 +26,9 @@ test("mobile homepage has no horizontal overflow at 320px", async ({ page }) => 
   const viewportWidth = await page.evaluate(() => window.innerWidth);
 
   expect(htmlWidth).toBeLessThanOrEqual(viewportWidth);
-  await expect(page.getByText("Golf Data Viz")).toBeVisible();
+  await expect(
+    page.getByTestId("site-header").getByRole("link", { name: /^Golf Data Viz$/ })
+  ).toBeVisible();
 });
 
 test("mobile panel surface reflects scroll state", async ({ page }) => {

@@ -22,15 +22,52 @@ import { AuthModal } from "@/components/auth/auth-modal";
 describe("AuthModal", () => {
   let onClose: ReturnType<typeof vi.fn>;
   let onSuccess: ReturnType<typeof vi.fn>;
+  let originalLocalStorage: Storage;
+  let mockStorage: Record<string, string> | null;
+  const pendingOauthClaim = JSON.stringify({
+    roundId: "round-123",
+    claimToken: "claim-token-123",
+  });
+
+  function installMockLocalStorage() {
+    mockStorage = {};
+
+    Object.defineProperty(globalThis, "localStorage", {
+      value: {
+        getItem: (key: string) => mockStorage?.[key] ?? null,
+        setItem: (key: string, value: string) => {
+          if (!mockStorage) return;
+          mockStorage[key] = value;
+        },
+        removeItem: (key: string) => {
+          if (!mockStorage) return;
+          delete mockStorage[key];
+        },
+        get length() {
+          return mockStorage ? Object.keys(mockStorage).length : 0;
+        },
+        key: (i: number) => (mockStorage ? Object.keys(mockStorage)[i] ?? null : null),
+      },
+      writable: true,
+      configurable: true,
+    });
+  }
 
   beforeEach(() => {
     vi.clearAllMocks();
+    originalLocalStorage = globalThis.localStorage;
+    mockStorage = null;
     onClose = vi.fn();
     onSuccess = vi.fn();
   });
 
   afterEach(() => {
     cleanup();
+    Object.defineProperty(globalThis, "localStorage", {
+      value: originalLocalStorage,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("does not render when open is false", () => {
@@ -157,6 +194,69 @@ describe("AuthModal", () => {
     await user.click(screen.getByTestId("google-signin-btn"));
 
     expect(mockSignInWithGoogle).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears pending OAuth claim state when Google sign-in resolves with an error", async () => {
+    const user = userEvent.setup();
+    installMockLocalStorage();
+    mockSignInWithGoogle.mockResolvedValue({
+      data: {},
+      error: { message: "OAuth disabled" },
+    });
+
+    render(
+      <AuthModal
+        open={true}
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onGoogleAuthStart={() => {
+          localStorage.setItem("pending-oauth-claim", pendingOauthClaim);
+        }}
+      />
+    );
+
+    await user.click(screen.getByTestId("google-signin-btn"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("auth-error")).toHaveTextContent(
+        "Could not initiate Google sign-in."
+      );
+    });
+
+    expect(globalThis.localStorage.getItem("pending-oauth-claim")).toBeNull();
+    expect(screen.getByTestId("auth-modal")).toBeInTheDocument();
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("clears pending OAuth claim state when Google sign-in throws", async () => {
+    const user = userEvent.setup();
+    installMockLocalStorage();
+    mockSignInWithGoogle.mockRejectedValue(new Error("network down"));
+
+    render(
+      <AuthModal
+        open={true}
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onGoogleAuthStart={() => {
+          localStorage.setItem("pending-oauth-claim", pendingOauthClaim);
+        }}
+      />
+    );
+
+    await user.click(screen.getByTestId("google-signin-btn"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("auth-error")).toHaveTextContent(
+        "Could not initiate Google sign-in."
+      );
+    });
+
+    expect(globalThis.localStorage.getItem("pending-oauth-claim")).toBeNull();
+    expect(screen.getByTestId("auth-modal")).toBeInTheDocument();
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("shows loading state during submission", async () => {

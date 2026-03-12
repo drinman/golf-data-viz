@@ -1,14 +1,26 @@
 import { defineConfig } from "@playwright/test";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd());
 
 const useProdServer = process.env.PLAYWRIGHT_USE_PROD_SERVER === "true";
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEBSERVER === "true";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const vercelAutomationBypassSecret =
+  process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const extraHTTPHeaders = vercelAutomationBypassSecret
+  ? {
+      "x-vercel-protection-bypass": vercelAutomationBypassSecret,
+      "x-vercel-set-bypass-cookie": "true",
+    }
+  : undefined;
 
 export default defineConfig({
   testDir: "./tests/e2e",
   use: {
     baseURL,
     trace: "on-first-retry",
+    extraHTTPHeaders,
   },
   projects: [
     {

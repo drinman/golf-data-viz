@@ -13,14 +13,15 @@ interface AuthModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  onGoogleAuthStart?: () => void;
   initialMode?: AuthMode;
 }
 
-export function AuthModal({ open, onClose, onSuccess, initialMode = "signin" }: AuthModalProps) {
+export function AuthModal({ open, onClose, onSuccess, onGoogleAuthStart, initialMode = "signin" }: AuthModalProps) {
   if (!open) return null;
 
   return (
-    <AuthModalContent onClose={onClose} onSuccess={onSuccess} initialMode={initialMode} />
+    <AuthModalContent onClose={onClose} onSuccess={onSuccess} onGoogleAuthStart={onGoogleAuthStart} initialMode={initialMode} />
   );
 }
 
@@ -28,6 +29,7 @@ export function AuthModal({ open, onClose, onSuccess, initialMode = "signin" }: 
 function AuthModalContent({
   onClose,
   onSuccess,
+  onGoogleAuthStart,
   initialMode = "signin",
 }: Omit<AuthModalProps, "open">) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
@@ -99,10 +101,20 @@ function AuthModalContent({
 
   async function handleGoogleSignIn() {
     setError(null);
-    try {
-      await signInWithGoogle();
-    } catch {
+    const handleGoogleStartFailure = () => {
+      // OAuth never redirected — clean up any persisted claim context
+      try { localStorage.removeItem("pending-oauth-claim"); } catch { /* noop */ }
       setError("Could not initiate Google sign-in.");
+    };
+
+    try {
+      onGoogleAuthStart?.();
+      const result = await signInWithGoogle();
+      if (result.error) {
+        handleGoogleStartFailure();
+      }
+    } catch {
+      handleGoogleStartFailure();
     }
   }
 

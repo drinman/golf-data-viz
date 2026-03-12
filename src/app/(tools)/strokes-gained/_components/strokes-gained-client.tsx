@@ -103,7 +103,7 @@ export default function StrokesGainedClient({
     initialInput ?? null
   );
   const [saveError, setSaveError] = useState<{
-    type: "config" | "runtime" | "rate_limited" | "verification";
+    type: "config" | "runtime" | "rate_limited" | "verification" | "duplicate";
     message: string;
   } | null>(null);
   const [saveOptInSelected, setSaveOptInSelected] = useState(false);
@@ -119,6 +119,7 @@ export default function StrokesGainedClient({
   const [troubleModalOpen, setTroubleModalOpen] = useState(false);
   const [troublePromptDismissed, setTroublePromptDismissed] = useState(false);
   const [savedRoundId, setSavedRoundId] = useState<string | null>(null);
+  const [savedRoundOwned, setSavedRoundOwned] = useState(false);
   const [savedClaimToken, setSavedClaimToken] = useState<string | null>(null);
   const [claimAuthModalOpen, setClaimAuthModalOpen] = useState(false);
   const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "failed">("idle");
@@ -134,6 +135,7 @@ export default function StrokesGainedClient({
     null
   );
   const saveRequestIdRef = useRef(0);
+  const claimRequestInFlightRef = useRef(false);
 
   if (
     attributionUtmSourceRef.current === undefined &&
@@ -197,6 +199,24 @@ export default function StrokesGainedClient({
     };
   }, []);
 
+  // Rehydrate pending claim from localStorage after OAuth redirect.
+  // Google OAuth navigates away, losing in-memory state. A dedicated
+  // "pending-oauth-claim" key is written when Google OAuth starts,
+  // and consumed (deleted) here on the next mount. This avoids scanning
+  // all claim:* entries and prevents stale rounds from being claimed.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pending-oauth-claim");
+      if (!raw) return;
+      localStorage.removeItem("pending-oauth-claim");
+      const parsed = JSON.parse(raw) as { roundId?: string; claimToken?: string };
+      if (parsed.roundId && parsed.claimToken) {
+        setSavedRoundId(parsed.roundId);
+        setSavedClaimToken(parsed.claimToken);
+      }
+    } catch { /* localStorage unavailable or corrupt entry */ }
+  }, []);
+
   function handleFormSubmit(
     input: RoundInput,
     options?: { saveToCloud: boolean }
@@ -221,6 +241,7 @@ export default function StrokesGainedClient({
     setSavedRoundId(null);
     setSavedClaimToken(null);
     setClaimStatus("idle");
+    claimRequestInFlightRef.current = false;
     if (saveSuccessTimerRef.current)
       clearTimeout(saveSuccessTimerRef.current);
 
@@ -330,16 +351,17 @@ export default function StrokesGainedClient({
             if (res.success) {
               trackEvent("round_saved");
               setSavedRoundId(res.roundId);
+              setSavedRoundOwned(res.isOwned);
               setSaveSuccess(true);
-              // Auto-dismiss for anonymous users only; signed-in users get a persistent card
-              if (!user) {
+              // Auto-dismiss for anonymous saves; owned rounds get a persistent card
+              if (!res.isOwned) {
                 saveSuccessTimerRef.current = setTimeout(
                   () => setSaveSuccess(false),
                   3000
                 );
               }
               // Store claim token for anonymous round claiming
-              if (res.claimToken && !user) {
+              if (res.claimToken && !res.isOwned) {
                 setSavedClaimToken(res.claimToken);
                 try {
                   localStorage.setItem(
@@ -349,15 +371,12 @@ export default function StrokesGainedClient({
                 } catch { /* localStorage unavailable */ }
               }
             } else if (res.code === "DUPLICATE_ROUND") {
-              // Round already exists — treat as success (not an error)
-              trackEvent("round_saved");
-              setSaveSuccess(true);
-              if (!user) {
-                saveSuccessTimerRef.current = setTimeout(
-                  () => setSaveSuccess(false),
-                  3000
-                );
-              }
+              // Round already exists but server could not attach it to this user
+              trackEvent("round_save_failed", { error_type: "duplicate" });
+              setSaveError({
+                type: "duplicate",
+                message: "This round was already saved.",
+              });
             } else if (res.code === "SAVE_DISABLED") {
               trackEvent("round_save_failed", { error_type: "config" });
               setSaveError({
@@ -473,9 +492,11 @@ export default function StrokesGainedClient({
     }
   }, []);
 
-  // After auth success, claim the saved round
-  const handleClaimAuthSuccess = useCallback(async () => {
-    if (!savedRoundId || !savedClaimToken) return;
+  // Claim a saved round — used both by auth modal callback and auto-claim effect
+  const attemptClaim = useCallback(async () => {
+    if (!savedRoundId || !savedClaimToken || claimRequestInFlightRef.current) return;
+
+    claimRequestInFlightRef.current = true;
     setClaimAuthModalOpen(false);
     setClaimStatus("claiming");
     try {
@@ -483,9 +504,11 @@ export default function StrokesGainedClient({
       if (result.success) {
         setClaimStatus("claimed");
         setSavedClaimToken(null);
+        setSavedRoundOwned(true);
         trackEvent("round_claimed");
         try {
           localStorage.removeItem(`claim:${savedRoundId}`);
+          localStorage.removeItem("pending-oauth-claim");
         } catch { /* localStorage unavailable */ }
       } else {
         setClaimStatus("failed");
@@ -494,8 +517,21 @@ export default function StrokesGainedClient({
     } catch {
       setClaimStatus("failed");
       trackEvent("round_claim_failed", { reason: "network_error" });
+    } finally {
+      claimRequestInFlightRef.current = false;
     }
   }, [savedRoundId, savedClaimToken]);
+
+  // After auth modal success, claim the saved round
+  const handleClaimAuthSuccess = attemptClaim;
+
+  // Auto-claim: if client already has a session but the server returned isOwned=false
+  // (auth-mismatch), claim immediately instead of showing "Create account" CTA
+  useEffect(() => {
+    if (user && savedRoundId && savedClaimToken && !savedRoundOwned && claimStatus === "idle") {
+      void attemptClaim();
+    }
+  }, [user, savedRoundId, savedClaimToken, savedRoundOwned, claimStatus, attemptClaim]);
 
   const copyButtonText = copyFailed
     ? "Failed to copy"
@@ -583,7 +619,7 @@ export default function StrokesGainedClient({
         </div>
       )}
 
-      {saveSuccess && user && (
+      {saveSuccess && savedRoundOwned && (
         <div
           data-testid="save-success-authed"
           className="mt-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4"
@@ -602,7 +638,7 @@ export default function StrokesGainedClient({
         </div>
       )}
 
-      {saveSuccess && !user && (
+      {saveSuccess && !savedRoundOwned && (
         <div
           data-testid="save-success"
           role="status"
@@ -613,8 +649,8 @@ export default function StrokesGainedClient({
         </div>
       )}
 
-      {/* Post-save claim CTA — shown for anonymous saves */}
-      {savedRoundId && savedClaimToken && !user && claimStatus === "idle" && (
+      {/* Post-save claim CTA — shown only for truly anonymous users (no client session) */}
+      {savedRoundId && savedClaimToken && !savedRoundOwned && !user && claimStatus === "idle" && (
         <div
           data-testid="claim-cta"
           className="mt-6 rounded-xl border border-brand-200 bg-brand-50/50 px-5 py-4"
@@ -680,6 +716,18 @@ export default function StrokesGainedClient({
         open={claimAuthModalOpen}
         onClose={() => setClaimAuthModalOpen(false)}
         onSuccess={handleClaimAuthSuccess}
+        onGoogleAuthStart={() => {
+          // Persist claim context just before Google OAuth redirects away.
+          // This key is consumed on the next mount to resume the claim.
+          if (savedRoundId && savedClaimToken) {
+            try {
+              localStorage.setItem(
+                "pending-oauth-claim",
+                JSON.stringify({ roundId: savedRoundId, claimToken: savedClaimToken })
+              );
+            } catch { /* localStorage unavailable */ }
+          }
+        }}
       />
 
       {saveError && (

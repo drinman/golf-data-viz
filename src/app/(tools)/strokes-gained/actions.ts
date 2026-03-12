@@ -24,6 +24,7 @@ import {
 import { generateClaimToken, hashClaimToken } from "@/lib/security/claim-token";
 import { getUser } from "@/lib/supabase/auth";
 import { timingSafeEqual } from "crypto";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -38,7 +39,7 @@ export type SaveRoundErrorCode =
   | "UNEXPECTED";
 
 export type SaveRoundResult =
-  | { success: true; roundId: string; claimToken: string }
+  | { success: true; roundId: string; claimToken: string; isOwned: boolean }
   | { success: false; code: SaveRoundErrorCode; message: string };
 
 const SAVE_DISABLED_MESSAGE =
@@ -55,6 +56,17 @@ type SupabaseInsertError = {
   code?: string | null;
   message?: string | null;
 };
+
+type RoundWritePayload = ReturnType<typeof toRoundInsert> & {
+  user_id: string | null;
+  trust_status?: string;
+  trust_reasons?: string[];
+};
+
+interface ExistingRoundRecord {
+  id: string;
+  user_id: string | null;
+}
 
 function fail(code: SaveRoundErrorCode, message: string): SaveRoundResult {
   return { success: false, code, message };
@@ -78,6 +90,66 @@ function isMissingPhase2SchemaError(error: SupabaseInsertError | null): boolean 
       error.message ?? ""
     )
   );
+}
+
+function stripPhase2Fields(payload: RoundWritePayload): RoundWritePayload {
+  const sanitized = { ...payload };
+
+  delete sanitized.calibration_version;
+  delete sanitized.total_anchor_mode;
+  delete sanitized.total_anchor_value;
+  delete sanitized.reconciliation_scale_factor;
+  delete sanitized.reconciliation_flags;
+
+  return sanitized;
+}
+
+async function findExistingRound(
+  supabase: ReturnType<typeof createAdminClient>,
+  row: ReturnType<typeof toRoundInsert>
+): Promise<ExistingRoundRecord | null> {
+  const { data, error } = await supabase
+    .from("rounds")
+    .select("id, user_id")
+    .eq("course_name", row.course_name)
+    .eq("played_at", row.played_at)
+    .eq("score", row.score)
+    .eq("handicap_index", row.handicap_index)
+    .eq("total_putts", row.total_putts)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as ExistingRoundRecord;
+}
+
+async function updateOwnedRound(
+  supabase: ReturnType<typeof createAdminClient>,
+  roundId: string,
+  userId: string,
+  payload: RoundWritePayload
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("rounds")
+    .update(payload)
+    .eq("id", roundId)
+    .eq("user_id", userId)
+    .select("id");
+
+  return !error && Boolean(data?.length);
+}
+
+function revalidateRoundRoutes(roundId: string, isOwned: boolean): void {
+  revalidatePath(`/strokes-gained/rounds/${roundId}`);
+
+  if (!isOwned) {
+    return;
+  }
+
+  revalidatePath("/strokes-gained/history");
+  revalidatePath("/strokes-gained/lesson-prep");
 }
 
 export type { SgPhase2Mode } from "@/lib/golf/phase2-mode";
@@ -153,19 +225,21 @@ export async function saveRound(
 
     const supabase = createAdminClient();
     const row = toRoundInsert(validatedInput, sg);
+    const user = await getUser();
     const baseInsert = {
       ...row,
-      user_id: null,
+      user_id: user?.id ?? null,
     };
     const insertWithTrust = {
       ...baseInsert,
       trust_status: trust.status,
       trust_reasons: trust.reasons,
     };
+    let persistedPayload: RoundWritePayload = insertWithTrust;
 
     let { error, data: insertedRows } = await supabase
       .from("rounds")
-      .insert(insertWithTrust)
+      .insert(persistedPayload)
       .select("id");
 
     // Backward-compat: retry without trust columns if schema is behind
@@ -173,9 +247,10 @@ export async function saveRound(
       console.warn(
         "[saveRound] Retrying insert without trust metadata because the DB schema is behind app code"
       );
+      persistedPayload = baseInsert;
       ({ error, data: insertedRows } = await supabase
         .from("rounds")
-        .insert(baseInsert)
+        .insert(persistedPayload)
         .select("id"));
     }
 
@@ -184,17 +259,10 @@ export async function saveRound(
       console.warn(
         "[saveRound] Retrying insert without Phase 2 columns because the DB schema is behind app code"
       );
-      const {
-        calibration_version: _cv,
-        total_anchor_mode: _tam,
-        total_anchor_value: _tav,
-        reconciliation_scale_factor: _rsf,
-        reconciliation_flags: _rf,
-        ...baseWithoutPhase2
-      } = insertWithTrust;
+      persistedPayload = stripPhase2Fields(persistedPayload);
       ({ error, data: insertedRows } = await supabase
         .from("rounds")
-        .insert(baseWithoutPhase2)
+        .insert(persistedPayload)
         .select("id"));
     }
 
@@ -202,6 +270,67 @@ export async function saveRound(
       // Unique constraint violation — the round was already saved (dedup)
       if (error.code === "23505") {
         console.warn("[saveRound] Duplicate round detected:", error.message);
+
+        // If the user is authenticated, update or claim the existing row in place.
+        if (user) {
+          const existing = await findExistingRound(supabase, row);
+
+          if (existing) {
+            if (existing.user_id === user.id) {
+              const updated = await updateOwnedRound(
+                supabase,
+                existing.id,
+                user.id,
+                persistedPayload
+              );
+
+              if (updated) {
+                revalidateRoundRoutes(existing.id, true);
+                return { success: true, roundId: existing.id, claimToken: "", isOwned: true };
+              }
+
+              console.warn("[saveRound] Failed to update existing owned round");
+            }
+            if (existing.user_id === null) {
+              // Anonymous row — atomically claim it and persist the latest values.
+              const { data: claimedRows, error: claimError } = await supabase
+                .from("rounds")
+                .update({
+                  ...persistedPayload,
+                  user_id: user.id,
+                })
+                .eq("id", existing.id)
+                .is("user_id", null)
+                .select("id");
+
+              if (!claimError && claimedRows && claimedRows.length > 0) {
+                revalidateRoundRoutes(existing.id, true);
+                return { success: true, roundId: existing.id, claimToken: "", isOwned: true };
+              }
+              // Re-read: a concurrent request from the same user may have claimed it
+              const { data: recheck } = await supabase
+                .from("rounds")
+                .select("user_id")
+                .eq("id", existing.id)
+                .single();
+              if (recheck?.user_id === user.id) {
+                const updated = await updateOwnedRound(
+                  supabase,
+                  existing.id,
+                  user.id,
+                  persistedPayload
+                );
+
+                if (updated) {
+                  revalidateRoundRoutes(existing.id, true);
+                  return { success: true, roundId: existing.id, claimToken: "", isOwned: true };
+                }
+              }
+              console.warn("[saveRound] Failed to claim duplicate round:", claimError?.message ?? "concurrent claim won");
+            }
+          }
+        }
+
         return fail("DUPLICATE_ROUND", "This round was already saved.");
       }
       console.error("[saveRound] Supabase error:", error.message);
@@ -272,7 +401,9 @@ export async function saveRound(
       }
     }
 
-    return { success: true, roundId, claimToken };
+    revalidateRoundRoutes(roundId, !!user);
+
+    return { success: true, roundId, claimToken, isOwned: !!user };
   } catch (err) {
     if (err instanceof SupabaseConfigError) {
       console.error("[saveRound] Supabase config error:", err.message);

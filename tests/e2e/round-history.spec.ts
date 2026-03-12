@@ -18,7 +18,10 @@ test.describe("Round History", () => {
 
   test("header History link navigates to history page", async ({ page }) => {
     await page.goto("/");
-    await page.getByText("History").click();
+    await page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: "History" })
+      .click();
     await expect(page).toHaveURL(/\/strokes-gained\/history/);
   });
 

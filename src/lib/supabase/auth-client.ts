@@ -18,10 +18,14 @@ export async function signUpWithEmail(email: string, password: string) {
 
 export async function signInWithGoogle() {
   const supabase = createClient();
+  // Pass current path as `next` so the auth callback redirects back here.
+  // This preserves context for flows like post-save claim that depend on
+  // returning to the originating page (e.g. /strokes-gained).
+  const next = encodeURIComponent(window.location.pathname);
   return supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${window.location.origin}/auth/callback?next=${next}`,
     },
   });
 }

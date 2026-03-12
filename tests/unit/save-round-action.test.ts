@@ -10,6 +10,8 @@ const {
   mockCaptureMonitoringException,
   mockVerifyTurnstileToken,
   mockGenerateClaimToken,
+  mockGetUser,
+  mockRevalidatePath,
 } = vi.hoisted(() => ({
   mockInsert: vi.fn(),
   mockUpdate: vi.fn(),
@@ -18,6 +20,8 @@ const {
   mockCaptureMonitoringException: vi.fn(),
   mockVerifyTurnstileToken: vi.fn(),
   mockGenerateClaimToken: vi.fn(),
+  mockGetUser: vi.fn(),
+  mockRevalidatePath: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
@@ -43,7 +47,11 @@ vi.mock("@/lib/security/claim-token", () => ({
 }));
 
 vi.mock("@/lib/supabase/auth", () => ({
-  getUser: vi.fn().mockResolvedValue(null),
+  getUser: mockGetUser,
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: mockRevalidatePath,
 }));
 
 vi.mock("next/headers", () => ({
@@ -75,6 +83,7 @@ describe("saveRound server action", () => {
     vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "turnstile-site-key");
     vi.stubEnv("TURNSTILE_SECRET_KEY", "turnstile-secret-key");
     vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockGetUser.mockResolvedValue(null);
     mockCheckRateLimit.mockResolvedValue({ allowed: true });
     mockVerifyTurnstileToken.mockResolvedValue({
       ok: true,
@@ -137,6 +146,7 @@ describe("saveRound server action", () => {
       success: true,
       roundId: "test-round-id",
       claimToken: FAKE_CLAIM_TOKEN,
+      isOwned: false,
     });
     expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
   });
@@ -210,6 +220,7 @@ describe("saveRound server action", () => {
       success: true,
       roundId: "test-round-id",
       claimToken: FAKE_CLAIM_TOKEN,
+      isOwned: false,
     });
     expect(mockInsert).toHaveBeenCalledTimes(2);
     expect(mockInsert.mock.calls[0][0]).toEqual(
@@ -473,6 +484,171 @@ describe("saveRound server action", () => {
       success: true,
       roundId: "test-round-id",
       claimToken: "",
+      isOwned: false,
     });
+  });
+
+  it("sets user_id when authenticated user saves a round", async () => {
+    mockGetUser.mockResolvedValue({ id: "user-123" });
+
+    const result = await saveRound(makeRound(), verification);
+
+    expect(result).toEqual({
+      success: true,
+      roundId: "test-round-id",
+      claimToken: "",
+      isOwned: true,
+    });
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "user-123" })
+    );
+    expect(mockGenerateClaimToken).not.toHaveBeenCalled();
+  });
+
+  it("revalidates history routes after an authenticated save succeeds", async () => {
+    mockGetUser.mockResolvedValue({ id: "user-123" });
+
+    await saveRound(makeRound(), verification);
+
+    expect(mockRevalidatePath).toHaveBeenNthCalledWith(
+      1,
+      "/strokes-gained/rounds/test-round-id"
+    );
+    expect(mockRevalidatePath).toHaveBeenNthCalledWith(
+      2,
+      "/strokes-gained/history"
+    );
+    expect(mockRevalidatePath).toHaveBeenNthCalledWith(
+      3,
+      "/strokes-gained/lesson-prep"
+    );
+  });
+
+  it("updates the existing owned round on duplicate save for authenticated user", async () => {
+    mockGetUser.mockResolvedValue({ id: "user-456" });
+
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        error: {
+          message: 'duplicate key value violates unique constraint "rounds_dedup_idx"',
+          code: "23505",
+        },
+        data: null,
+      }),
+    });
+
+    const existingLookupChain = {
+      eq: vi.fn(),
+      single: vi.fn().mockResolvedValue({
+        data: { id: "existing-round-id", user_id: "user-456" },
+        error: null,
+      }),
+    };
+    existingLookupChain.eq.mockReturnValue(existingLookupChain);
+
+    const mockUpdateSelect = vi.fn().mockResolvedValue({
+      data: [{ id: "existing-round-id" }],
+      error: null,
+    });
+    const mockUpdateEqUser = vi.fn().mockReturnValue({ select: mockUpdateSelect });
+    const mockUpdateEqId = vi.fn().mockReturnValue({ eq: mockUpdateEqUser });
+    const mockOwnedUpdate = vi.fn().mockReturnValue({ eq: mockUpdateEqId });
+
+    mockCreateAdminClient.mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === "rounds") {
+          return {
+            insert: mockInsert,
+            update: mockOwnedUpdate,
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue(existingLookupChain) }),
+          };
+        }
+        return { insert: vi.fn().mockResolvedValue({ error: null }) };
+      }),
+    });
+
+    const result = await saveRound(
+      makeRound({ fairwaysHit: 10, greensInRegulation: 8 }),
+      verification
+    );
+
+    expect(result).toEqual({
+      success: true,
+      roundId: "existing-round-id",
+      claimToken: "",
+      isOwned: true,
+    });
+    expect(mockOwnedUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: "user-456",
+        fairways_hit: 10,
+        greens_in_regulation: 8,
+      })
+    );
+    expect(mockRevalidatePath).toHaveBeenCalledWith(
+      "/strokes-gained/rounds/existing-round-id"
+    );
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/strokes-gained/history");
+  });
+
+  it("claims existing anonymous round on duplicate for authenticated user", async () => {
+    mockGetUser.mockResolvedValue({ id: "user-456" });
+
+    // Insert fails with duplicate
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        error: {
+          message: 'duplicate key value violates unique constraint "rounds_dedup_idx"',
+          code: "23505",
+        },
+        data: null,
+      }),
+    });
+
+    // Build a chainable mock that supports .select().eq().eq().eq().eq().eq().single()
+    // and .update().eq().is().select()
+    const mockClaimUpdate = vi.fn();
+    const eqChain = {
+      eq: vi.fn(),
+      single: vi.fn().mockResolvedValue({
+        data: { id: "existing-round-id", user_id: null },
+        error: null,
+      }),
+    };
+    // Each .eq() returns the same chainable object
+    eqChain.eq.mockReturnValue(eqChain);
+
+    const mockClaimSelect = vi.fn().mockResolvedValue({ data: [{ id: "existing-round-id" }], error: null });
+    const mockClaimIs = vi.fn().mockReturnValue({ select: mockClaimSelect });
+    const mockClaimEq = vi.fn().mockReturnValue({ is: mockClaimIs });
+    mockClaimUpdate.mockReturnValue({ eq: mockClaimEq });
+
+    mockCreateAdminClient.mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === "rounds") {
+          return {
+            insert: mockInsert,
+            update: mockClaimUpdate,
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue(eqChain) }),
+          };
+        }
+        return { insert: vi.fn().mockResolvedValue({ error: null }) };
+      }),
+    });
+
+    const result = await saveRound(makeRound(), verification);
+
+    expect(result).toEqual({
+      success: true,
+      roundId: "existing-round-id",
+      claimToken: "",
+      isOwned: true,
+    });
+    expect(mockClaimUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "user-456" })
+    );
+    expect(mockRevalidatePath).toHaveBeenCalledWith(
+      "/strokes-gained/rounds/existing-round-id"
+    );
   });
 });

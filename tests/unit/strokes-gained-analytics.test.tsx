@@ -8,11 +8,13 @@ import type { ComponentProps } from "react";
 const {
   mockTrackEvent,
   mockSaveRound,
+  mockClaimRound,
   mockTurnstileExecute,
   mockInitialSavePreference,
 } = vi.hoisted(() => ({
   mockTrackEvent: vi.fn(),
   mockSaveRound: vi.fn(() => Promise.resolve({ success: true })),
+  mockClaimRound: vi.fn(() => Promise.resolve({ success: true, claimedRoundId: "r-1" })),
   mockTurnstileExecute: vi.fn(() => Promise.resolve("turnstile-token")),
   mockInitialSavePreference: { current: true },
 }));
@@ -109,6 +111,9 @@ vi.mock("@/lib/golf/share-codec", () => ({
 
 vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
   saveRound: mockSaveRound,
+  claimRound: mockClaimRound,
+  saveTroubleContext: vi.fn(() => Promise.resolve({ success: true })),
+  clearTroubleContext: vi.fn(() => Promise.resolve({ success: true })),
 }));
 
 vi.mock("@/lib/capture", () => ({
@@ -689,7 +694,7 @@ describe("Claim CTA copy", () => {
     mockSaveRound.mockClear();
     mockTurnstileExecute.mockClear();
     mockUser.current = null;
-    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1", claimToken: "ct-1" });
+    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1", claimToken: "ct-1", isOwned: false });
     mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
   });
@@ -721,7 +726,7 @@ describe("Post-save confirmation for signed-in users", () => {
     mockTrackEvent.mockClear();
     mockSaveRound.mockClear();
     mockTurnstileExecute.mockClear();
-    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1" });
+    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1", claimToken: "", isOwned: true });
     mockTurnstileExecute.mockResolvedValue("turnstile-token");
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
   });
@@ -743,6 +748,7 @@ describe("Post-save confirmation for signed-in users", () => {
 
   it("shows auto-dismiss toast when anonymous user saves", async () => {
     mockUser.current = null;
+    mockSaveRound.mockResolvedValue({ success: true, roundId: "r-1", claimToken: "ct-1", isOwned: false });
     renderClient();
     await userEvent.click(screen.getByTestId("mock-submit"));
 
@@ -767,5 +773,113 @@ describe("Post-save confirmation for signed-in users", () => {
     expect(mockTrackEvent).toHaveBeenCalledWith("history_link_clicked", {
       surface: "post_save_confirmation",
     });
+  });
+});
+
+describe("OAuth claim rehydration", () => {
+  let mockStorage: Record<string, string>;
+  let originalLocalStorage: Storage;
+
+  beforeEach(() => {
+    mockStorage = {};
+    originalLocalStorage = globalThis.localStorage;
+
+    Object.defineProperty(globalThis, "localStorage", {
+      value: {
+        getItem: (key: string) => mockStorage[key] ?? null,
+        setItem: (key: string, value: string) => { mockStorage[key] = value; },
+        removeItem: (key: string) => { delete mockStorage[key]; },
+        get length() { return Object.keys(mockStorage).length; },
+        key: (i: number) => Object.keys(mockStorage)[i] ?? null,
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    mockTrackEvent.mockClear();
+    mockSaveRound.mockClear();
+    mockClaimRound.mockClear();
+    mockTurnstileExecute.mockClear();
+    mockTurnstileExecute.mockResolvedValue("turnstile-token");
+    vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    Object.defineProperty(globalThis, "localStorage", {
+      value: originalLocalStorage,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it("auto-claims a round from pending-oauth-claim when signed-in user mounts", async () => {
+    // Simulate: user saved anonymously, clicked "Create account", completed Google OAuth.
+    // The pending-oauth-claim key was written before the redirect.
+    mockStorage["pending-oauth-claim"] = JSON.stringify({ roundId: "oauth-round-1", claimToken: "oauth-ct-1" });
+    mockUser.current = { id: "user-1", email: "test@example.com" };
+    mockClaimRound.mockResolvedValue({ success: true, claimedRoundId: "oauth-round-1" });
+
+    renderClient();
+
+    await waitFor(() => {
+      expect(mockClaimRound).toHaveBeenCalledWith("oauth-round-1", "oauth-ct-1");
+    });
+
+    // Verify claim success UI
+    await waitFor(() => {
+      expect(screen.getByTestId("claim-success")).toBeInTheDocument();
+    });
+    expect(mockTrackEvent).toHaveBeenCalledWith("round_claimed");
+
+    // pending-oauth-claim consumed from localStorage
+    expect(mockStorage["pending-oauth-claim"]).toBeUndefined();
+  });
+
+  it("does not auto-claim when no pending-oauth-claim exists", async () => {
+    mockUser.current = { id: "user-1", email: "test@example.com" };
+
+    renderClient();
+
+    // Give the effect a tick to run
+    await waitFor(() => {
+      expect(screen.getByTestId("mock-submit")).toBeInTheDocument();
+    });
+
+    expect(mockClaimRound).not.toHaveBeenCalled();
+  });
+
+  it("does not auto-claim when user is not signed in", async () => {
+    mockStorage["pending-oauth-claim"] = JSON.stringify({ roundId: "oauth-round-2", claimToken: "oauth-ct-2" });
+    mockUser.current = null;
+
+    renderClient();
+
+    // Give effects time to settle
+    await waitFor(() => {
+      expect(screen.getByTestId("mock-submit")).toBeInTheDocument();
+    });
+
+    // Rehydration consumed the key, but no user → auto-claim effect does not fire
+    expect(mockStorage["pending-oauth-claim"]).toBeUndefined();
+    expect(mockClaimRound).not.toHaveBeenCalled();
+  });
+
+  it("shows claim failure UI when auto-claim after OAuth fails", async () => {
+    mockStorage["pending-oauth-claim"] = JSON.stringify({ roundId: "oauth-round-3", claimToken: "oauth-ct-3" });
+    mockUser.current = { id: "user-1", email: "test@example.com" };
+    mockClaimRound.mockResolvedValue({ success: false, code: "token_expired", message: "Claim token has expired." });
+
+    renderClient();
+
+    await waitFor(() => {
+      expect(mockClaimRound).toHaveBeenCalledWith("oauth-round-3", "oauth-ct-3");
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("claim-error")).toBeInTheDocument();
+    });
+    expect(mockTrackEvent).toHaveBeenCalledWith("round_claim_failed", { reason: "token_expired" });
   });
 });
