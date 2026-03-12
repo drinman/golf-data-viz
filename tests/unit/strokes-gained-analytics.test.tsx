@@ -112,6 +112,7 @@ vi.mock("@/lib/golf/share-codec", () => ({
 vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
   saveRound: mockSaveRound,
   claimRound: mockClaimRound,
+  createShareToken: vi.fn(() => Promise.resolve({ success: false, message: "mock" })),
   saveTroubleContext: vi.fn(() => Promise.resolve({ success: true })),
   clearTroubleContext: vi.fn(() => Promise.resolve({ success: true })),
 }));
@@ -380,7 +381,8 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     await userEvent.click(screen.getByTestId("copy-link"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith("copy_link_clicked", {
-      has_share_param: true,
+      share_type: "encoded",
+      surface: "results_page",
       utm_source: "reddit",
     });
   });
@@ -401,7 +403,8 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     await userEvent.click(screen.getByTestId("download-png"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith("copy_link_clicked", {
-      has_share_param: true,
+      share_type: "encoded",
+      surface: "results_page",
       utm_source: "reddit",
     });
     await waitFor(() => {

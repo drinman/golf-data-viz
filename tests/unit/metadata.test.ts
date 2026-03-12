@@ -14,33 +14,28 @@ function makeSearchParams(d?: string): Promise<Record<string, string | undefined
 }
 
 describe("generateMetadata", () => {
-  it("annotates estimated categories with (est.) in og:description", async () => {
-    // Partial round: no GIR → approach and ATG will be estimated
-    const round = makeRound();
-    delete round.greensInRegulation;
-    delete round.upAndDownAttempts;
-    delete round.upAndDownConverted;
+  it("generates score-first title and description for shared round", async () => {
+    const round = makeRound({ course: "Pebble Beach", score: 82 });
     const encoded = encodeRound(round);
 
     const meta = await generateMetadata({ searchParams: makeSearchParams(encoded) });
 
+    const title = meta.title as string;
+    expect(title).toContain("Shot 82");
+    expect(title).toContain("Pebble Beach");
+
     const description = meta.description as string;
-    expect(description).toContain("Approach");
-    expect(description).toContain("(est.)");
-    // OTT and Putting should NOT have (est.)
-    expect(description).toMatch(/Off the Tee [+-]\d/);
-    expect(description).not.toMatch(/Off the Tee [+-][\d.]+ \(est\.\)/);
-    expect(description).toMatch(/Putting [+-]\d/);
-    expect(description).not.toMatch(/Putting [+-][\d.]+ \(est\.\)/);
+    expect(description).toBeTruthy();
+    // Score-first description includes index and familiar stats
+    expect(description).toContain("index");
+    expect(description).toContain("GIR");
+    expect(description).toContain("putts");
   });
 
-  it("does not annotate categories when all data is provided", async () => {
-    const round = makeRound();
-    const encoded = encodeRound(round);
+  it("returns default metadata when no d param", async () => {
+    const meta = await generateMetadata({ searchParams: makeSearchParams() });
 
-    const meta = await generateMetadata({ searchParams: makeSearchParams(encoded) });
-
-    const description = meta.description as string;
-    expect(description).not.toContain("(est.)");
+    const title = meta.title as string;
+    expect(title).toBe("Strokes Gained Benchmarker");
   });
 });

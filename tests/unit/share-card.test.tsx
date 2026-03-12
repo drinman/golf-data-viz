@@ -2,9 +2,8 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { ShareCard } from "@/app/(tools)/strokes-gained/_components/share-card";
-import { makeSGResult } from "../fixtures/factories";
-import type { BenchmarkMeta, RadarChartDatum } from "@/lib/golf/types";
-import { makeEmptyCitations } from "../helpers";
+import { makeSGResult, makeRound } from "../fixtures/factories";
+import type { RadarChartDatum } from "@/lib/golf/types";
 
 afterEach(cleanup);
 
@@ -91,7 +90,7 @@ describe("ShareCard", () => {
     );
 
     expect(screen.getByText("+2.50")).toBeTruthy();
-    expect(screen.getByText("Proxy SG")).toBeTruthy();
+    expect(screen.getByText("SG vs peers")).toBeTruthy();
   });
 
   it("shows bracket label", () => {
@@ -114,16 +113,6 @@ describe("ShareCard", () => {
   it("shows Proxy SG trust label", () => {
     const result = makeSGResult();
     const chartData = makeChartData();
-    const meta: BenchmarkMeta = {
-      version: "0.1.0",
-      updatedAt: "2026-02-28",
-      provisional: true,
-      sources: [],
-      citations: makeEmptyCitations(),
-      changelog: [
-        { version: "0.1.0", date: "2026-02-28", summary: "Test" },
-      ],
-    };
 
     render(
       <ShareCard
@@ -131,11 +120,55 @@ describe("ShareCard", () => {
         chartData={chartData}
         courseName="Test"
         score={85}
-        benchmarkMeta={meta}
       />
     );
 
     expect(screen.getAllByText(/Proxy SG/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders familiar stats and scoring breakdown when roundInput is provided", () => {
+    const result = makeSGResult();
+    const chartData = makeChartData();
+    const roundInput = makeRound({ greensInRegulation: 6, totalPutts: 33, fairwaysHit: 7 });
+
+    render(
+      <ShareCard
+        result={result}
+        chartData={chartData}
+        courseName="Test"
+        score={87}
+        roundInput={roundInput}
+      />
+    );
+
+    expect(screen.getByText(/6 GIR/)).toBeTruthy();
+    expect(screen.getByText(/33 putts/)).toBeTruthy();
+    expect(screen.getByText(/7 par/)).toBeTruthy();
+    expect(screen.getByText(/7 bogey/)).toBeTruthy();
+  });
+
+  it("omits familiar stats when roundInput has null optional fields", () => {
+    const result = makeSGResult();
+    const chartData = makeChartData();
+    const roundInput = makeRound({
+      greensInRegulation: undefined,
+      totalPutts: undefined,
+      fairwaysHit: undefined,
+    });
+
+    render(
+      <ShareCard
+        result={result}
+        chartData={chartData}
+        courseName="Test"
+        score={87}
+        roundInput={roundInput}
+      />
+    );
+
+    // No familiar stats line should render (no GIR, no putts, no fairways)
+    expect(screen.queryByText(/GIR/)).toBeNull();
+    expect(screen.queryByText(/putts/)).toBeNull();
   });
 
   it("shows context legend and strokes-gained watermark URL", () => {

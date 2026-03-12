@@ -2,19 +2,13 @@ import type { Metadata } from "next";
 import { decodeRound } from "@/lib/golf/share-codec";
 import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGained } from "@/lib/golf/strokes-gained";
-import type { StrokesGainedCategory } from "@/lib/golf/types";
-import { CATEGORY_LABELS } from "@/lib/golf/constants";
+import { formatHandicap, findWeakestCategory } from "@/lib/golf/format";
 import { getRoundSaveAvailability } from "@/lib/round-save";
 import { getSampleResult } from "@/lib/golf/sample-round";
 import StrokesGainedClient from "./_components/strokes-gained-client";
 
 const PAGE_DESCRIPTION =
   "Free post-round proxy strokes gained from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.";
-
-function formatSG(value: number): string {
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(1)}`;
-}
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -48,23 +42,18 @@ export async function generateMetadata({
   const benchmark = getInterpolatedBenchmark(input.handicapIndex);
   const result = calculateStrokesGained(input, benchmark);
 
-  const skippedSet = new Set(result.skippedCategories);
-  const estimatedSet = new Set(result.estimatedCategories);
-  const categoryHighlights = (
-    Object.keys(CATEGORY_LABELS) as StrokesGainedCategory[]
-  )
-    .filter((key) => !skippedSet.has(key))
-    .map((key) => {
-      const label = CATEGORY_LABELS[key];
-      const value = formatSG(result.categories[key]);
-      return estimatedSet.has(key) ? `${label} ${value} (est.)` : `${label} ${value}`;
-    })
-    .join(", ");
-
-  const title = `SG Breakdown: ${formatSG(result.total)} total — ${input.course}`;
-  const description = categoryHighlights
-    ? `Shot ${input.score} at ${input.course}. ${categoryHighlights}.`
-    : `Shot ${input.score} at ${input.course}.`;
+  const title = `Shot ${input.score} at ${input.course}`;
+  const descParts: string[] = [`${formatHandicap(input.handicapIndex)} index`];
+  if (input.greensInRegulation != null) descParts.push(`${input.greensInRegulation} GIR`);
+  if (input.totalPutts != null) descParts.push(`${input.totalPutts} putts`);
+  const weakest = findWeakestCategory({
+    sgOffTheTee: result.categories["off-the-tee"],
+    sgApproach: result.categories["approach"],
+    sgAroundTheGreen: result.categories["around-the-green"],
+    sgPutting: result.categories["putting"],
+  });
+  if (weakest) descParts.push(`Lost most strokes on ${weakest}`);
+  const description = descParts.join(" · ");
 
   return {
     title,

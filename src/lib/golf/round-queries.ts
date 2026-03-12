@@ -62,7 +62,9 @@ const DETAIL_COLUMNS = `
   confidence_around_the_green, confidence_putting,
   estimated_categories, skipped_categories,
   fairways_hit, fairway_attempts, greens_in_regulation,
-  up_and_down_attempts, up_and_down_converted
+  up_and_down_attempts, up_and_down_converted,
+  eagles, birdies, pars, bogeys, double_bogeys, triple_plus,
+  total_putts, penalty_strokes, course_rating, slope_rating
 `.replace(/\s+/g, " ").trim();
 
 function mapRowToDetailSnapshot(row: Record<string, unknown>): RoundDetailSnapshot {
@@ -116,6 +118,16 @@ function mapRowToDetailSnapshot(row: Record<string, unknown>): RoundDetailSnapsh
     estimatedCategories: (row.estimated_categories as StrokesGainedCategory[] | null) ?? [],
     skippedCategories: (row.skipped_categories as StrokesGainedCategory[] | null) ?? [],
     ...rawInputs,
+    eagles: (row.eagles as number | null) ?? null,
+    birdies: (row.birdies as number | null) ?? null,
+    pars: (row.pars as number | null) ?? null,
+    bogeys: (row.bogeys as number | null) ?? null,
+    doubleBogeys: (row.double_bogeys as number | null) ?? null,
+    triplePlus: (row.triple_plus as number | null) ?? null,
+    totalPutts: (row.total_putts as number | null) ?? null,
+    penaltyStrokes: (row.penalty_strokes as number | null) ?? null,
+    courseRating: (row.course_rating as number | null) ?? null,
+    slopeRating: (row.slope_rating as number | null) ?? null,
   };
 }
 

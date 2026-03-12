@@ -2,12 +2,12 @@
 
 import { forwardRef } from "react";
 import type {
-  BenchmarkMeta,
   StrokesGainedResult,
   RadarChartDatum,
+  RoundInput,
 } from "@/lib/golf/types";
 import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/golf/constants";
-import { formatHandicap } from "@/lib/golf/format";
+import { formatHandicap, formatScoringBreakdown, buildFamiliarStats } from "@/lib/golf/format";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ConfidenceBadge } from "./confidence-badge";
 
@@ -21,12 +21,13 @@ interface ShareCardProps {
   chartData: RadarChartDatum[];
   courseName: string;
   score: number;
-  benchmarkMeta?: BenchmarkMeta;
   hasTroubleContext?: boolean;
+  /** Pass the round input to show scoring distribution and familiar stats. */
+  roundInput?: RoundInput | null;
 }
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
-  function ShareCard({ result, chartData, courseName, score, benchmarkMeta, hasTroubleContext }, ref) {
+  function ShareCard({ result, chartData, courseName, score, hasTroubleContext, roundInput }, ref) {
     const bracketLabel =
       BRACKET_LABELS[result.benchmarkBracket] ?? result.benchmarkBracket;
 
@@ -40,6 +41,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
       estimated: estimatedSet.has(key),
     }));
 
+    const familiarStats = roundInput ? buildFamiliarStats(roundInput) : [];
+    const scoringBreakdown = roundInput
+      ? formatScoringBreakdown(roundInput)
+      : [];
+
     return (
       <div
         ref={ref}
@@ -47,26 +53,20 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         className="w-[600px] overflow-hidden rounded-xl shadow-lg"
         style={{ fontFamily: "DM Sans, sans-serif" }}
       >
-        {/* Dark green header band */}
+        {/* Dark green header band — score-first */}
         <div className="bg-brand-900 px-8 pb-5 pt-6">
-          <div className="flex items-start justify-between">
-            <div className="min-w-0 flex-1 pr-4">
-              <h2 className="truncate font-display text-xl font-bold text-white">
-                {courseName}
-              </h2>
-              <p className="mt-1 text-sm text-brand-100">
-                Shot {score} &middot; {formatHandicap(result.benchmarkHandicap)} HCP &middot; vs {bracketLabel}
-                {result.totalAnchorMode === "course_adjusted" && " \u00b7 Course-Adjusted"}
-                {result.totalAnchorMode === "course_neutral" && " \u00b7 Course-Neutral"}
-                {hasTroubleContext && " \u00b7 Trouble context added"}
-              </p>
-              {benchmarkMeta && (
-                <p className="mt-0.5 text-xs italic text-brand-100/70">
-                  Proxy SG &mdash; scorecard-based estimate &middot; Benchmarks v{benchmarkMeta.version}
-                </p>
-              )}
+          <p className="truncate font-display text-base font-bold text-brand-100">
+            {courseName}
+          </p>
+
+          {/* Score hero + SG badge */}
+          <div className="mt-3 flex items-end gap-5">
+            <div className="flex flex-col items-center">
+              <span className="font-display text-5xl font-bold text-white">
+                {score}
+              </span>
+              <span className="mt-0.5 text-[10px] uppercase tracking-wider text-brand-100/70">Score</span>
             </div>
-            {/* Total SG badge */}
             <div className="flex flex-col items-center">
               <div
                 className={`flex h-16 w-16 items-center justify-center rounded-full border-2 ${
@@ -83,11 +83,34 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                   {formatSG(result.total)}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-brand-100/70">Proxy SG</p>
+              <span className="mt-0.5 text-[10px] text-brand-100/70">SG vs peers</span>
             </div>
           </div>
+
+          <p className="mt-2 text-xs text-brand-100/70">
+            {formatHandicap(result.benchmarkHandicap)} index · vs {bracketLabel}
+            {result.totalAnchorMode === "course_adjusted" && " · Course-Adjusted"}
+            {result.totalAnchorMode === "course_neutral" && " · Course-Neutral"}
+            {hasTroubleContext && " · Trouble context added"}
+          </p>
+          <p className="mt-0.5 text-[10px] text-brand-100/50">
+            Scorecard-based estimate
+          </p>
+
           {/* Gold separator */}
-          <div className="mt-4 h-px bg-accent-500/50" />
+          <div className="mt-3 h-px bg-accent-500/50" />
+
+          {/* Familiar stats + scoring distribution */}
+          {familiarStats.length > 0 && (
+            <p className="mt-2.5 text-xs text-brand-100">
+              {familiarStats.join(" · ")}
+            </p>
+          )}
+          {scoringBreakdown.length > 0 && (
+            <p className="mt-0.5 text-xs text-brand-100/70">
+              {scoringBreakdown.join(" · ")}
+            </p>
+          )}
         </div>
 
         {/* White body */}
@@ -158,7 +181,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               <circle cx="16" cy="16" r="1.8" fill="currentColor" />
             </svg>
             <p className="text-xs text-accent-500">
-              Golf Data Viz &middot; golfdataviz.com/strokes-gained
+              Golf Data Viz · golfdataviz.com/strokes-gained
             </p>
           </div>
         </div>

@@ -9,7 +9,7 @@ import {
 } from "@/lib/golf/round-detail-adapter";
 import { getBenchmarkMeta } from "@/lib/golf/benchmarks";
 import { BRACKET_LABELS } from "@/lib/golf/constants";
-import { formatHandicap, formatSG, formatDate } from "@/lib/golf/format";
+import { formatHandicap, formatSG, formatDate, formatScoringBreakdown, buildFamiliarStats } from "@/lib/golf/format";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ResultsSummary } from "./results-summary";
 import { ShareCard } from "./share-card";
@@ -60,26 +60,27 @@ export function RoundLayout({
     <main className="mx-auto max-w-3xl px-4 py-8">
       {beforeHeader}
 
-      {/* Header band */}
+      {/* Header band — score-first box score */}
       <div
         className="mt-6 animate-fade-up overflow-hidden rounded-xl bg-brand-900 px-6 py-6 shadow-lg sm:px-8"
         style={d(1)}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate font-display text-2xl font-bold text-white sm:text-3xl">
-              {snapshot.courseName}
-            </h1>
-            <p className="mt-1.5 text-sm text-brand-100">
-              {formatDate(snapshot.playedAt)} &middot; Shot {snapshot.score}{" "}
-              &middot; {formatHandicap(snapshot.handicapIndex)} HCP
-            </p>
-            <p className="mt-0.5 text-sm text-brand-100/70">
-              vs {bracketLabel}
-            </p>
+        <h1 className="truncate font-display text-lg font-bold text-brand-100 sm:text-xl">
+          {snapshot.courseName}
+        </h1>
+        <p className="mt-1 text-sm text-brand-100/70">
+          {formatDate(snapshot.playedAt)}
+        </p>
+
+        {/* Score + SG hero row */}
+        <div className="mt-4 flex items-end gap-6 sm:gap-8">
+          <div className="flex flex-col items-center">
+            <span className="font-display text-5xl font-bold text-white sm:text-6xl">
+              {snapshot.score}
+            </span>
+            <span className="mt-1 text-xs uppercase tracking-wider text-brand-100/70">Score</span>
           </div>
-          {/* Total SG badge */}
-          <div className="flex shrink-0 flex-col items-center">
+          <div className="flex flex-col items-center">
             <div
               className={`flex h-16 w-16 items-center justify-center rounded-full border-2 sm:h-20 sm:w-20 ${
                 snapshot.sgTotal >= 0
@@ -95,11 +96,47 @@ export function RoundLayout({
                 {formatSG(snapshot.sgTotal)}
               </span>
             </div>
-            <p className="mt-1 text-xs text-brand-100/70">Proxy SG</p>
+            <span className="mt-1 text-xs text-brand-100/70">SG vs peers</span>
           </div>
         </div>
+
+        <p className="mt-2 text-sm text-brand-100/70">
+          {formatHandicap(snapshot.handicapIndex)} index &middot; vs {bracketLabel}
+        </p>
+        <p className="mt-0.5 text-xs text-brand-100/50">
+          Scorecard-based estimate
+        </p>
+
         {/* Gold separator */}
         <div className="mt-4 h-px bg-accent-500/50" />
+
+        {/* Familiar stats row */}
+        {(() => {
+          const familiar = buildFamiliarStats(snapshot);
+          return familiar.length > 0 ? (
+            <p className="mt-3 text-sm text-brand-100">
+              {familiar.join(" · ")}
+            </p>
+          ) : null;
+        })()}
+
+        {/* Scoring distribution row */}
+        {(() => {
+          if (snapshot.eagles == null) return null;
+          const breakdown = formatScoringBreakdown({
+            eagles: snapshot.eagles ?? 0,
+            birdies: snapshot.birdies ?? 0,
+            pars: snapshot.pars ?? 0,
+            bogeys: snapshot.bogeys ?? 0,
+            doubleBogeys: snapshot.doubleBogeys ?? 0,
+            triplePlus: snapshot.triplePlus ?? 0,
+          });
+          return breakdown.length > 0 ? (
+            <p className="mt-1 text-sm text-brand-100/70">
+              {breakdown.join(" · ")}
+            </p>
+          ) : null;
+        })()}
       </div>
 
       {/* Radar chart */}
@@ -170,7 +207,29 @@ export function RoundLayout({
           chartData={chartData}
           courseName={snapshot.courseName}
           score={snapshot.score}
-          benchmarkMeta={benchmarkMeta}
+          roundInput={
+            snapshot.eagles != null
+              ? {
+                  course: snapshot.courseName,
+                  date: snapshot.playedAt,
+                  score: snapshot.score,
+                  handicapIndex: snapshot.handicapIndex,
+                  courseRating: snapshot.courseRating ?? 72,
+                  slopeRating: snapshot.slopeRating ?? 113,
+                  fairwaysHit: snapshot.fairwaysHit ?? undefined,
+                  fairwayAttempts: snapshot.fairwayAttempts ?? 14,
+                  greensInRegulation: snapshot.greensInRegulation ?? undefined,
+                  totalPutts: snapshot.totalPutts ?? 36,
+                  penaltyStrokes: snapshot.penaltyStrokes ?? 0,
+                  eagles: snapshot.eagles ?? 0,
+                  birdies: snapshot.birdies ?? 0,
+                  pars: snapshot.pars ?? 0,
+                  bogeys: snapshot.bogeys ?? 0,
+                  doubleBogeys: snapshot.doubleBogeys ?? 0,
+                  triplePlus: snapshot.triplePlus ?? 0,
+                }
+              : null
+          }
         />
       </div>
     </main>

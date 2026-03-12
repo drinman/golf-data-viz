@@ -38,7 +38,7 @@ import {
   TurnstileWidget,
   type TurnstileWidgetHandle,
 } from "@/components/security/turnstile-widget";
-import { saveRound, saveTroubleContext, clearTroubleContext, claimRound } from "../actions";
+import { saveRound, saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { CompactSamplePreview } from "@/components/compact-sample-preview";
 import { ContourBg } from "@/components/contour-bg";
@@ -121,6 +121,7 @@ export default function StrokesGainedClient({
   const [savedRoundId, setSavedRoundId] = useState<string | null>(null);
   const [savedRoundOwned, setSavedRoundOwned] = useState(false);
   const [savedClaimToken, setSavedClaimToken] = useState<string | null>(null);
+  const [shareToken, setShareToken] = useState<string | null>(null);
   const [claimAuthModalOpen, setClaimAuthModalOpen] = useState(false);
   const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "failed">("idle");
   const { user } = useSupabaseUser();
@@ -147,6 +148,15 @@ export default function StrokesGainedClient({
   function getAttributionUtmSource(): string | undefined {
     return attributionUtmSourceRef.current ?? getUtmSource();
   }
+
+  // Auto-scroll to results when opened from a shared ?d= link
+  useEffect(() => {
+    if (!initialInput) return;
+    const id = requestAnimationFrame(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fire shared_round_viewed when viewing a shared link
   useEffect(() => {
@@ -240,6 +250,7 @@ export default function StrokesGainedClient({
     setTroublePromptDismissed(false);
     setSavedRoundId(null);
     setSavedClaimToken(null);
+    setShareToken(null);
     setClaimStatus("idle");
     claimRequestInFlightRef.current = false;
     if (saveSuccessTimerRef.current)
@@ -353,6 +364,12 @@ export default function StrokesGainedClient({
               setSavedRoundId(res.roundId);
               setSavedRoundOwned(res.isOwned);
               setSaveSuccess(true);
+              // Create a share token for canonical URL sharing (owner only)
+              if (res.isOwned) {
+                void createShareToken(res.roundId).then((tokenRes) => {
+                  if (tokenRes.success) setShareToken(tokenRes.token);
+                });
+              }
               // Auto-dismiss for anonymous saves; owned rounds get a persistent card
               if (!res.isOwned) {
                 saveSuccessTimerRef.current = setTimeout(
@@ -456,22 +473,27 @@ export default function StrokesGainedClient({
   }, [downloading]);
 
   const handleCopyLink = useCallback(async () => {
+    const url = shareToken
+      ? `${window.location.origin}/strokes-gained/shared/round/${shareToken}`
+      : window.location.href;
+
     trackEvent("copy_link_clicked", {
-      has_share_param: window.location.search.includes("d="),
+      share_type: shareToken ? "canonical" : "encoded",
+      surface: "results_page",
       utm_source: getAttributionUtmSource(),
     });
 
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
 
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(url);
       setCopyFailed(false);
       setCopied(true);
       copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback: hidden textarea + execCommand
       const textarea = document.createElement("textarea");
-      textarea.value = window.location.href;
+      textarea.value = url;
       textarea.style.position = "fixed";
       textarea.style.left = "-9999px";
       document.body.appendChild(textarea);
@@ -490,7 +512,7 @@ export default function StrokesGainedClient({
         document.body.removeChild(textarea);
       }
     }
-  }, []);
+  }, [shareToken]);
 
   // Claim a saved round — used both by auth modal callback and auto-claim effect
   const attemptClaim = useCallback(async () => {
@@ -875,8 +897,8 @@ export default function StrokesGainedClient({
               chartData={chartData}
               courseName={lastInput.course}
               score={lastInput.score}
-              benchmarkMeta={benchmarkMeta}
               hasTroubleContext={troubleContext !== null}
+              roundInput={lastInput}
             />
           </div>
         </div>

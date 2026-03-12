@@ -202,14 +202,15 @@ test.describe("Strokes Gained Benchmarker", () => {
     const ogTitle = await page
       .locator('meta[property="og:title"]')
       .getAttribute("content");
-    expect(ogTitle).toContain("SG Breakdown:");
+    expect(ogTitle).toContain("Shot 87");
     expect(ogTitle).toContain("Pacifica Sharp Park");
 
     const ogDesc = await page
       .locator('meta[property="og:description"]')
       .getAttribute("content");
-    expect(ogDesc).toContain("87");
-    expect(ogDesc).toContain("Pacifica Sharp Park");
+    expect(ogDesc).toBeTruthy();
+    expect(ogDesc).toContain("index");
+    expect(ogDesc).toContain("GIR");
 
     const robots = await page.locator('meta[name="robots"]').getAttribute("content");
     expect(robots?.toLowerCase()).toContain("noindex");

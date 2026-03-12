@@ -279,6 +279,18 @@ export interface RoundDetailSnapshot {
   greensInRegulation: number | null;
   upAndDownAttempts: number | null;
   upAndDownConverted: number | null;
+  /** Scoring distribution */
+  eagles: number | null;
+  birdies: number | null;
+  pars: number | null;
+  bogeys: number | null;
+  doubleBogeys: number | null;
+  triplePlus: number | null;
+  /** Familiar stats for box score display */
+  totalPutts: number | null;
+  penaltyStrokes: number | null;
+  courseRating: number | null;
+  slopeRating: number | null;
 }
 
 /** Chart-ready data shape for Nivo radar chart */

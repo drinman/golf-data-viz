@@ -2,15 +2,11 @@ import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
 import { getRoundByShareToken } from "@/lib/golf/round-queries";
 import { toStrokesGainedResult } from "@/lib/golf/round-detail-adapter";
-import { getBenchmarkMeta } from "@/lib/golf/benchmarks";
-import { formatHandicap } from "@/lib/golf/format";
+import { buildFamiliarStats } from "@/lib/golf/format";
 import {
-  buildOGCardEntries,
-  formatSGForOG,
+  buildCompactSGRow,
+  findWeakestCategoryFromResult,
   truncateText,
-  getBracketLabel,
-  CONFIDENCE_COLORS_HEX,
-  CONFIDENCE_LABELS,
 } from "@/lib/golf/og-card-data";
 
 // Node runtime needed for admin client (service role key)
@@ -81,16 +77,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   const result = toStrokesGainedResult(snapshot);
   const courseName = truncateText(snapshot.courseName, 58);
-  const bracketLabel = getBracketLabel(result);
-  const meta = getBenchmarkMeta();
-  const entries = buildOGCardEntries(result);
+  const compactSG = buildCompactSGRow(result);
+  const weakest = findWeakestCategoryFromResult(result);
 
-  const anchorLabel = result.totalAnchorMode === "course_adjusted"
-    ? "Course-Adjusted"
-    : result.totalAnchorMode === "course_neutral"
-      ? "Course-Neutral"
-      : "Scorecard-based";
-  const trustLabel = `Proxy SG · ${anchorLabel} · Benchmarks v${meta.version}`;
+  const familiarLine = buildFamiliarStats({
+    handicapIndex: snapshot.handicapIndex,
+    greensInRegulation: snapshot.greensInRegulation,
+    totalPutts: snapshot.totalPutts,
+  }).join(" · ");
 
   return new ImageResponse(
     (
@@ -100,177 +94,103 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           flexDirection: "column",
           width: "100%",
           height: "100%",
+          backgroundColor: "#0f3d22",
           fontFamily: "DM Sans",
         }}
       >
-        {/* Dark green header band */}
+        {/* Score hero */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "#0f3d22",
-            padding: "40px 64px 32px",
+            alignItems: "center",
+            paddingTop: 48,
           }}
         >
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
+              fontSize: 140,
+              fontWeight: 400,
+              color: "#fefcf3",
+              fontFamily: "DM Serif Display",
+              lineHeight: 1,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                maxWidth: 820,
-                paddingRight: 24,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 44,
-                  fontWeight: 400,
-                  color: "#fefcf3",
-                  fontFamily: "DM Serif Display",
-                }}
-              >
-                {courseName}
-              </div>
-              <div style={{ fontSize: 22, color: "#a8d5ba", marginTop: 8, fontWeight: 500 }}>
-                {`Shot ${snapshot.score} · ${formatHandicap(snapshot.handicapIndex)} HCP · vs ${bracketLabel}`}
-              </div>
-              <div style={{ fontSize: 14, color: "#7cb899", marginTop: 6, fontStyle: "italic", fontWeight: 500 }}>
-                {trustLabel}
-              </div>
-            </div>
-            {/* Total SG circular badge */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                minWidth: 130,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 100,
-                  height: 100,
-                  borderRadius: 50,
-                  border: `3px solid ${result.total >= 0 ? "#16a34a" : "#dc2626"}`,
-                  backgroundColor: result.total >= 0 ? "rgba(22, 163, 74, 0.15)" : "rgba(220, 38, 38, 0.15)",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 32,
-                    fontWeight: 600,
-                    color: result.total >= 0 ? "#4ade80" : "#fca5a5",
-                  }}
-                >
-                  {formatSGForOG(result.total)}
-                </div>
-              </div>
-              <div style={{ fontSize: 14, color: "#7cb899", marginTop: 6 }}>
-                Proxy SG
-              </div>
-            </div>
+            {String(snapshot.score)}
           </div>
-          {/* Gold separator */}
-          <div style={{ height: 1, backgroundColor: "#b8860b", marginTop: 20, opacity: 0.5 }} />
+          <div
+            style={{
+              fontSize: 36,
+              fontWeight: 400,
+              color: "#fefcf3",
+              fontFamily: "DM Serif Display",
+              marginTop: 8,
+            }}
+          >
+            {courseName}
+          </div>
+          <div style={{ fontSize: 22, color: "#a8d5ba", marginTop: 8, fontWeight: 500 }}>
+            {familiarLine}
+          </div>
         </div>
 
-        {/* White body with category rows */}
+        {/* Gold separator */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            backgroundColor: "#ffffff",
-            padding: "28px 64px 24px",
+            justifyContent: "center",
+            marginTop: 24,
+          }}
+        >
+          <div style={{ width: 120, height: 1, backgroundColor: "#b8860b", opacity: 0.6 }} />
+        </div>
+
+        {/* One-line takeaway */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 20,
+          }}
+        >
+          <div style={{ fontSize: 24, color: "#fca5a5", fontWeight: 500 }}>
+            {weakest ? `Lost most strokes on ${weakest}` : ""}
+          </div>
+        </div>
+
+        {/* Compact SG row */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 16,
           }}
         >
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              gap: 12,
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderRadius: 10,
+              padding: "12px 32px",
             }}
           >
-            {entries.map(({ label, value, skipped, confidence }, i) => (
-              <div
-                key={label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  backgroundColor: i % 2 === 0 ? "#ffffff" : "#fefcf3",
-                  borderRadius: 10,
-                  padding: "16px 28px",
-                  borderLeft: skipped ? "none" : `4px solid ${value >= 0 ? "#16a34a" : "#dc2626"}`,
-                }}
-              >
-                <div style={{ fontSize: 26, fontWeight: 500, color: "#292524" }}>
-                  {label}
-                </div>
-                {skipped ? (
-                  <div style={{ fontSize: 26, fontWeight: 500, fontStyle: "italic", color: "#a8a29e" }}>
-                    Not Tracked
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: CONFIDENCE_COLORS_HEX[confidence].text,
-                      backgroundColor: CONFIDENCE_COLORS_HEX[confidence].bg,
-                      borderRadius: 4,
-                      padding: "2px 8px",
-                      letterSpacing: "0.05em",
-                    }}>
-                      {CONFIDENCE_LABELS[confidence].toUpperCase()}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 26,
-                        fontWeight: 600,
-                        color: value >= 0 ? "#16a34a" : "#dc2626",
-                      }}
-                    >
-                      {formatSGForOG(value)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div
-            style={{
-              fontSize: 14,
-              color: "#a8a29e",
-              textAlign: "center",
-              marginTop: 12,
-            }}
-          >
-            + = better than peers · − = room to grow · Dashed line = peer average
-          </div>
-
-          {/* Gold watermark */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "auto",
-              paddingTop: 16,
-            }}
-          >
-            <div style={{ fontSize: 16, color: "#b8860b" }}>
-              Golf Data Viz · golfdataviz.com/strokes-gained
+            <div style={{ fontSize: 20, color: "#a8d5ba", fontWeight: 600, letterSpacing: "0.05em" }}>
+              {compactSG}
             </div>
+          </div>
+        </div>
+
+        {/* Watermark */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "auto",
+            paddingBottom: 28,
+          }}
+        >
+          <div style={{ fontSize: 16, color: "#b8860b" }}>
+            golfdataviz.com
           </div>
         </div>
       </div>

@@ -76,6 +76,16 @@ export function makeDetailSnapshot(
     greensInRegulation: 9,
     upAndDownAttempts: null,
     upAndDownConverted: null,
+    eagles: 0,
+    birdies: 1,
+    pars: 8,
+    bogeys: 6,
+    doubleBogeys: 3,
+    triplePlus: 0,
+    totalPutts: 32,
+    penaltyStrokes: 1,
+    courseRating: 72.1,
+    slopeRating: 135,
     ...overrides,
   };
 }

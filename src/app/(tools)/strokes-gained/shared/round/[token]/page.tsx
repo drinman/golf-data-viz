@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getRoundByShareToken } from "@/lib/golf/round-queries";
-import { formatHandicap } from "@/lib/golf/format";
+import { formatHandicap, findWeakestCategory } from "@/lib/golf/format";
 import { SharedRoundClient } from "./_components/shared-round-client";
 
 interface PageProps {
@@ -15,9 +15,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Round Not Found" };
   }
 
-  const sgSign = snapshot.sgTotal >= 0 ? "+" : "";
-  const title = `${snapshot.courseName} — ${sgSign}${snapshot.sgTotal.toFixed(1)} SG`;
-  const description = `Shot ${snapshot.score} · ${formatHandicap(snapshot.handicapIndex)} HCP · Strokes Gained performance snapshot`;
+  const title = `Shot ${snapshot.score} at ${snapshot.courseName}`;
+  const descParts: string[] = [`${formatHandicap(snapshot.handicapIndex)} index`];
+  if (snapshot.greensInRegulation != null) descParts.push(`${snapshot.greensInRegulation} GIR`);
+  if (snapshot.totalPutts != null) descParts.push(`${snapshot.totalPutts} putts`);
+  const weakest = findWeakestCategory(snapshot);
+  if (weakest) descParts.push(`Lost most strokes on ${weakest}`);
+  const description = descParts.join(" · ");
 
   return {
     title,
