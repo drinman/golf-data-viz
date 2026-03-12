@@ -126,6 +126,22 @@ describe("roundInputSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects numeric-only course names", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      course: "98",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts course names that include letters and numbers", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      course: "Pinehurst No. 2",
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("rejects future date", () => {
     const result = roundInputSchema.safeParse({
       ...validInput(),

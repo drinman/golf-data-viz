@@ -146,6 +146,7 @@ export function RoundInputForm({
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-8"
+      autoComplete="off"
       noValidate
     >
       {/* Section 1: Handicap + Bracket */}
@@ -204,6 +205,8 @@ export function RoundInputForm({
               type="text"
               className={inputClass}
               placeholder="e.g., Pebble Beach"
+              autoComplete="off"
+              autoCapitalize="words"
               {...register("course")}
             />
           </FormField>

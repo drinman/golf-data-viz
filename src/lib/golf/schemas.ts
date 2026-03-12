@@ -33,7 +33,14 @@ const optionalInt = (max: number) =>
 
 export const roundInputSchema = z
   .object({
-    course: z.string().min(1, "Course name is required").max(100),
+    course: z
+      .string()
+      .trim()
+      .min(1, "Course name is required")
+      .max(100)
+      .refine((val) => /\p{L}/u.test(val), {
+        message: "Course name must include letters",
+      }),
     date: z.string().refine(
       (val) => {
         const match = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);

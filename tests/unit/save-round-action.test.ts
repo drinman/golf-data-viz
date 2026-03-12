@@ -177,6 +177,23 @@ describe("saveRound server action", () => {
     });
   });
 
+  it("rejects numeric-only course names before touching the database", async () => {
+    const result = await saveRound(
+      makeRound({
+        course: "98",
+      }),
+      verification
+    );
+
+    expect(result.success).toBe(false);
+    expect(result).toMatchObject({
+      code: "VALIDATION",
+      message: "Course name must include letters",
+    });
+    expect(mockCreateAdminClient).not.toHaveBeenCalled();
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
   it("returns DUPLICATE_ROUND when unique constraint violation (23505) occurs", async () => {
     mockInsert.mockReturnValue({
       select: vi.fn().mockResolvedValue({
