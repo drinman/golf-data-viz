@@ -30,9 +30,10 @@ function createAdminClient() {
 
 async function createClaimableRound() {
   const admin = createAdminClient();
+  const playedAt = new Date().toISOString().slice(0, 10);
   const input: RoundInput = {
     course: `Playwright Claim Test ${crypto.randomUUID().slice(0, 8)}`,
-    date: "2026-03-11",
+    date: playedAt,
     score: 87,
     handicapIndex: 14.3,
     courseRating: 72.1,

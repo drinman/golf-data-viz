@@ -135,6 +135,7 @@ export default function StrokesGainedClient({
     null
   );
   const saveRequestIdRef = useRef(0);
+  const claimRequestInFlightRef = useRef(false);
 
   if (
     attributionUtmSourceRef.current === undefined &&
@@ -240,6 +241,7 @@ export default function StrokesGainedClient({
     setSavedRoundId(null);
     setSavedClaimToken(null);
     setClaimStatus("idle");
+    claimRequestInFlightRef.current = false;
     if (saveSuccessTimerRef.current)
       clearTimeout(saveSuccessTimerRef.current);
 
@@ -492,7 +494,9 @@ export default function StrokesGainedClient({
 
   // Claim a saved round — used both by auth modal callback and auto-claim effect
   const attemptClaim = useCallback(async () => {
-    if (!savedRoundId || !savedClaimToken) return;
+    if (!savedRoundId || !savedClaimToken || claimRequestInFlightRef.current) return;
+
+    claimRequestInFlightRef.current = true;
     setClaimAuthModalOpen(false);
     setClaimStatus("claiming");
     try {
@@ -513,6 +517,8 @@ export default function StrokesGainedClient({
     } catch {
       setClaimStatus("failed");
       trackEvent("round_claim_failed", { reason: "network_error" });
+    } finally {
+      claimRequestInFlightRef.current = false;
     }
   }, [savedRoundId, savedClaimToken]);
 
