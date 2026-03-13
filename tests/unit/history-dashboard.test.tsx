@@ -56,7 +56,7 @@ describe("HistoryDashboard", () => {
     expect(screen.getByText("Baseline established")).toBeInTheDocument();
     expect(screen.getByText(/The trend chart needs 3 rounds/)).toBeInTheDocument();
     expect(
-      screen.getByText("After 3 rounds, turn your data into a coach-ready lesson prep report.")
+      screen.getByText(/\d more rounds? until you can turn your data into a coach-ready lesson prep report/)
     ).toBeInTheDocument();
     expect(screen.getByText("Torrey Pines")).toBeInTheDocument();
 

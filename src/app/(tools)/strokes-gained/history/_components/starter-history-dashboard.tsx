@@ -45,13 +45,6 @@ function StarterReadinessCard({ roundCount }: { roundCount: number }) {
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-600">
           {body}
         </p>
-        <Link
-          href="/strokes-gained?from=history"
-          onClick={() => trackEvent("history_link_clicked", { surface: "starter_readiness_card" })}
-          className="mt-3 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
-        >
-          Log a Round
-        </Link>
       </div>
 
       <div className="px-5 py-5">
@@ -160,7 +153,9 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
   );
 }
 
-function StarterLessonPrepCard() {
+function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
+  const roundsNeeded = Math.max(0, MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS - roundCount);
+
   return (
     <section
       data-testid="starter-lesson-prep-card"
@@ -181,7 +176,7 @@ function StarterLessonPrepCard() {
           </div>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-          After {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds, turn your data into a
+          {roundsNeeded} more round{roundsNeeded === 1 ? "" : "s"} until you can turn your data into a
           coach-ready lesson prep report.
         </p>
       </div>
@@ -223,7 +218,7 @@ export function StarterHistoryDashboard({
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
         <StarterReadinessCard roundCount={rounds.length} />
-        <StarterLessonPrepCard />
+        <StarterLessonPrepCard roundCount={rounds.length} />
       </div>
 
       <StarterTrendCard roundCount={rounds.length} />

@@ -82,7 +82,7 @@ export async function generateMetadata({
 export default async function StrokesGainedPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const payload = typeof params.d === "string" ? params.d : undefined;
-  const from = typeof params.from === "string" ? params.from : undefined;
+  const from = params.from === "history" ? ("history" as const) : undefined;
   const initialInput = payload ? decodeRound(payload) : null;
   const saveEnabled = getRoundSaveAvailability().enabled;
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null;

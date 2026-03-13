@@ -61,7 +61,7 @@ interface StrokesGainedClientProps {
   saveEnabled?: boolean;
   turnstileSiteKey?: string | null;
   samplePreview?: SamplePreviewData;
-  from?: string;
+  from?: "history";
 }
 
 function getUtmSource(): string | undefined {
@@ -583,7 +583,7 @@ export default function StrokesGainedClient({
               href="/strokes-gained/history"
               className="animate-fade-up mb-4 inline-block text-sm text-brand-800 hover:text-brand-600"
             >
-              &larr; Back to History
+              <span aria-hidden="true">&larr; </span>Back to History
             </Link>
           )}
           <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.22em] text-brand-800">
