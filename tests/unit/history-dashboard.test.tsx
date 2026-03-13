@@ -54,9 +54,9 @@ describe("HistoryDashboard", () => {
     );
 
     expect(screen.getByText("Baseline established")).toBeInTheDocument();
-    expect(screen.getByText("2 more rounds unlock trends.")).toBeInTheDocument();
+    expect(screen.getByText(/The trend chart needs 3 rounds/)).toBeInTheDocument();
     expect(
-      screen.getByText("Save 2 more rounds to build a coach-ready lesson prep report.")
+      screen.getByText("After 3 rounds, turn your data into a coach-ready lesson prep report.")
     ).toBeInTheDocument();
     expect(screen.getByText("Torrey Pines")).toBeInTheDocument();
 
@@ -80,7 +80,7 @@ describe("HistoryDashboard", () => {
     );
 
     expect(screen.getByText("Comparison started")).toBeInTheDocument();
-    expect(screen.getByText("1 more round unlocks trends.")).toBeInTheDocument();
+    expect(screen.getByText(/The trend chart needs 3 rounds/)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Preview lesson prep flow" })
     ).toHaveAttribute("href", "/strokes-gained/lesson-prep");
@@ -107,7 +107,7 @@ describe("HistoryDashboard", () => {
 
     expect(screen.getByText("SG Trends")).toBeInTheDocument();
     expect(screen.getByTestId("nivo-line-mock")).toBeInTheDocument();
-    expect(screen.getByText("Preview Premium Report")).toBeInTheDocument();
+    expect(screen.getByText("See What Premium Unlocks")).toBeInTheDocument();
 
     await waitFor(() => {
       expect(mockTrackEvent).toHaveBeenCalledWith("history_page_viewed", {

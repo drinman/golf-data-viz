@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics/client";
 
 export function HistoryEmptyState() {
   return (
@@ -10,15 +11,15 @@ export function HistoryEmptyState() {
         No rounds yet
       </h2>
       <p className="mx-auto mt-3 max-w-sm text-neutral-600">
-        Enter your first round in the SG Benchmarker to start tracking your
-        progress over time.
+        Log your first round to start tracking strokes gained over time.
       </p>
       <Link
-        href="/strokes-gained"
+        href="/strokes-gained?from=history"
         data-testid="empty-state-cta"
+        onClick={() => trackEvent("history_link_clicked", { surface: "history_empty_state_cta" })}
         className="mt-6 inline-block rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
       >
-        Enter a round
+        Log a Round
       </Link>
     </div>
   );

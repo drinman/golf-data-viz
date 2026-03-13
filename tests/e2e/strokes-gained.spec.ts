@@ -508,6 +508,37 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByTestId("trouble-context-prompt")).not.toBeVisible();
   });
 
+  test("from=history shows adapted heading and compressed subhead", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained?from=history");
+    await expect(page.locator("h1")).toContainText("Log Another Round");
+    await expect(
+      page.getByText("Scorecard-based estimate vs your handicap peers. Add it to your history when you save.")
+    ).toBeVisible();
+    // Trust panel should be collapsed (details element)
+    await expect(page.getByText("About this tool")).toBeVisible();
+    // Back link should be present
+    await expect(page.getByText(/Back to History/)).toBeVisible();
+  });
+
+  test("shared link ?d= takes priority over from=history", async ({
+    page,
+  }) => {
+    // First, get a valid ?d= param
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    const dParam = new URL(page.url()).searchParams.get("d");
+    expect(dParam).toBeTruthy();
+
+    // Navigate with both params — shared link should win
+    await page.goto(`/strokes-gained?d=${dParam}&from=history`);
+    await expect(page.locator("h1")).toContainText("Strokes Gained Benchmarker");
+    await expect(
+      page.getByText("Your Proxy SG Breakdown")
+    ).toBeVisible({ timeout: 5000 });
+  });
+
   test("form validation prevents submission with invalid scoring sum", async ({
     page,
   }) => {

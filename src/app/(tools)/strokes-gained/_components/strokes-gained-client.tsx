@@ -61,6 +61,7 @@ interface StrokesGainedClientProps {
   saveEnabled?: boolean;
   turnstileSiteKey?: string | null;
   samplePreview?: SamplePreviewData;
+  from?: string;
 }
 
 function getUtmSource(): string | undefined {
@@ -78,7 +79,10 @@ export default function StrokesGainedClient({
   saveEnabled = true,
   turnstileSiteKey = null,
   samplePreview,
+  from,
 }: StrokesGainedClientProps) {
+  // from=history adaptation: show returning-user copy unless viewing a shared link
+  const isFromHistory = from === "history" && !initialInput;
   const benchmarkMeta = getBenchmarkMeta();
 
   const phase2Mode = getClientPhase2Mode();
@@ -574,30 +578,54 @@ export default function StrokesGainedClient({
       <section className="relative overflow-hidden px-4 pb-8 pt-12 sm:pb-10 sm:pt-16">
         <ContourBg className="text-brand-900" />
         <div className="relative mx-auto max-w-3xl">
+          {isFromHistory && (
+            <Link
+              href="/strokes-gained/history"
+              className="animate-fade-up mb-4 inline-block text-sm text-brand-800 hover:text-brand-600"
+            >
+              &larr; Back to History
+            </Link>
+          )}
           <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.22em] text-brand-800">
             Free post-round benchmark
           </p>
           <h1 className="animate-fade-up [animation-delay:100ms] mt-4 font-display text-4xl tracking-tight text-neutral-950 sm:text-5xl">
-            Strokes Gained Benchmarker
+            {isFromHistory ? "Log Another Round" : "Strokes Gained Benchmarker"}
           </h1>
-          <p className="animate-fade-up [animation-delay:200ms] mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
-            A proxy strokes gained benchmark built from scorecard stats amateurs already track.
-          </p>
-          <p className="animate-fade-up [animation-delay:200ms] mt-2 max-w-lg text-sm text-neutral-500">
-            See where you gain and lose strokes compared to golfers at your handicap
-            level. No sensors needed.{" "}
-            <Link href="/methodology" className="text-brand-800 underline transition-colors hover:text-brand-700">
-              See full methodology &rarr;
-            </Link>
-          </p>
+          {isFromHistory ? (
+            <>
+              <p className="animate-fade-up [animation-delay:200ms] mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
+                Scorecard-based estimate vs your handicap peers. Add it to your history when you save.
+              </p>
+              <p className="animate-fade-up [animation-delay:200ms] mt-2 max-w-lg text-sm text-neutral-500">
+                No sensors needed.{" "}
+                <Link href="/methodology" className="text-brand-800 underline transition-colors hover:text-brand-700">
+                  See full methodology &rarr;
+                </Link>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="animate-fade-up [animation-delay:200ms] mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
+                A proxy strokes gained benchmark built from scorecard stats amateurs already track.
+              </p>
+              <p className="animate-fade-up [animation-delay:200ms] mt-2 max-w-lg text-sm text-neutral-500">
+                See where you gain and lose strokes compared to golfers at your handicap
+                level. No sensors needed.{" "}
+                <Link href="/methodology" className="text-brand-800 underline transition-colors hover:text-brand-700">
+                  See full methodology &rarr;
+                </Link>
+              </p>
+            </>
+          )}
 
-          {samplePreview && (
+          {!isFromHistory && samplePreview && (
             <div className="mt-8">
               <CompactSamplePreview {...samplePreview} />
             </div>
           )}
 
-          <LaunchTrustPanel />
+          <LaunchTrustPanel defaultCollapsed={isFromHistory} />
         </div>
       </section>
       <div className="mx-auto max-w-3xl px-4 pb-10 sm:pb-14">
@@ -655,7 +683,7 @@ export default function StrokesGainedClient({
             onClick={() => trackEvent("history_link_clicked", { surface: "post_save_confirmation" })}
             className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
           >
-            View your trends &rarr;
+            {isFromHistory ? "See updated history" : "View your trends"} &rarr;
           </Link>
         </div>
       )}

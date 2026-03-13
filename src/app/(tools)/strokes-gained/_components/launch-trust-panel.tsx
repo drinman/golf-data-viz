@@ -4,12 +4,13 @@ import Link from "next/link";
 
 const GITHUB_REPO_URL = "https://github.com/drinman/golf-data-viz";
 
-export function LaunchTrustPanel() {
-  return (
-    <section
-      aria-label="What this is"
-      className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-5 text-sm text-neutral-700"
-    >
+interface LaunchTrustPanelProps {
+  defaultCollapsed?: boolean;
+}
+
+export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelProps) {
+  const content = (
+    <>
       <ul className="space-y-2">
         <li>
           <strong className="text-neutral-950">Beta</strong>
@@ -105,6 +106,31 @@ export function LaunchTrustPanel() {
           </div>
         </dl>
       </details>
+    </>
+  );
+
+  if (defaultCollapsed) {
+    return (
+      <details
+        aria-label="What this is"
+        className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 text-sm text-neutral-700"
+      >
+        <summary className="cursor-pointer px-5 py-4 font-medium text-neutral-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/30">
+          About this tool
+        </summary>
+        <div className="px-5 pb-5">
+          {content}
+        </div>
+      </details>
+    );
+  }
+
+  return (
+    <section
+      aria-label="What this is"
+      className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-5 text-sm text-neutral-700"
+    >
+      {content}
     </section>
   );
 }

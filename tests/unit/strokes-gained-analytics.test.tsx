@@ -416,6 +416,45 @@ describe("StrokesGainedClient analytics instrumentation", () => {
   });
 });
 
+describe("from=history adaptation", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    mockTrackEvent.mockClear();
+    mockUser.current = null;
+    vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+  });
+
+  it("shows 'Log Another Round' heading when from=history", () => {
+    renderClient({ from: "history" });
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Log Another Round");
+  });
+
+  it("shows default heading when from is not set", () => {
+    renderClient();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Strokes Gained Benchmarker");
+  });
+
+  it("shows default heading when from=history but shared link is present", () => {
+    renderClient({ from: "history", initialInput: mockInput });
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Strokes Gained Benchmarker");
+  });
+
+  it("shows back link to history when from=history", () => {
+    renderClient({ from: "history" });
+    const backLink = screen.getByText(/Back to History/);
+    expect(backLink.closest("a")).toHaveAttribute("href", "/strokes-gained/history");
+  });
+
+  it("hides sample preview when from=history", () => {
+    renderClient({ from: "history", samplePreview: { totalSg: -1.5, categories: [] as never, courseName: "Test", score: 87, handicap: 14.3, bracketLabel: "10–15 HCP" } });
+    expect(screen.queryByTestId("compact-sample-preview")).not.toBeInTheDocument();
+  });
+});
+
 describe("Copy Link error handling", () => {
   afterEach(() => {
     cleanup();
@@ -776,6 +815,18 @@ describe("Post-save confirmation for signed-in users", () => {
     expect(mockTrackEvent).toHaveBeenCalledWith("history_link_clicked", {
       surface: "post_save_confirmation",
     });
+  });
+
+  it("shows 'See updated history' link when from=history", async () => {
+    mockUser.current = { id: "user-1", email: "test@example.com" };
+    renderClient({ from: "history" });
+    await userEvent.click(screen.getByTestId("mock-submit"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-success-authed")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/See updated history/)).toBeInTheDocument();
   });
 });
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Flag, LineChart, NotebookPen } from "lucide-react";
 import { MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS } from "@/lib/golf/constants";
+import { trackEvent } from "@/lib/analytics/client";
 import type { RoundSgSnapshot } from "@/lib/golf/trends";
 import { SummaryStats } from "./history-summary-stats";
 import { RoundHistoryList } from "./round-history-list";
@@ -19,8 +20,8 @@ function StarterReadinessCard({ roundCount }: { roundCount: number }) {
       : `Round 2 of ${MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS}`;
   const body =
     roundCount === 1
-      ? "You have your first saved benchmark. One more round starts to separate a single day from the shape of your game."
-      : "You now have enough history to compare how your game is moving. One more round unlocks the first real pattern view.";
+      ? "You have your first saved benchmark. Log round 2 to start seeing how your game moves."
+      : "Two data points. One more round unlocks your trend line and biggest mover.";
 
   return (
     <section
@@ -44,6 +45,13 @@ function StarterReadinessCard({ roundCount }: { roundCount: number }) {
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-600">
           {body}
         </p>
+        <Link
+          href="/strokes-gained?from=history"
+          onClick={() => trackEvent("history_link_clicked", { surface: "starter_readiness_card" })}
+          className="mt-3 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+        >
+          Log a Round
+        </Link>
       </div>
 
       <div className="px-5 py-5">
@@ -99,8 +107,8 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
             SG Trends
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-brand-100/80">
-            Your trend line stays locked until the next round gives the chart enough context
-            to show movement instead of noise.
+            The trend chart needs {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds to show real
+            movement. You&apos;re {roundsNeeded} away.
           </p>
         </div>
 
@@ -111,7 +119,7 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
             </div>
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">
-                Locked for now
+                Unlocks at {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds
               </p>
               <p className="font-display text-xl tracking-tight text-neutral-950">
                 {roundsNeeded} more {roundsNeeded === 1 ? "round" : "rounds"}
@@ -138,15 +146,21 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
               />
             ))}
           </div>
+
+          <Link
+            href="/strokes-gained?from=history"
+            onClick={() => trackEvent("history_link_clicked", { surface: "starter_trend_card" })}
+            className="mt-4 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+          >
+            Log a Round
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
-  const roundsNeeded = Math.max(0, MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS - roundCount);
-
+function StarterLessonPrepCard() {
   return (
     <section
       data-testid="starter-lesson-prep-card"
@@ -167,7 +181,7 @@ function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
           </div>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-          Save {roundsNeeded} more round{roundsNeeded === 1 ? "" : "s"} to build a
+          After {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds, turn your data into a
           coach-ready lesson prep report.
         </p>
       </div>
@@ -197,11 +211,19 @@ export function StarterHistoryDashboard({
 }: StarterHistoryDashboardProps) {
   return (
     <div className="space-y-6">
+      <Link
+        href="/strokes-gained?from=history"
+        onClick={() => trackEvent("history_link_clicked", { surface: "history_log_round_cta" })}
+        className="inline-block rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+      >
+        Log a Round
+      </Link>
+
       <SummaryStats rounds={rounds} />
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
         <StarterReadinessCard roundCount={rounds.length} />
-        <StarterLessonPrepCard roundCount={rounds.length} />
+        <StarterLessonPrepCard />
       </div>
 
       <StarterTrendCard roundCount={rounds.length} />
