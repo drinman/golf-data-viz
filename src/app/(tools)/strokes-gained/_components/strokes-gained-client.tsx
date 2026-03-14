@@ -48,8 +48,8 @@ import { useSupabaseUser } from "@/lib/supabase/auth-client";
 
 function getClientPhase2Mode(): SgPhase2Mode {
   const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
-  if (mode === "shadow" || mode === "full") return mode;
-  return "off";
+  if (mode === "off" || mode === "shadow") return mode;
+  return "full";
 }
 
 function getCalculator(mode: SgPhase2Mode) {

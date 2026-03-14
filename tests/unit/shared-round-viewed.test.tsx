@@ -91,6 +91,31 @@ vi.mock("@/lib/golf/strokes-gained", () => ({
   ]),
 }));
 
+vi.mock("@/lib/golf/strokes-gained-v3", () => ({
+  calculateStrokesGainedV3: vi.fn(() => ({
+    total: -1.5,
+    categories: {
+      "off-the-tee": -0.5,
+      approach: 0.2,
+      "around-the-green": -0.8,
+      putting: -0.4,
+    },
+    benchmarkBracket: "10-15" as const,
+    skippedCategories: [],
+    estimatedCategories: [],
+    confidence: {
+      "off-the-tee": "medium",
+      approach: "high",
+      "around-the-green": "medium",
+      putting: "high",
+    },
+    methodologyVersion: "3.0.0",
+    benchmarkVersion: "1.0.0",
+    benchmarkHandicap: 14.3,
+    diagnostics: { threePuttImpact: null },
+  })),
+}));
+
 vi.mock("@/lib/golf/share-codec", () => ({
   encodeRound: vi.fn(() => "encoded-test-data"),
 }));
