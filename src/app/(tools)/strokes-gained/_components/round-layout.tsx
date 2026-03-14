@@ -73,7 +73,7 @@ export function RoundLayout({
         </p>
 
         {/* Score + SG hero row */}
-        <div className="mt-4 flex items-end gap-6 sm:gap-8">
+        <div className="mt-4 flex items-center gap-6 sm:gap-8">
           <div className="flex flex-col items-center">
             <span className="font-display text-5xl font-bold text-white sm:text-6xl">
               {snapshot.score}
