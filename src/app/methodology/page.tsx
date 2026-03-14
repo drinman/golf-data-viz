@@ -187,8 +187,9 @@ const FORMULA_CARDS = [
   },
   {
     category: "Putting",
-    formula: "(peerPutts/18 \u2212 playerPutts/18) \u00D7 4.0",
+    formula: "(expectedPutts \u2212 actualPutts) / 18 \u00D7 4.0",
     weights: "4.0",
+    note: "expectedPutts = GIR \u00D7 puttsPerGIR + (18 \u2212 GIR) \u00D7 puttsPerNonGIR. Falls back to (peerPutts/18 \u2212 playerPutts/18) when GIR is unavailable.",
   },
 ];
 
@@ -296,6 +297,11 @@ export default function MethodologyPage() {
                 <p className="mt-2 rounded-md bg-neutral-50 px-3 py-2 font-mono text-xs leading-relaxed text-neutral-600">
                   {card.formula}
                 </p>
+                {"note" in card && card.note && (
+                  <p className="mt-2 text-xs italic text-neutral-500">
+                    {card.note}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -386,6 +392,46 @@ export default function MethodologyPage() {
                 up-and-down data with missed greens
               </li>
             </ul>
+            <div className="mt-4 overflow-x-auto rounded-md border border-neutral-200">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-neutral-200 bg-neutral-50 text-left">
+                    <th className="px-3 py-2 font-medium text-neutral-600">Profile</th>
+                    <th className="px-3 py-2 font-medium text-neutral-600">OTT FIR</th>
+                    <th className="px-3 py-2 font-medium text-neutral-600">OTT Pen</th>
+                    <th className="px-3 py-2 font-medium text-neutral-600">Approach</th>
+                    <th className="px-3 py-2 font-medium text-neutral-600">ATG</th>
+                    <th className="px-3 py-2 font-medium text-neutral-600">Putting</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 font-mono">
+                  <tr>
+                    <td className="px-3 py-2 font-sans text-neutral-800">Full</td>
+                    <td className="px-3 py-2 text-neutral-600">6.0</td>
+                    <td className="px-3 py-2 text-neutral-600">0.8</td>
+                    <td className="px-3 py-2 text-neutral-600">8.0</td>
+                    <td className="px-3 py-2 text-neutral-600">5.0</td>
+                    <td className="px-3 py-2 text-neutral-600">4.0</td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-sans text-neutral-800">GIR-estimated</td>
+                    <td className="px-3 py-2 text-neutral-600">6.0</td>
+                    <td className="px-3 py-2 text-neutral-600">0.8</td>
+                    <td className="px-3 py-2 text-neutral-600">6.5</td>
+                    <td className="px-3 py-2 text-neutral-600">4.0</td>
+                    <td className="px-3 py-2 text-neutral-600">4.0</td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-sans text-neutral-800">ATG-fallback</td>
+                    <td className="px-3 py-2 text-neutral-600">6.0</td>
+                    <td className="px-3 py-2 text-neutral-600">0.8</td>
+                    <td className="px-3 py-2 text-neutral-600">8.0</td>
+                    <td className="px-3 py-2 text-neutral-600">3.5</td>
+                    <td className="px-3 py-2 text-neutral-600">4.0</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <p className="mt-4 text-xs italic text-neutral-500">
               Coefficients are model artifacts, not hardcoded truths. The
               current seed coefficients ({CALIBRATION_VERSION}) are derived
@@ -417,6 +463,21 @@ export default function MethodologyPage() {
               The maximum proportional change applied to any category. A scale factor
               near 0 means strong alignment between the calibrated sum and the anchor.
               A factor above 0.5 triggers an &ldquo;excessive scaling&rdquo; flag.
+            </p>
+            <p>
+              <strong className="text-neutral-800">Sign-flip prevention:</strong>{" "}
+              If a reconciliation adjustment would reverse a category&apos;s sign
+              (e.g., turning a positive into a negative), the category is clamped
+              to zero instead. The excess amount is tracked as &ldquo;Other (not
+              captured by scorecard stats)&rdquo; and shown on the results page
+              when non-zero.
+            </p>
+            <p>
+              <strong className="text-neutral-800">Signal breakdown:</strong>{" "}
+              The info icon next to each category shows the raw signal value and
+              reconciliation adjustment separately, so you can see how much of
+              the final value came from your scorecard data vs. the reconciliation
+              step.
             </p>
             <p className="text-xs italic text-neutral-500">
               Skipped categories (value = 0) are excluded from reconciliation.
@@ -639,6 +700,15 @@ export default function MethodologyPage() {
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-relaxed text-amber-900">
+            <strong>Low-GIR putting caveat:</strong>{" "}
+            When a player&apos;s GIR rate is more than 10 percentage points below
+            their peer benchmark, the putting category displays a &ldquo;Low GIR
+            — less reliable&rdquo; badge. With few greens hit in regulation, most
+            putts come from scramble situations where expected putts differ
+            significantly from GIR putts, reducing the reliability of the
+            GIR-adjusted putting formula.
           </div>
         </section>
 
