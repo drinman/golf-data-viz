@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
   try {
     const message = await client.messages.create(
       {
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 400,
         temperature: 0.7,
         system: NARRATIVE_SYSTEM_PROMPT,
