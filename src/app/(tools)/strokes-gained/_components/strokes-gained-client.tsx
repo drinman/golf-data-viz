@@ -239,6 +239,10 @@ export default function StrokesGainedClient({
   // "pending-oauth-claim" key is written when Google OAuth starts,
   // and consumed (deleted) here on the next mount. This avoids scanning
   // all claim:* entries and prevents stale rounds from being claimed.
+  //
+  // Also restore the last round from localStorage so the results section
+  // renders — claim success/error UI is inside the results block and
+  // won't be visible without it.
   useEffect(() => {
     try {
       const raw = localStorage.getItem("pending-oauth-claim");
@@ -248,6 +252,17 @@ export default function StrokesGainedClient({
       if (parsed.roundId && parsed.claimToken) {
         setSavedRoundId(parsed.roundId);
         setSavedClaimToken(parsed.claimToken);
+
+        // Restore results so claim UI is visible (it renders inside the results block)
+        const stored = readStoredRound();
+        if (stored) {
+          setResult(stored.result);
+          setChartData(stored.chartData);
+          setLastInput(stored.input);
+          setSaveSuccess(true); // hide CTA since round is already saved
+          const encoded = encodeRound(stored.input);
+          window.history.replaceState(null, "", `?d=${encoded}`);
+        }
       }
     } catch { /* localStorage unavailable or corrupt entry */ }
   }, []);
