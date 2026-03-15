@@ -54,7 +54,11 @@ export type AnalyticsEvent =
   | "lesson_report_regenerated"
   | "lesson_report_share_token_created"
   | "lesson_report_share_link_copied"
-  | "shared_lesson_report_viewed";
+  | "shared_lesson_report_viewed"
+  | "narrative_requested"
+  | "narrative_generated"
+  | "narrative_failed"
+  | "narrative_copied";
 
 type EmptyPayload = Record<never, never>;
 
@@ -170,6 +174,17 @@ export type AnalyticsEventProps = {
     surface: "lesson_report_owner";
   };
   shared_lesson_report_viewed: { referrer: string };
+  narrative_requested: EmptyPayload;
+  narrative_generated: { latency_ms: number; word_count: number };
+  narrative_failed: {
+    error_type:
+      | "rate_limited"
+      | "validation"
+      | "generation"
+      | "timeout"
+      | "network";
+  };
+  narrative_copied: { word_count: number; surface: "results_page" };
 };
 
 type RequiredKeys<T extends object> = {

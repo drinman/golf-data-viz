@@ -96,6 +96,36 @@ describe("trackEvent", () => {
     expect(mockGtag).not.toHaveBeenCalled();
   });
 
+  // --- Narrative events ---
+
+  it("tracks narrative_requested event", () => {
+    trackEvent("narrative_requested");
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_requested");
+  });
+
+  it("tracks narrative_generated event with payload", () => {
+    trackEvent("narrative_generated", { latency_ms: 2500, word_count: 85 });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_generated", {
+      latency_ms: 2500,
+      word_count: 85,
+    });
+  });
+
+  it("tracks narrative_failed event with error type", () => {
+    trackEvent("narrative_failed", { error_type: "rate_limited" });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_failed", {
+      error_type: "rate_limited",
+    });
+  });
+
+  it("tracks narrative_copied event", () => {
+    trackEvent("narrative_copied", { word_count: 95, surface: "results_page" });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_copied", {
+      word_count: 95,
+      surface: "results_page",
+    });
+  });
+
   // --- No-throw guarantees ---
 
   it("does not throw when Vercel track throws", () => {

@@ -205,6 +205,74 @@ describe("rate limiter", () => {
     expect(commands[1][0]).toBe("INCR");
   });
 
+  // --- Parameterization tests ---
+
+  it("uses custom prefix when provided", async () => {
+    const store = new InMemoryRateLimitStore();
+    const result = await checkRateLimit("1.2.3.4", store, {
+      prefix: "narrative",
+      maxPerHour: 10,
+    });
+    expect(result).toEqual({ allowed: true });
+    // Different prefix = independent bucket: save_round should not be counted
+    for (let i = 0; i < 6; i++) {
+      await checkRateLimit("1.2.3.4", store);
+    }
+    // narrative bucket is still fine
+    const narrativeResult = await checkRateLimit("1.2.3.4", store, {
+      prefix: "narrative",
+      maxPerHour: 10,
+    });
+    expect(narrativeResult).toEqual({ allowed: true });
+  });
+
+  it("enforces custom hourly limit", async () => {
+    const store = new InMemoryRateLimitStore();
+    for (let i = 0; i < 10; i++) {
+      const result = await checkRateLimit("1.2.3.4", store, {
+        prefix: "narrative",
+        maxPerHour: 10,
+      });
+      expect(result).toEqual({ allowed: true });
+    }
+    const blocked = await checkRateLimit("1.2.3.4", store, {
+      prefix: "narrative",
+      maxPerHour: 10,
+    });
+    expect(blocked).toEqual({ allowed: false, reason: "hour" });
+  });
+
+  it("skips minute check when maxPerMinute is undefined", async () => {
+    const store = new InMemoryRateLimitStore();
+    // With default options, 6th request is blocked by minute limit
+    for (let i = 0; i < 5; i++) {
+      await checkRateLimit("5.5.5.5", store);
+    }
+    expect(await checkRateLimit("5.5.5.5", store)).toEqual({
+      allowed: false,
+      reason: "minute",
+    });
+
+    // With undefined maxPerMinute, minute check is skipped
+    for (let i = 0; i < 10; i++) {
+      const result = await checkRateLimit("6.6.6.6", store, {
+        prefix: "test",
+        maxPerHour: 20,
+      });
+      expect(result).toEqual({ allowed: true });
+    }
+  });
+
+  it("maintains backward compatibility with no options", async () => {
+    const store = new InMemoryRateLimitStore();
+    for (let i = 0; i < 5; i++) {
+      const result = await checkRateLimit("7.7.7.7", store);
+      expect(result).toEqual({ allowed: true });
+    }
+    const blocked = await checkRateLimit("7.7.7.7", store);
+    expect(blocked).toEqual({ allowed: false, reason: "minute" });
+  });
+
   it("warns and captures once when falling back to in-memory store", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("KV_REST_API_URL", "");

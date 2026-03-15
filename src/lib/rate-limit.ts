@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
 
-const MINUTE_WINDOW_SECONDS = 60;
-const HOUR_WINDOW_SECONDS = 60 * 60;
-const MAX_REQUESTS_PER_MINUTE = 5;
-const MAX_REQUESTS_PER_HOUR = 30;
+const DEFAULT_MINUTE_WINDOW_SECONDS = 60;
+const DEFAULT_HOUR_WINDOW_SECONDS = 60 * 60;
+const DEFAULT_MAX_PER_MINUTE = 5;
+const DEFAULT_MAX_PER_HOUR = 30;
 const KV_FETCH_TIMEOUT_MS = 3000;
 const MIN_RATE_LIMIT_SALT_LENGTH = 16;
 const DEV_FALLBACK_SALT = "dev-rate-limit-fallback-salt";
@@ -182,25 +182,40 @@ export function hashRateLimitKey(ip: string): string {
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
 
+export interface RateLimitOptions {
+  prefix?: string;
+  maxPerMinute?: number;
+  maxPerHour?: number;
+}
+
 export async function checkRateLimit(
   ip: string,
-  store: RateLimitStore = getDefaultStore()
+  store: RateLimitStore = getDefaultStore(),
+  options?: RateLimitOptions
 ): Promise<RateLimitDecision> {
+  const prefix = options?.prefix ?? "save_round";
+  const maxPerMinute = options?.maxPerMinute ?? DEFAULT_MAX_PER_MINUTE;
+  const maxPerHour = options?.maxPerHour ?? DEFAULT_MAX_PER_HOUR;
+
   try {
     const key = hashRateLimitKey(ip || "unknown");
-    const minuteKey = `save_round:minute:${key}`;
-    const hourKey = `save_round:hour:${key}`;
+    const checkMinute = !options || options.maxPerMinute !== undefined;
 
-    const [minuteCount, hourCount] = await Promise.all([
-      store.increment(minuteKey, MINUTE_WINDOW_SECONDS),
-      store.increment(hourKey, HOUR_WINDOW_SECONDS),
-    ]);
+    const checks: Promise<number>[] = [];
+    if (checkMinute) {
+      checks.push(store.increment(`${prefix}:minute:${key}`, DEFAULT_MINUTE_WINDOW_SECONDS));
+    }
+    checks.push(store.increment(`${prefix}:hour:${key}`, DEFAULT_HOUR_WINDOW_SECONDS));
 
-    if (minuteCount > MAX_REQUESTS_PER_MINUTE) {
+    const results = await Promise.all(checks);
+    const minuteCount = checkMinute ? results[0] : undefined;
+    const hourCount = checkMinute ? results[1] : results[0];
+
+    if (minuteCount !== undefined && minuteCount > maxPerMinute) {
       return { allowed: false, reason: "minute" };
     }
 
-    if (hourCount > MAX_REQUESTS_PER_HOUR) {
+    if (hourCount > maxPerHour) {
       return { allowed: false, reason: "hour" };
     }
 

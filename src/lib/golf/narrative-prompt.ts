@@ -1,0 +1,79 @@
+import type { RoundInput, StrokesGainedResult } from "./types";
+import type { RoundTroubleContext } from "./trouble-context";
+import { generateTroubleNarrative } from "./trouble-context";
+import { BRACKET_LABELS, CATEGORY_LABELS, CATEGORY_ORDER } from "./constants";
+
+export const NARRATIVE_SYSTEM_PROMPT = `You are a golf performance analyst writing for mid-handicap recreational golfers.
+Your job is to translate strokes gained statistics into a clear, compelling 3-5 sentence narrative about a golfer's round.
+
+Rules:
+- Write in second person ("you", "your")
+- Use plain English a 14-handicap golfer understands. No jargon without explanation.
+- Never suggest drills, practice routines, or swing changes
+- Never compare to Tour/PGA players
+- Reference specific stats from the round (putts, fairways, GIR, score)
+- The benchmark comparison group is other golfers at their handicap level
+- Be honest: if a category is weak, say so directly. Don't sugarcoat.
+- Be encouraging when warranted: if something is genuinely strong, acknowledge it
+- Keep it tight: 3-5 sentences, under 120 words
+- Format as a single paragraph — no bullet points, no headers
+- If trouble context is provided, incorporate it into the narrative
+- Include confidence caveats when a category has "low" confidence
+- End with one sentence about the single most impactful area for improvement, framed as observation not advice ("your biggest opportunity is..." not "you should...")`;
+
+function formatSgValue(value: number): string {
+  if (value === 0) return "0.00";
+  return value > 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
+}
+
+export function buildNarrativeUserPrompt(
+  input: RoundInput,
+  result: StrokesGainedResult,
+  troubleContext?: RoundTroubleContext
+): string {
+  const bracketLabel = BRACKET_LABELS[result.benchmarkBracket];
+
+  const fairwaysLine =
+    input.fairwaysHit != null
+      ? `- Fairways: ${input.fairwaysHit}/${input.fairwayAttempts}`
+      : "- Fairways: not tracked";
+
+  const girEstimated = result.estimatedCategories.includes("approach");
+  const girLine = `- Greens in Regulation: ${input.greensInRegulation ?? "N/A"}/18${girEstimated ? " (estimated)" : ""}`;
+
+  const scoringLine = `- Scoring: ${input.eagles}E, ${input.birdies}B, ${input.pars}P, ${input.bogeys}Bo, ${input.doubleBogeys}D, ${input.triplePlus}T+`;
+
+  const sgLines = CATEGORY_ORDER.map((cat) => {
+    const label = CATEGORY_LABELS[cat];
+    const value = formatSgValue(result.categories[cat]);
+    const confidence = result.confidence[cat];
+    return `- ${label}: ${value} (confidence: ${confidence})`;
+  });
+
+  const estimatedNote =
+    result.estimatedCategories.length > 0
+      ? `\nNote: ${result.estimatedCategories.map((c) => CATEGORY_LABELS[c]).join(", ")} ${result.estimatedCategories.length === 1 ? "was" : "were"} estimated, not directly measured.`
+      : "";
+
+  let troubleText = "";
+  if (troubleContext && troubleContext.troubleHoles.length > 0) {
+    const narrative = generateTroubleNarrative(troubleContext);
+    troubleText = `\nTrouble context: ${narrative.body}`;
+  }
+
+  return `Round data:
+- Course: ${input.course}, Score: ${input.score}, Handicap Index: ${input.handicapIndex}
+- Course Rating: ${input.courseRating}, Slope: ${input.slopeRating}
+${fairwaysLine}
+${girLine}
+- Total Putts: ${input.totalPutts}
+- Penalty Strokes: ${input.penaltyStrokes}
+${scoringLine}
+
+Strokes Gained vs ${bracketLabel} peers:
+- Total: ${formatSgValue(result.total)}
+${sgLines.join("\n")}
+${troubleText}${estimatedNote}
+
+Write a 3-5 sentence narrative about this round.`;
+}

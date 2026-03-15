@@ -33,6 +33,7 @@ import { ResultsSummary } from "./results-summary";
 import { ShareCard } from "./share-card";
 import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
+import { NarrativeBlock } from "./narrative-block";
 import { RadarChart } from "@/components/charts/radar-chart";
 import {
   TurnstileWidget,
@@ -890,8 +891,17 @@ export default function StrokesGainedClient({
             />
           )}
 
+          {/* AI Narrative */}
+          {lastInput && (
+            <NarrativeBlock
+              input={lastInput}
+              troubleContext={troubleContext}
+              isSharedLink={!!initialInput}
+            />
+          )}
+
           {/* Share actions */}
-          <div className="animate-fade-up [animation-delay:400ms] flex gap-3">
+          <div className="animate-fade-up [animation-delay:450ms] flex gap-3">
             <button
               type="button"
               data-testid="download-png"
