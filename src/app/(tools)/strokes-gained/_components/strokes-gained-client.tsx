@@ -35,6 +35,7 @@ import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
 import { NarrativeBlock } from "./narrative-block";
 import { PostResultsSaveCta } from "./post-results-save-cta";
+import { LastRoundBanner } from "./last-round-banner";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
@@ -70,6 +71,37 @@ function getUtmSource(): string | undefined {
 async function waitForUiPaint(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+const LAST_ROUND_KEY = "gdv:last-round";
+const LAST_ROUND_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+interface StoredRound {
+  input: RoundInput;
+  result: StrokesGainedResult;
+  chartData: RadarChartDatum[];
+  timestamp: string;
+}
+
+function readStoredRound(): StoredRound | null {
+  try {
+    const raw = localStorage.getItem(LAST_ROUND_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredRound;
+    if (!parsed.timestamp || !parsed.input || !parsed.result || !parsed.chartData) {
+      localStorage.removeItem(LAST_ROUND_KEY);
+      return null;
+    }
+    const age = Date.now() - new Date(parsed.timestamp).getTime();
+    if (age > LAST_ROUND_MAX_AGE_MS) {
+      localStorage.removeItem(LAST_ROUND_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    localStorage.removeItem(LAST_ROUND_KEY);
+    return null;
+  }
 }
 
 export default function StrokesGainedClient({
@@ -118,6 +150,7 @@ export default function StrokesGainedClient({
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [claimAuthModalOpen, setClaimAuthModalOpen] = useState(false);
   const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "failed">("idle");
+  const [storedRound, setStoredRound] = useState<StoredRound | null>(null);
   const { user } = useSupabaseUser();
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
@@ -219,6 +252,36 @@ export default function StrokesGainedClient({
     } catch { /* localStorage unavailable or corrupt entry */ }
   }, []);
 
+  // Read last round from localStorage on mount (no shared link, not from history)
+  useEffect(() => {
+    if (initialInput || from === "history") return;
+    const stored = readStoredRound();
+    if (stored) setStoredRound(stored);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleRestore() {
+    if (!storedRound) return;
+    setResult(storedRound.result);
+    setChartData(storedRound.chartData);
+    setLastInput(storedRound.input);
+    setStoredRound(null);
+
+    // Update URL with shareable param
+    const encoded = encodeRound(storedRound.input);
+    window.history.replaceState(null, "", `?d=${encoded}`);
+
+    trackEvent("local_round_restored");
+
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }
+
+  function handleDismiss() {
+    setStoredRound(null);
+    try { localStorage.removeItem(LAST_ROUND_KEY); } catch { /* ok */ }
+  }
+
   function handleFormSubmit(input: RoundInput) {
     setIsCalculating(true);
 
@@ -292,6 +355,16 @@ export default function StrokesGainedClient({
     // Update URL with shareable param (no navigation)
     const encoded = encodeRound(input);
     window.history.replaceState(null, "", `?d=${encoded}`);
+
+    // Persist to localStorage for recall on return visits
+    try {
+      localStorage.setItem(LAST_ROUND_KEY, JSON.stringify({
+        input, result: sgResult, chartData: radar, timestamp: new Date().toISOString(),
+      }));
+    } catch { /* localStorage unavailable */ }
+
+    // Clear stored round banner if visible
+    setStoredRound(null);
 
     // Keep loading state visible for at least one paint + 300ms
     requestAnimationFrame(() => {
@@ -477,6 +550,19 @@ export default function StrokesGainedClient({
         </div>
       </section>
       <div className="mx-auto max-w-3xl px-4 pb-10 sm:pb-14">
+
+      {/* Last round recall banner */}
+      {storedRound && !result && (
+        <div className="mt-6">
+          <LastRoundBanner
+            courseName={storedRound.input.course}
+            score={storedRound.input.score}
+            date={storedRound.input.date}
+            onRestore={handleRestore}
+            onDismiss={handleDismiss}
+          />
+        </div>
+      )}
 
       <div
         className="mt-10 rounded-xl border border-cream-200 bg-white p-6 shadow-md sm:p-8"
