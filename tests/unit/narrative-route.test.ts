@@ -190,7 +190,7 @@ describe("POST /api/narrative", () => {
     await POST(makeRequest(VALID_BODY));
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: "claude-sonnet-4-6-20250514",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 400,
         temperature: 0.7,
       }),

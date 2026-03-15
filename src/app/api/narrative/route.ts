@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
   try {
     const message = await client.messages.create(
       {
-        model: "claude-sonnet-4-6-20250514",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 400,
         temperature: 0.7,
         system: NARRATIVE_SYSTEM_PROMPT,
@@ -170,6 +170,7 @@ export async function POST(request: NextRequest) {
         504
       );
     }
+    console.error("[narrative] Unexpected error:", String(err), err instanceof Error ? err.message : "");
     return errorResponse(
       "Failed to generate narrative",
       "GENERATION_FAILED",
