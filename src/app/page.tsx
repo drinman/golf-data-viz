@@ -43,6 +43,37 @@ export default async function Home({ searchParams }: HomePageProps) {
         </div>
       </section>
 
+      {/* Sample preview */}
+      <section data-testid="sample-preview" className="border-t border-cream-200 px-4 py-14 sm:py-16">
+        <div className="mx-auto max-w-4xl">
+          <p className="mt-2 text-sm text-neutral-600">
+            A strokes gained breakdown showing where your score separated from your peers.
+          </p>
+          <div className="mt-6">
+            <SampleResultPreview {...sample.preview} />
+          </div>
+          <div className="mt-6">
+            <LandingCta
+              utmSource={utmSource}
+              eventName="sample_preview_cta_clicked"
+              testId="sample-preview-cta"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Social proof bar */}
+      <section data-testid="social-proof-bar" className="border-t border-cream-200 bg-cream-100 px-4 py-5">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center
+          gap-x-8 gap-y-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
+          <span>Compared against amateur peers, not Tour pros</span>
+          <span className="hidden sm:inline text-cream-200">|</span>
+          <span>Open methodology &amp; published data sources</span>
+          <span className="hidden sm:inline text-cream-200">|</span>
+          <span>Free — no account required</span>
+        </div>
+      </section>
+
       {/* How it works */}
       <section data-testid="how-it-works" className="border-t border-cream-200 px-4 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
@@ -90,28 +121,6 @@ export default async function Home({ searchParams }: HomePageProps) {
         </div>
       </section>
 
-      {/* What you get */}
-      <section data-testid="sample-preview" className="border-t border-cream-200 px-4 py-14 sm:py-16">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
-            What you get
-          </h2>
-          <p className="mt-2 text-sm text-neutral-600">
-            A strokes gained breakdown showing where your score separated from your peers.
-          </p>
-          <div className="mt-6">
-            <SampleResultPreview {...sample.preview} />
-          </div>
-          <div className="mt-6">
-            <LandingCta
-              utmSource={utmSource}
-              eventName="sample_preview_cta_clicked"
-              testId="sample-preview-cta"
-            />
-          </div>
-        </div>
-      </section>
-
       <section
         data-testid="what-is-sg"
         className="border-t border-cream-200 px-4 py-20 sm:py-24"
@@ -131,9 +140,10 @@ export default async function Home({ searchParams }: HomePageProps) {
               handicap peers is what makes practice decisions useful.
             </p>
             <p>
-              Off the Tee covers driving/penalties, Approach covers GIR
-              performance, Around the Green covers scrambling, and Putting
-              covers putt efficiency.
+              Off the Tee covers driving and penalties. Approach covers greens
+              in regulation. Around the Green covers scrambling. Putting covers
+              putt efficiency. Each category benchmarked against golfers at your
+              handicap.
             </p>
             <p>
               We publish our exact formulas, data sources, and limitations.{" "}

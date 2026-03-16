@@ -47,6 +47,16 @@ test("sample preview CTA navigates to /strokes-gained", async ({ page }) => {
   await expect(page).toHaveURL(/\/strokes-gained/);
 });
 
+test("social proof bar is visible between sample preview and how-it-works", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const proofBar = page.getByTestId("social-proof-bar");
+  await expect(proofBar).toBeVisible();
+  await expect(proofBar.getByText("Compared against amateur peers, not Tour pros")).toBeVisible();
+  await expect(proofBar.getByText("Free — no account required")).toBeVisible();
+});
+
 test("no Next.js starter content remains", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("text=To get started")).not.toBeVisible();
