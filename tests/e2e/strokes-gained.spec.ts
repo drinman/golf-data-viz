@@ -692,4 +692,59 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByTestId("form-wrapper")).toBeVisible();
     await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
   });
+
+  test("shared link shows score-first header band with correct score and course", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    const dParam = new URL(page.url()).searchParams.get("d");
+    expect(dParam).toBeTruthy();
+
+    await page.goto(`/strokes-gained?d=${dParam}`);
+    await expect(
+      page.getByText("Your Round Breakdown")
+    ).toBeVisible({ timeout: 5000 });
+
+    const headerBand = page.getByTestId("shared-link-header");
+    await expect(headerBand).toBeVisible();
+    await expect(headerBand.getByText("87")).toBeVisible();
+    await expect(headerBand.getByText("Pacifica Sharp Park")).toBeVisible();
+    await expect(headerBand.getByText(/[+-]\d+\.\d{2}/)).toBeVisible();
+    await expect(headerBand.getByText(/14\.3 index/)).toBeVisible();
+    await expect(headerBand.getByText(/10\u201315 HCP/)).toBeVisible();
+  });
+
+  test("shared link shows recipient CTA 'What does your game look like?'", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    const dParam = new URL(page.url()).searchParams.get("d");
+    expect(dParam).toBeTruthy();
+
+    await page.goto(`/strokes-gained?d=${dParam}`);
+    await expect(
+      page.getByText("Your Round Breakdown")
+    ).toBeVisible({ timeout: 5000 });
+
+    const cta = page.getByTestId("recipient-cta");
+    await expect(cta).toBeVisible();
+    await expect(cta.getByText("What does your game look like?")).toBeVisible();
+  });
+
+  test("shared link header does NOT appear for user-submitted results", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    await expect(page.getByTestId("shared-link-header")).not.toBeVisible();
+  });
+
+  test("shared link header does NOT appear for from=history", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained?from=history");
+    await expect(page.getByTestId("shared-link-header")).not.toBeVisible();
+  });
 });
