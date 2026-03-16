@@ -37,6 +37,7 @@ import { NarrativeBlock } from "./narrative-block";
 import { PostResultsSaveCta } from "./post-results-save-cta";
 import { LastRoundBanner } from "./last-round-banner";
 import { RadarChart } from "@/components/charts/radar-chart";
+import { readStoredRound, LAST_ROUND_KEY, type StoredRound } from "@/lib/golf/local-storage";
 import { saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { CompactSamplePreview } from "@/components/compact-sample-preview";
@@ -71,37 +72,6 @@ function getUtmSource(): string | undefined {
 async function waitForUiPaint(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-}
-
-const LAST_ROUND_KEY = "gdv:last-round";
-const LAST_ROUND_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-
-interface StoredRound {
-  input: RoundInput;
-  result: StrokesGainedResult;
-  chartData: RadarChartDatum[];
-  timestamp: string;
-}
-
-function readStoredRound(): StoredRound | null {
-  try {
-    const raw = localStorage.getItem(LAST_ROUND_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoredRound;
-    if (!parsed.timestamp || !parsed.input || !parsed.result || !parsed.chartData) {
-      localStorage.removeItem(LAST_ROUND_KEY);
-      return null;
-    }
-    const age = Date.now() - new Date(parsed.timestamp).getTime();
-    if (age > LAST_ROUND_MAX_AGE_MS) {
-      localStorage.removeItem(LAST_ROUND_KEY);
-      return null;
-    }
-    return parsed;
-  } catch {
-    localStorage.removeItem(LAST_ROUND_KEY);
-    return null;
-  }
 }
 
 export default function StrokesGainedClient({

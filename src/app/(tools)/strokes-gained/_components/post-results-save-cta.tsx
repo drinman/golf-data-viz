@@ -96,7 +96,7 @@ export function PostResultsSaveCta({
       setPhase("success");
       // Brief success micro-interaction beat before notifying parent
       setTimeout(() => {
-        onSaveComplete(res as SaveRoundResult & { success: true });
+        onSaveComplete(res);
       }, 300);
       return;
     }
@@ -162,9 +162,7 @@ export function PostResultsSaveCta({
   return (
     <div
       data-testid="post-results-save-cta"
-      className={`animate-fade-up [animation-delay:500ms] rounded-xl border border-brand-200 bg-brand-50/30 px-5 py-5${
-        phase === "error" ? " animate-shake" : ""
-      }`}
+      className={`${phase === "error" ? "animate-shake" : "animate-fade-up [animation-delay:500ms]"} rounded-xl border border-brand-200 bg-brand-50/30 px-5 py-5`}
     >
       <p className="text-sm font-medium text-neutral-900">{heading}</p>
       <p className="mt-1 text-sm text-neutral-600">{body}</p>
