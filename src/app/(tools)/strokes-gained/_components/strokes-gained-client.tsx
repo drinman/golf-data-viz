@@ -84,8 +84,9 @@ export default function StrokesGainedClient({
 }: StrokesGainedClientProps) {
   // from=history adaptation: show returning-user copy unless viewing a shared link
   const isFromHistory = from === "history" && !initialInput;
-  // Shared link recipient: initialInput present AND not navigating from history
-  const isSharedLink = !!initialInput && from !== "history";
+  // Shared link recipient: initialInput present AND not navigating from history.
+  // State so it clears when the recipient submits their own round.
+  const [isSharedLink, setIsSharedLink] = useState(!!initialInput && from !== "history");
   const benchmarkMeta = getBenchmarkMeta();
 
   const phase2Mode = getClientPhase2Mode();
@@ -283,6 +284,7 @@ export default function StrokesGainedClient({
 
     // Clear stale feedback from previous submit
     setSaveSuccess(false);
+    setIsSharedLink(false);
     setTroubleContext(null);
     setTroubleModalOpen(false);
     setTroublePromptDismissed(false);
