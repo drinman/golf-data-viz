@@ -71,7 +71,7 @@ test("mobile user can submit a round and reach share actions", async ({
 
   await page.click('button[type="submit"]');
 
-  await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({
+  await expect(page.getByText("Your Round Breakdown")).toBeVisible({
     timeout: 5000,
   });
   await expect(page.getByTestId("download-png")).toBeVisible();

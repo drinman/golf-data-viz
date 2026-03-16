@@ -47,7 +47,7 @@ export function SampleResultPreview({
           }`}
         >
           <p className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-            Total Proxy SG
+            Total SG
           </p>
           <p
             className={`font-mono text-lg font-semibold tabular-nums ${

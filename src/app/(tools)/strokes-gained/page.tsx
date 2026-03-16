@@ -8,7 +8,7 @@ import { getSampleResult } from "@/lib/golf/sample-round";
 import StrokesGainedClient from "./_components/strokes-gained-client";
 
 const PAGE_DESCRIPTION =
-  "Free post-round proxy strokes gained from manual scorecard stats. Compare yourself to handicap peers, not Tour pros.";
+  "Free post-round strokes gained analysis from your scorecard stats. Compare yourself to handicap peers, not Tour pros.";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

@@ -110,7 +110,7 @@ describe("ShareCard", () => {
     expect(screen.getByText(/10–15 HCP/)).toBeTruthy();
   });
 
-  it("shows Proxy SG trust label", () => {
+  it("shows SG trust label", () => {
     const result = makeSGResult();
     const chartData = makeChartData();
 
@@ -123,7 +123,7 @@ describe("ShareCard", () => {
       />
     );
 
-    expect(screen.getAllByText(/Proxy SG/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Strokes Gained/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders familiar stats and scoring breakdown when roundInput is provided", () => {

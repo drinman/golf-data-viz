@@ -19,7 +19,7 @@ export async function generateMetadata({
 
   const title = `${snapshot.reportData.summary.roundCount} rounds · ${formatSG(
     snapshot.reportData.summary.averageSgTotal
-  )} Avg Proxy SG`;
+  )} Avg SG`;
   const description =
     "Read-only lesson prep report with focus area, trend signal, confidence, and methodology caveats.";
 

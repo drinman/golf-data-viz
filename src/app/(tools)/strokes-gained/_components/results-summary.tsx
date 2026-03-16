@@ -21,9 +21,9 @@ import { TroubleContextNarrative } from "./trouble-context-narrative";
 // a future category is added without updating this map.
 const EMPHASIS_COPY: Partial<Record<StrokesGainedCategory, string>> = {
   putting:
-    "Putting is one of the clearest scorecard-based signals in this round.",
+    "Putting is one of the strongest signals in this round.",
   "around-the-green":
-    "Your short-game result looks actionable here because the supporting inputs are strong enough to trust directionally.",
+    "Your short game shows a clear pattern.",
 };
 
 const CATEGORY_DESCRIPTIONS: Record<StrokesGainedCategory, string> = {
@@ -101,7 +101,7 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
         }`}
       >
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
-          Total Proxy SG
+          Total SG
         </p>
         <p
           className={`mt-1 font-display text-4xl tracking-tight sm:text-5xl ${
@@ -158,7 +158,7 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
         </div>
       )}
       <p className="text-xs italic text-neutral-400">
-        Proxy SG (scorecard-based){" "}
+        SG{" "}
         {benchmarkMeta.provisional && (
           <span className="not-italic rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
             Beta
@@ -178,10 +178,10 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
           className="rounded-lg border border-brand-100 bg-brand-50/50 px-5 py-4"
         >
           <p className="font-display text-sm font-semibold tracking-tight text-neutral-950">
-            Most actionable scorecard-based insights
+            Key Insights
           </p>
           <p className="mt-0.5 text-xs text-neutral-500">
-            These are the clearest signals from your scorecard-based round data today.
+            The clearest signals from this round.
           </p>
           <div className="mt-3 space-y-2.5">
             {emphasizedCategories.map((cat) => {

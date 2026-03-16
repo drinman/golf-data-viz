@@ -186,7 +186,7 @@ export function LessonReportView({
           </div>
           <div className="rounded-3xl border border-white/15 bg-white/10 px-6 py-5 text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-brand-100/75">
-              Avg Proxy SG
+              Avg SG
             </p>
             <p className="mt-1 font-display text-5xl text-white">
               {formatSG(report.summary.averageSgTotal)}
@@ -439,7 +439,7 @@ export function LessonReportView({
         {surface === "shared" && (
           <div className="mt-8 text-center">
             <p className="text-sm text-neutral-500">
-              Want your own single-round Proxy SG breakdown?
+              Want your own strokes gained breakdown?
             </p>
             <Link
               href="/strokes-gained"
@@ -452,7 +452,7 @@ export function LessonReportView({
       </div>
 
       <div className="mt-8 text-center text-xs text-neutral-400">
-        Proxy SG · Report v{snapshot.reportVersion}
+        SG Analysis · Report v{snapshot.reportVersion}
         {report.methodologyVersions.length > 0 && (
           <> · Methodology {report.methodologyVersions.join(", ")}</>
         )}

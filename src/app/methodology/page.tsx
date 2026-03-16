@@ -164,7 +164,7 @@ const TOC_ITEMS = [
   { id: "confidence", label: "Confidence Levels" },
   { id: "plus-handicaps", label: "Plus Handicaps" },
   { id: "ott-limitations", label: "OTT Limitations" },
-  { id: "proxy-vs-shot-level", label: "Proxy vs Shot-Level" },
+  { id: "proxy-vs-shot-level", label: "Scorecard SG vs Shot-Level" },
   { id: "assumptions", label: "Assumptions" },
   { id: "fixture-check", label: "Fixture Check" },
   { id: "changelog", label: "Changelog" },
@@ -258,10 +258,9 @@ export default function MethodologyPage() {
             Methodology
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-neutral-600">
-            Golf Data Viz is a free post-round benchmark that estimates
-            proxy strokes gained from round-level scorecard stats, not
-            shot-level tracking. This page explains the formulas, sources,
-            confidence levels, and limitations.
+            Golf Data Viz estimates strokes gained from round-level
+            scorecard stats. This page explains the formulas, data sources,
+            confidence levels, and known limitations.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="rounded-full border border-brand-100 bg-white px-3 py-1 text-xs font-medium text-brand-800">
@@ -281,10 +280,10 @@ export default function MethodologyPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-10">
-        {/* Proxy model disclaimer */}
+        {/* Methodology context */}
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-relaxed text-amber-900">
-          True Strokes Gained requires shot-level start/end context (e.g., putt
-          starting distances). This is a proxy model that uses aggregate
+          True shot-level Strokes Gained requires start/end context for every
+          shot (e.g., putt starting distances). This tool uses aggregate
           round statistics to estimate where you gain and lose strokes relative
           to your handicap peers.
         </div>
@@ -314,7 +313,7 @@ export default function MethodologyPage() {
         {/* ── SG Formulas ── */}
         <section id="formulas" className="mt-14 scroll-mt-8">
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
-            Proxy SG Formulas
+            SG Formulas
             <span className="ml-2 align-middle text-sm font-sans font-normal text-neutral-400">
               v{METHODOLOGY_VERSION_V3}
             </span>
@@ -356,7 +355,7 @@ export default function MethodologyPage() {
             Total Anchor
           </h2>
           <p className="mt-2 text-base leading-relaxed text-neutral-600">
-            Total Proxy SG is anchored to a peer expectation so that
+            Total SG is anchored to a peer expectation so that
             category values sum to a coherent total. Two modes exist:
           </p>
           <div className="mt-6 space-y-4">
@@ -365,7 +364,7 @@ export default function MethodologyPage() {
                 Course-Adjusted (preferred)
               </p>
               <p className="mt-1 text-sm leading-relaxed text-neutral-600">
-                When course rating and slope are available, total Proxy SG is
+                When course rating and slope are available, total SG is
                 anchored to a course-adjusted peer expectation:
               </p>
               <div className="mt-3 space-y-1 rounded-md bg-white/60 px-3 py-2">
@@ -507,7 +506,7 @@ export default function MethodologyPage() {
             <div className="rounded-lg border border-cream-200 bg-white px-5 py-4 text-sm leading-relaxed text-neutral-600">
               <p className="font-medium text-neutral-800">Why</p>
               <p className="mt-1">
-                In scorecard-based proxy models, some tee-shot value leaks into
+                In scorecard-based models, some tee-shot value leaks into
                 Approach when longer or more playable drives create shorter approach
                 shots. A player with low FIR% but high GIR% may be under-credited
                 on OTT and over-credited on Approach (or vice versa).
@@ -577,7 +576,7 @@ export default function MethodologyPage() {
             Data Sources &amp; Citations
           </h2>
           <p className="mt-2 text-base leading-relaxed text-neutral-600">
-            All benchmark metrics used in the live Proxy SG calculation are
+            All benchmark metrics used in the SG calculation are
             source-locked and versioned.{" "}
             {coveredMetricCount} of {CITATION_METRIC_KEYS.length} tracked metrics
             have published-source coverage for some brackets.{" "}
@@ -760,10 +759,10 @@ export default function MethodologyPage() {
           </p>
         </section>
 
-        {/* ── Proxy SG vs Shot-Level SG ── */}
+        {/* ── Scorecard SG vs Shot-Level SG ── */}
         <section id="proxy-vs-shot-level" className="mt-14 scroll-mt-8">
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
-            Proxy SG vs Shot-Level SG
+            Scorecard SG vs Shot-Level SG
           </h2>
           <div className="mt-4 space-y-3 text-base leading-relaxed text-neutral-600">
             <p>
@@ -772,13 +771,13 @@ export default function MethodologyPage() {
               This requires GPS or shot-tracking hardware.
             </p>
             <p>
-              Proxy SG estimates category-level performance from aggregate round
+              Scorecard SG estimates category-level performance from aggregate round
               stats (fairways hit, GIR, putts, penalties, scoring distribution).
               It answers &ldquo;where am I gaining/losing relative to my handicap
               peers?&rdquo; without shot-level data.
             </p>
             <p>
-              Proxy SG is directionally useful for practice prioritization but
+              Scorecard SG is directionally useful for practice prioritization but
               cannot capture within-category nuance (e.g., putt starting
               distances, approach miss direction, driving distance).
             </p>
@@ -792,7 +791,7 @@ export default function MethodologyPage() {
           </h2>
           <ul className="mt-4 list-disc space-y-3 pl-6 text-sm leading-relaxed text-neutral-600">
             <li>
-              <strong className="text-neutral-800">Proxy model</strong> — not true SG Putting (requires putt
+              <strong className="text-neutral-800">Scorecard-based model</strong> — not true SG Putting (requires putt
               starting distances)
             </li>
             <li>
@@ -806,7 +805,7 @@ export default function MethodologyPage() {
             </li>
             <li>
               <strong className="text-neutral-800">OTT&rarr;Approach attribution</strong> — in scorecard-based
-              proxy models, some tee-shot value can appear in Approach when longer
+              models, some tee-shot value can appear in Approach when longer
               or more playable drives create shorter approach shots. The attribution
               correction layer ({ATTRIBUTION_CORRECTION_VERSION}) partially
               mitigates this using FIR/GIR divergence patterns, but full correction
@@ -895,7 +894,7 @@ export default function MethodologyPage() {
             versioned independently. Methodology v{METHODOLOGY_VERSION_V3},
             Calibration {CALIBRATION_VERSION},
             Attribution Correction {ATTRIBUTION_CORRECTION_VERSION}.
-            This is a peer-compared SG proxy, not true shot-level Strokes Gained.
+            Scorecard-based SG, not true shot-level Strokes Gained.
           </p>
         </footer>
       </div>

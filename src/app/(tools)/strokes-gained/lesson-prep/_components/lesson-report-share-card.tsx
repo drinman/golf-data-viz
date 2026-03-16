@@ -38,13 +38,13 @@ export const LessonReportShareCard = forwardRef<
               {formatDate(report.summary.endDate)}
             </h2>
             <p className="mt-2 text-base text-brand-100/80">
-              Snapshot-generated for coaching conversations. Proxy SG, confidence,
+              Snapshot-generated for coaching conversations. SG analysis, confidence,
               and methodology caveats included.
             </p>
           </div>
           <div className="rounded-3xl border border-white/20 bg-white/10 px-6 py-5 text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-brand-100/70">
-              Avg Proxy SG
+              Avg SG
             </p>
             <p className="mt-1 font-display text-5xl text-white">
               {formatSG(report.summary.averageSgTotal)}
@@ -98,7 +98,7 @@ export const LessonReportShareCard = forwardRef<
       </div>
 
       <div className="mt-6 border-t border-neutral-200 pt-4 text-center text-xs text-neutral-500">
-        Golf Data Viz · Proxy SG · Report v{snapshot.reportVersion} · golfdataviz.com/strokes-gained
+        Golf Data Viz · SG Analysis · Report v{snapshot.reportVersion} · golfdataviz.com/strokes-gained
       </div>
     </div>
   );

@@ -67,13 +67,13 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.goto("/strokes-gained");
 
     await expect(
-      page.getByText("A proxy strokes gained benchmark built from scorecard stats amateurs already track.")
+      page.getByText("See where your strokes went this round.")
     ).toBeVisible();
     await expect(
       page.getByText("Beta")
     ).toBeVisible();
     await expect(
-      page.getByText("Proxy Strokes Gained", { exact: true })
+      page.getByText("Scorecard Strokes Gained", { exact: true })
     ).toBeVisible();
     await expect(
       page.getByText("Private")
@@ -162,7 +162,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Results should auto-render without any form interaction
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Radar chart should be present
@@ -243,10 +243,10 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     const sgResults = page.locator('[data-testid="sg-results"]');
 
-    // Trust label with new "Peer-compared SG" language + Beta pill
+    // Trust label with "SG · Benchmarks" language + Beta pill
     // Scoped to visible results summary (share card has a duplicate off-screen)
     const trustLabel = sgResults
-      .getByText(/Proxy SG.*Benchmarks/)
+      .getByText(/SG.*Benchmarks/)
       .first();
     await expect(trustLabel).toBeVisible();
     await expect(
@@ -282,7 +282,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     // SG formulas section uses card layout with h3 headings
     await expect(page.getByRole("heading", { name: "Off the Tee", level: 3 })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Putting", level: 3 })).toBeVisible();
-    await expect(page.getByText(/proxy model/i).first()).toBeVisible();
+    await expect(page.getByText(/scorecard-based model/i).first()).toBeVisible();
   });
 
   test("V3 results show Course-Adjusted badge and methodology tooltip with signal breakdown", async ({
@@ -335,7 +335,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     await page.goto(`/strokes-gained?d=${dParam}`);
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Confidence badges should still render after reload
@@ -353,7 +353,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Results should render
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Old save banners should not appear (no pre-submit checkbox)
@@ -455,7 +455,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     await page.goto(`/strokes-gained?d=${dParam}`);
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Verify toggle rehydrates as "+"
@@ -543,7 +543,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.goto("/strokes-gained?from=history");
     await expect(page.locator("h1")).toContainText("Log Another Round");
     await expect(
-      page.getByText("Scorecard-based estimate vs your handicap peers. Add it to your history when you save.")
+      page.getByText("Log another round and see how your game is changing.")
     ).toBeVisible();
     // Trust panel should be collapsed (details element)
     await expect(page.getByText("About this tool")).toBeVisible();
@@ -564,7 +564,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.goto(`/strokes-gained?d=${dParam}&from=history`);
     await expect(page.locator("h1")).toContainText("Strokes Gained Benchmarker");
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
   });
 
@@ -598,7 +598,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     // Should show validation error, not results
     await expect(page.getByText(/total 18/i)).toBeVisible({ timeout: 3000 });
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).not.toBeVisible();
   });
 
@@ -610,7 +610,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Results should render
     await expect(
-      page.getByText("Your Proxy SG Breakdown")
+      page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
     // Reload page — banner should appear
@@ -631,7 +631,7 @@ test.describe("Strokes Gained Benchmarker", () => {
   }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
-    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Your Round Breakdown")).toBeVisible({ timeout: 5000 });
 
     // Reload
     await page.goto("/strokes-gained");
@@ -641,7 +641,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.getByTestId("last-round-banner").getByRole("button", { name: /view results/i }).click();
 
     // Results should appear and URL should update
-    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Your Round Breakdown")).toBeVisible({ timeout: 5000 });
     expect(page.url()).toContain("?d=");
 
     // Banner should disappear
@@ -653,7 +653,7 @@ test.describe("Strokes Gained Benchmarker", () => {
   }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
-    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Your Round Breakdown")).toBeVisible({ timeout: 5000 });
 
     // Reload
     await page.goto("/strokes-gained");
@@ -678,7 +678,7 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     // Navigate with ?d= — banner should not appear
     await page.goto(`/strokes-gained?d=${dParam}`);
-    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Your Round Breakdown")).toBeVisible({ timeout: 5000 });
     await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
   });
 

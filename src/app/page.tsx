@@ -25,19 +25,17 @@ export default async function Home({ searchParams }: HomePageProps) {
           className="relative mx-auto max-w-4xl"
         >
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.18em] text-brand-800 sm:text-sm sm:tracking-[0.22em]">
-            Free post-round benchmark
+            Strokes Gained Benchmarker
           </p>
           <h1
             data-testid="hero-headline"
             className="animate-fade-up mt-4 max-w-[10ch] font-display text-4xl leading-[0.95] tracking-tight text-neutral-950 sm:text-5xl md:text-6xl"
           >
-            Know where your strokes go
+            Where did your strokes go?
           </h1>
           <p className="animate-fade-up delay-1 mt-6 max-w-[22rem] text-base leading-relaxed text-neutral-600 sm:max-w-xl sm:text-lg">
-            Use the scorecard stats you already track after a round to see
-            where you gain and lose strokes compared to golfers at your
-            handicap level. No sensors, no subscription, and no Tour-pro
-            baseline.
+            Enter your scorecard stats after a round. See exactly where you
+            gained and lost strokes compared to golfers at your level.
           </p>
           <div className="animate-fade-up delay-2 mt-8 sm:mt-10">
             <LandingCta utmSource={utmSource} />
@@ -124,9 +122,9 @@ export default async function Home({ searchParams }: HomePageProps) {
           </h2>
           <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-neutral-600 sm:text-base">
             <p>
-              Strokes Gained shows where your score separated from your peers by
-              category, not just raw totals. This tool provides proxy SG — a
-              scorecard-based estimate, not shot-level tracking.
+              Strokes Gained breaks your score into categories and measures each
+              against golfers at your level. Instead of just knowing your total,
+              you see exactly where you gained and lost strokes.
             </p>
             <p>
               Losing strokes to Tour players is expected. Comparing you to your

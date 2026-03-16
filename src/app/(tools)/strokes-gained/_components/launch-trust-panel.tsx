@@ -19,10 +19,10 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
           published.
         </li>
         <li>
-          <strong className="text-neutral-950">Proxy Strokes Gained</strong>
+          <strong className="text-neutral-950">Scorecard Strokes Gained</strong>
           {" "}
-          Round-level strokes gained estimate versus your handicap peers, not
-          shot-level tracking.
+          Strokes gained from the stats you already track, compared to golfers
+          at your handicap level.
         </li>
         <li>
           <strong className="text-neutral-950">Private</strong>
@@ -80,8 +80,8 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
               Is this true strokes gained?
             </dt>
             <dd className="mt-1">
-              No. It is a proxy model built from round-level inputs. The
-              methodology page explains the tradeoffs.
+              It uses scorecard-level stats, not shot-by-shot tracking. The
+              methodology page explains the approach and tradeoffs.
             </dd>
           </div>
           <div>

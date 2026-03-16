@@ -94,7 +94,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             {hasTroubleContext && " · Trouble context added"}
           </p>
           <p className="mt-0.5 text-[10px] text-brand-100/50">
-            Scorecard-based estimate
+            Scorecard SG
           </p>
 
           {/* Gold separator */}
@@ -169,7 +169,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           </div>
 
           <p className="mt-3 text-center text-[10px] text-neutral-400">
-            Proxy SG — scorecard-based estimate. Confidence: High = direct data, Med = derived, Low = limited.
+            Strokes Gained from scorecard stats &middot; golfdataviz.com
           </p>
 
           {/* Watermark */}

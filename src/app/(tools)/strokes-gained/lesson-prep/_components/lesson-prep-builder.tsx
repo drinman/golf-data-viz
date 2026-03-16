@@ -246,7 +246,7 @@ export function LessonPrepBuilder({
               <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
                 <p className="font-medium text-neutral-950">What the report includes</p>
                 <ul className="mt-2 space-y-1">
-                  <li>Average Proxy SG and category shape</li>
+                  <li>Average SG and category shape</li>
                   <li>Trend signal and primary focus area</li>
                   <li>Confidence rollups and methodology caveats</li>
                   <li>Read-only share link for your coach</li>

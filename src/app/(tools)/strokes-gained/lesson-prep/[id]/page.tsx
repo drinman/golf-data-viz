@@ -23,7 +23,7 @@ export async function generateMetadata({
   return {
     title: `${snapshot.reportData.summary.roundCount} rounds · ${formatSG(
       snapshot.reportData.summary.averageSgTotal
-    )} Avg Proxy SG`,
+    )} Avg SG`,
     description:
       "Multi-round lesson prep report with focus area, trend signal, and confidence framing.",
     robots: { index: false, follow: false },

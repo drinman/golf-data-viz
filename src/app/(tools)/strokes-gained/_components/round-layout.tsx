@@ -181,7 +181,7 @@ export function RoundLayout({
         style={d(7)}
       >
         <p>
-          Proxy SG &middot; Benchmarks v{benchmarkMeta.version}
+          SG &middot; Benchmarks v{benchmarkMeta.version}
           {snapshot.methodologyVersion && (
             <> &middot; Methodology v{snapshot.methodologyVersion}</>
           )}
@@ -191,7 +191,7 @@ export function RoundLayout({
             href="/methodology"
             className="mt-1 inline-block underline transition-colors hover:text-neutral-600"
           >
-            How Proxy Strokes Gained works
+            How Strokes Gained works
           </Link>
         )}
       </div>

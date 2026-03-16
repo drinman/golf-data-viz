@@ -275,7 +275,7 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     renderClient();
 
     expect(screen.getByText("Beta")).toBeVisible();
-    expect(screen.getByText("Proxy Strokes Gained")).toBeVisible();
+    expect(screen.getByText("Scorecard Strokes Gained")).toBeVisible();
     expect(screen.getByText("Private")).toBeVisible();
     expect(screen.getByText("Open")).toBeVisible();
     expect(

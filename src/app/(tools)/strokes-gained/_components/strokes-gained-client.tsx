@@ -493,7 +493,7 @@ export default function StrokesGainedClient({
             </Link>
           )}
           <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.22em] text-brand-800">
-            Free post-round benchmark
+            Strokes Gained Benchmarker
           </p>
           <h1 className="animate-fade-up [animation-delay:100ms] mt-4 font-display text-4xl tracking-tight text-neutral-950 sm:text-5xl">
             {isFromHistory ? "Log Another Round" : "Strokes Gained Benchmarker"}
@@ -501,7 +501,7 @@ export default function StrokesGainedClient({
           {isFromHistory ? (
             <>
               <p className="animate-fade-up [animation-delay:200ms] mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
-                Scorecard-based estimate vs your handicap peers. Add it to your history when you save.
+                Log another round and see how your game is changing.
               </p>
               <p className="animate-fade-up [animation-delay:200ms] mt-2 max-w-lg text-sm text-neutral-500">
                 No sensors needed.{" "}
@@ -513,7 +513,7 @@ export default function StrokesGainedClient({
           ) : (
             <>
               <p className="animate-fade-up [animation-delay:200ms] mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
-                A proxy strokes gained benchmark built from scorecard stats amateurs already track.
+                See where your strokes went this round.
               </p>
               <p className="animate-fade-up [animation-delay:200ms] mt-2 max-w-lg text-sm text-neutral-500">
                 See where you gain and lose strokes compared to golfers at your handicap
@@ -579,7 +579,7 @@ export default function StrokesGainedClient({
               Results
             </p>
             <h2 className="mt-2 font-display text-3xl tracking-tight text-neutral-950 sm:text-4xl">
-              Your Proxy SG Breakdown
+              Your Round Breakdown
             </h2>
           </div>
           <details className="animate-fade-up [animation-delay:100ms] rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-500">

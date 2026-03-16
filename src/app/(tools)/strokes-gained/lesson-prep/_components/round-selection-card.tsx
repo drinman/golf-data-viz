@@ -60,7 +60,7 @@ export function RoundSelectionCard({
             {formatSG(round.sgTotal)}
           </p>
           <p className="text-xs uppercase tracking-[0.12em] text-neutral-400">
-            Proxy SG
+            SG
           </p>
         </div>
       </div>

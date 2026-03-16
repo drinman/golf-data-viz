@@ -67,7 +67,7 @@ export async function GET(
             Lesson Prep Report
           </div>
           <div style={{ marginTop: 14, fontSize: 48, fontWeight: 700 }}>
-            {`${report.summary.roundCount} rounds · ${formatSG(report.summary.averageSgTotal)} Avg Proxy SG`}
+            {`${report.summary.roundCount} rounds · ${formatSG(report.summary.averageSgTotal)} Avg SG`}
           </div>
           <div style={{ marginTop: 10, fontSize: 24, color: "#cfe8d8" }}>
             {`${report.summary.startDate} to ${report.summary.endDate}`}
