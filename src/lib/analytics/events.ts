@@ -58,7 +58,10 @@ export type AnalyticsEvent =
   | "narrative_requested"
   | "narrative_generated"
   | "narrative_failed"
-  | "narrative_copied";
+  | "narrative_copied"
+  | "post_results_save_cta_viewed"
+  | "post_results_save_cta_clicked"
+  | "local_round_restored";
 
 type EmptyPayload = Record<never, never>;
 
@@ -185,6 +188,9 @@ export type AnalyticsEventProps = {
       | "network";
   };
   narrative_copied: { word_count: number; surface: "results_page" };
+  post_results_save_cta_viewed: EmptyPayload;
+  post_results_save_cta_clicked: EmptyPayload;
+  local_round_restored: EmptyPayload;
 };
 
 type RequiredKeys<T extends object> = {

@@ -3,7 +3,7 @@
 
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { roundInputSchema, type RoundInputFormData } from "@/lib/golf/schemas";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
@@ -11,16 +11,9 @@ import { BRACKET_LABELS } from "@/lib/golf/constants";
 import type { RoundInput } from "@/lib/golf/types";
 
 interface RoundInputFormProps {
-  onSubmit: (
-    data: RoundInput,
-    options?: { saveToCloud: boolean }
-  ) => void;
-  onSavePreferenceChange?: (saveToCloud: boolean) => void;
+  onSubmit: (data: RoundInput) => void;
   initialValues?: Partial<RoundInput> | null;
   isCalculating?: boolean;
-  isSaving?: boolean;
-  saveEnabled?: boolean;
-  isAuthenticated?: boolean;
 }
 
 function FormField({
@@ -62,26 +55,13 @@ const inputClass =
 
 export function RoundInputForm({
   onSubmit,
-  onSavePreferenceChange,
   initialValues,
   isCalculating,
-  isSaving = false,
-  saveEnabled = true,
-  isAuthenticated = false,
 }: RoundInputFormProps) {
   const [showOptional, setShowOptional] = useState(false);
-  const [saveToCloud, setSaveToCloud] = useState(false);
   const [isPlusHandicap, setIsPlusHandicap] = useState(
     initialValues?.handicapIndex != null && initialValues.handicapIndex < 0
   );
-
-  useEffect(() => {
-    setSaveToCloud(false);
-  }, [initialValues, saveEnabled]);
-
-  useEffect(() => {
-    onSavePreferenceChange?.(saveToCloud);
-  }, [onSavePreferenceChange, saveToCloud]);
 
   const {
     register,
@@ -139,7 +119,7 @@ export function RoundInputForm({
   function handleFormSubmit(data: RoundInputFormData) {
     const absHcp = Math.abs(data.handicapIndex);
     const handicapIndex = isPlusHandicap && absHcp > 0 ? -absHcp : absHcp;
-    onSubmit({ ...data, handicapIndex }, { saveToCloud });
+    onSubmit({ ...data, handicapIndex });
   }
 
   return (
@@ -480,55 +460,13 @@ export function RoundInputForm({
         )}
       </div>
 
-      {saveEnabled && (
-        <div className="space-y-2">
-          <label className="flex items-start gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-neutral-700">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-cream-300 text-brand-800 focus:ring-brand-800/30"
-              checked={saveToCloud}
-              onChange={(event) => {
-                setSaveToCloud(event.target.checked);
-              }}
-            />
-            <span>Save this round to track over time</span>
-          </label>
-          {saveToCloud && (
-            <p className="text-xs text-neutral-500">
-              {isAuthenticated
-                ? "This round will be added to your history."
-                : "Save this round now, then create a free account to claim it and track your SG trends over time."}{" "}
-              Cloudflare Turnstile verifies you&apos;re human.{" "}
-              <a
-                href="https://www.cloudflare.com/privacypolicy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-neutral-700"
-              >
-                Privacy Policy
-              </a>{" "}
-              and{" "}
-              <a
-                href="https://www.cloudflare.com/website-terms/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-neutral-700"
-              >
-                Terms
-              </a>
-              .
-            </p>
-          )}
-        </div>
-      )}
-
       {/* Submit */}
       <button
         type="submit"
-        disabled={isCalculating || isSaving}
+        disabled={isCalculating}
         className="w-full rounded-lg bg-brand-800 px-4 py-3.5 text-base font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isCalculating ? "Calculating..." : isSaving ? "Saving..." : "See My Strokes Gained"}
+        {isCalculating ? "Calculating..." : "See My Strokes Gained"}
       </button>
     </form>
   );

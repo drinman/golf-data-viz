@@ -11,14 +11,14 @@ describe("RoundInputForm plus handicap toggle", () => {
   const onSubmit = vi.fn();
 
   it("toggle defaults to HCP", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} />);
+    render(<RoundInputForm onSubmit={onSubmit} />);
     const toggle = screen.getByTestId("plus-handicap-toggle");
     expect(toggle.textContent).toBe("HCP");
   });
 
   it("clicking toggle changes label to +", async () => {
     const user = userEvent.setup();
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} />);
+    render(<RoundInputForm onSubmit={onSubmit} />);
     const toggle = screen.getByTestId("plus-handicap-toggle");
     await user.click(toggle);
     expect(toggle.textContent).toBe("+");
@@ -26,7 +26,7 @@ describe("RoundInputForm plus handicap toggle", () => {
 
   it("plus toggle on shows Plus HCP badge", async () => {
     const user = userEvent.setup();
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} />);
+    render(<RoundInputForm onSubmit={onSubmit} />);
     const toggle = screen.getByTestId("plus-handicap-toggle");
     await user.click(toggle);
 
@@ -44,7 +44,6 @@ describe("RoundInputForm plus handicap toggle", () => {
     render(
       <RoundInputForm
         onSubmit={onSubmit}
-        saveEnabled={false}
         initialValues={{ handicapIndex: -2.3 } as never}
       />
     );
@@ -56,117 +55,27 @@ describe("RoundInputForm plus handicap toggle", () => {
   });
 });
 
-describe("RoundInputForm isSaving prop", () => {
+describe("RoundInputForm submit button", () => {
   const onSubmit = vi.fn();
 
-  it("disables submit button when isSaving is true", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isSaving />);
-    const button = screen.getByRole("button", { name: "Saving..." });
-    expect(button).toBeDisabled();
-  });
-
-  it("shows 'Saving...' text when isSaving is true", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isSaving />);
-    expect(screen.getByRole("button", { name: "Saving..." })).toBeVisible();
-  });
-
-  it("shows default text when isSaving is false", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isSaving={false} />);
+  it("shows default text when not calculating", () => {
+    render(<RoundInputForm onSubmit={onSubmit} />);
     expect(screen.getByRole("button", { name: "See My Strokes Gained" })).not.toBeDisabled();
   });
 
-  it("isCalculating takes priority over isSaving for button text", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} isCalculating isSaving />);
+  it("shows Calculating... and is disabled when isCalculating", () => {
+    render(<RoundInputForm onSubmit={onSubmit} isCalculating />);
     expect(screen.getByRole("button", { name: "Calculating..." })).toBeDisabled();
   });
 });
 
-describe("RoundInputForm save consent", () => {
+describe("RoundInputForm save checkbox removed", () => {
   const onSubmit = vi.fn();
 
-  it("shows anonymous save consent when save is enabled", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled />);
-
-    expect(
-      screen.getByLabelText("Save this round to track over time")
-    ).toBeVisible();
-  });
-
-  it("hides anonymous save consent when save is disabled", () => {
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled={false} />);
-
+  it("does not render save checkbox", () => {
+    render(<RoundInputForm onSubmit={onSubmit} />);
     expect(
       screen.queryByLabelText("Save this round to track over time")
     ).toBeNull();
-  });
-
-  it("shows the Cloudflare disclosure only when anonymous save is checked", async () => {
-    const user = userEvent.setup();
-
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled />);
-
-    expect(
-      screen.queryByText(/create a free account to claim it/i)
-    ).toBeNull();
-
-    await user.click(
-      screen.getByLabelText(
-        "Save this round to track over time"
-      )
-    );
-
-    expect(
-      screen.getByText(/Save this round now, then create a free account to claim it and track your SG trends over time/i)
-    ).toBeVisible();
-    expect(
-      screen.getByText(/Cloudflare Turnstile verifies you're human/i)
-    ).toBeVisible();
-    expect(
-      screen.getByRole("link", { name: "Privacy Policy" })
-    ).toHaveAttribute("href", "https://www.cloudflare.com/privacypolicy/");
-    expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute(
-      "href",
-      "https://www.cloudflare.com/website-terms/"
-    );
-  });
-
-  it("shows authenticated disclosure when user is signed in", async () => {
-    const user = userEvent.setup();
-
-    render(<RoundInputForm onSubmit={onSubmit} saveEnabled isAuthenticated />);
-
-    await user.click(
-      screen.getByLabelText("Save this round to track over time")
-    );
-
-    expect(
-      screen.getByText(/This round will be added to your history/i)
-    ).toBeVisible();
-    expect(
-      screen.queryByText(/create a free account/i)
-    ).toBeNull();
-  });
-
-  it("reports the save opt-in state upward as the checkbox changes", async () => {
-    const user = userEvent.setup();
-    const onSavePreferenceChange = vi.fn();
-
-    render(
-      <RoundInputForm
-        onSubmit={onSubmit}
-        saveEnabled
-        onSavePreferenceChange={onSavePreferenceChange}
-      />
-    );
-
-    expect(onSavePreferenceChange).toHaveBeenCalledWith(false);
-
-    await user.click(
-      screen.getByLabelText(
-        "Save this round to track over time"
-      )
-    );
-
-    expect(onSavePreferenceChange).toHaveBeenLastCalledWith(true);
   });
 });

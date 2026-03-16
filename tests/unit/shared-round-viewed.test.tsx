@@ -139,11 +139,11 @@ vi.mock(
     RoundInputForm: ({
       onSubmit,
     }: {
-      onSubmit: (data: unknown, options?: { saveToCloud: boolean }) => void;
+      onSubmit: (data: unknown) => void;
       initialValues?: unknown;
       isCalculating?: boolean;
     }) => (
-      <button data-testid="mock-submit" type="button" onClick={() => onSubmit({}, { saveToCloud: false })}>
+      <button data-testid="mock-submit" type="button" onClick={() => onSubmit({})}>
         Submit
       </button>
     ),
@@ -172,14 +172,31 @@ const mockInput = {
   triplePlus: 1,
 };
 
+// Stub localStorage — jsdom's built-in localStorage is incomplete in this env
+const mockStorage: Record<string, string> = {};
+const localStorageStub = {
+  getItem: (key: string) => mockStorage[key] ?? null,
+  setItem: (key: string, value: string) => { mockStorage[key] = value; },
+  removeItem: (key: string) => { delete mockStorage[key]; },
+  get length() { return Object.keys(mockStorage).length; },
+  key: (i: number) => Object.keys(mockStorage)[i] ?? null,
+  clear: () => { for (const k of Object.keys(mockStorage)) delete mockStorage[k]; },
+};
+
 describe("shared_round_viewed analytics event", () => {
   beforeEach(() => {
     mockTrackEvent.mockClear();
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+    Object.defineProperty(globalThis, "localStorage", {
+      value: localStorageStub,
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it("fires exactly once when initialInput is provided (Strict Mode safe)", () => {

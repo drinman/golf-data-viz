@@ -34,12 +34,11 @@ import { ShareCard } from "./share-card";
 import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
 import { NarrativeBlock } from "./narrative-block";
+import { PostResultsSaveCta } from "./post-results-save-cta";
+import { LastRoundBanner } from "./last-round-banner";
 import { RadarChart } from "@/components/charts/radar-chart";
-import {
-  TurnstileWidget,
-  type TurnstileWidgetHandle,
-} from "@/components/security/turnstile-widget";
-import { saveRound, saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
+import { readStoredRound, LAST_ROUND_KEY, type StoredRound } from "@/lib/golf/local-storage";
+import { saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { CompactSamplePreview } from "@/components/compact-sample-preview";
 import { ContourBg } from "@/components/contour-bg";
@@ -107,14 +106,6 @@ export default function StrokesGainedClient({
   const [lastInput, setLastInput] = useState<RoundInput | null>(
     initialInput ?? null
   );
-  const [saveError, setSaveError] = useState<{
-    type: "config" | "runtime" | "rate_limited" | "verification" | "duplicate";
-    message: string;
-  } | null>(null);
-  const [saveOptInSelected, setSaveOptInSelected] = useState(false);
-  const [savePhase, setSavePhase] = useState<null | "verifying" | "saving">(
-    null
-  );
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -129,10 +120,10 @@ export default function StrokesGainedClient({
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [claimAuthModalOpen, setClaimAuthModalOpen] = useState(false);
   const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "failed">("idle");
+  const [storedRound, setStoredRound] = useState<StoredRound | null>(null);
   const { user } = useSupabaseUser();
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
-  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const formStartedRef = useRef(false);
   const sharedRoundViewedRef = useRef(false);
   const attributionUtmSourceRef = useRef<string | undefined>(undefined);
@@ -140,7 +131,6 @@ export default function StrokesGainedClient({
   const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
-  const saveRequestIdRef = useRef(0);
   const claimRequestInFlightRef = useRef(false);
 
   if (
@@ -219,6 +209,10 @@ export default function StrokesGainedClient({
   // "pending-oauth-claim" key is written when Google OAuth starts,
   // and consumed (deleted) here on the next mount. This avoids scanning
   // all claim:* entries and prevents stale rounds from being claimed.
+  //
+  // Also restore the last round from localStorage so the results section
+  // renders — claim success/error UI is inside the results block and
+  // won't be visible without it.
   useEffect(() => {
     try {
       const raw = localStorage.getItem("pending-oauth-claim");
@@ -228,14 +222,52 @@ export default function StrokesGainedClient({
       if (parsed.roundId && parsed.claimToken) {
         setSavedRoundId(parsed.roundId);
         setSavedClaimToken(parsed.claimToken);
+
+        // Restore results so claim UI is visible (it renders inside the results block)
+        const stored = readStoredRound();
+        if (stored) {
+          setResult(stored.result);
+          setChartData(stored.chartData);
+          setLastInput(stored.input);
+          setSaveSuccess(true); // hide CTA since round is already saved
+          const encoded = encodeRound(stored.input);
+          window.history.replaceState(null, "", `?d=${encoded}`);
+        }
       }
     } catch { /* localStorage unavailable or corrupt entry */ }
   }, []);
 
-  function handleFormSubmit(
-    input: RoundInput,
-    options?: { saveToCloud: boolean }
-  ) {
+  // Read last round from localStorage on mount (no shared link, not from history)
+  useEffect(() => {
+    if (initialInput || from === "history") return;
+    const stored = readStoredRound();
+    if (stored) setStoredRound(stored);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleRestore() {
+    if (!storedRound) return;
+    setResult(storedRound.result);
+    setChartData(storedRound.chartData);
+    setLastInput(storedRound.input);
+    setStoredRound(null);
+
+    // Update URL with shareable param
+    const encoded = encodeRound(storedRound.input);
+    window.history.replaceState(null, "", `?d=${encoded}`);
+
+    trackEvent("local_round_restored");
+
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }
+
+  function handleDismiss() {
+    setStoredRound(null);
+    try { localStorage.removeItem(LAST_ROUND_KEY); } catch { /* ok */ }
+  }
+
+  function handleFormSubmit(input: RoundInput) {
     setIsCalculating(true);
 
     const benchmark = getInterpolatedBenchmark(input.handicapIndex);
@@ -247,8 +279,6 @@ export default function StrokesGainedClient({
     setLastInput(input);
 
     // Clear stale feedback from previous submit
-    setSavePhase(null);
-    setSaveError(null);
     setSaveSuccess(false);
     setTroubleContext(null);
     setTroubleModalOpen(false);
@@ -311,145 +341,20 @@ export default function StrokesGainedClient({
     const encoded = encodeRound(input);
     window.history.replaceState(null, "", `?d=${encoded}`);
 
+    // Persist to localStorage for recall on return visits
+    try {
+      localStorage.setItem(LAST_ROUND_KEY, JSON.stringify({
+        input, result: sgResult, chartData: radar, timestamp: new Date().toISOString(),
+      }));
+    } catch { /* localStorage unavailable */ }
+
+    // Clear stored round banner if visible
+    setStoredRound(null);
+
     // Keep loading state visible for at least one paint + 300ms
     requestAnimationFrame(() => {
       setTimeout(() => setIsCalculating(false), 300);
     });
-
-    // Request scoping: only apply the result from the latest submit
-    const requestId = ++saveRequestIdRef.current;
-
-    if (saveEnabled && options?.saveToCloud === true) {
-      if (!turnstileSiteKey || !turnstileRef.current) {
-        trackEvent("round_save_failed", { error_type: "config" });
-        setSaveError({
-          type: "config",
-          message:
-            "Cloud save unavailable — your results are still shown below.",
-        });
-      } else {
-        setSavePhase("verifying");
-
-        void (async () => {
-          let token: string;
-
-          try {
-            token = await turnstileRef.current!.execute();
-          } catch (err) {
-            if (requestId !== saveRequestIdRef.current) return;
-            if (
-              typeof err === "object" &&
-              err !== null &&
-              "code" in err &&
-              err.code === "superseded"
-            ) {
-              return;
-            }
-            setSavePhase(null);
-            console.error("[StrokesGained] Verification failed:", err);
-            trackEvent("round_save_failed", { error_type: "verification" });
-            setSaveError({
-              type: "verification",
-              message: "Bot check failed. Your results are still shown below.",
-            });
-            return;
-          }
-
-          if (requestId !== saveRequestIdRef.current) return;
-
-          setSavePhase("saving");
-
-          try {
-            const res = await saveRound(input, { turnstileToken: token });
-            if (requestId !== saveRequestIdRef.current) return;
-
-            setSavePhase(null);
-            if (res.success) {
-              trackEvent("round_saved");
-              setSavedRoundId(res.roundId);
-              setSavedRoundOwned(res.isOwned);
-              setSaveSuccess(true);
-              // Create a share token for canonical URL sharing (owner only)
-              if (res.isOwned) {
-                void createShareToken(res.roundId).then((tokenRes) => {
-                  if (tokenRes.success) setShareToken(tokenRes.token);
-                });
-              }
-              // Auto-dismiss for anonymous saves; owned rounds get a persistent card
-              if (!res.isOwned) {
-                saveSuccessTimerRef.current = setTimeout(
-                  () => setSaveSuccess(false),
-                  3000
-                );
-              }
-              // Store claim token for anonymous round claiming
-              if (res.claimToken && !res.isOwned) {
-                setSavedClaimToken(res.claimToken);
-                try {
-                  localStorage.setItem(
-                    `claim:${res.roundId}`,
-                    JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })
-                  );
-                } catch { /* localStorage unavailable */ }
-              }
-            } else if (res.code === "DUPLICATE_ROUND") {
-              // Round already exists but server could not attach it to this user
-              trackEvent("round_save_failed", { error_type: "duplicate" });
-              setSaveError({
-                type: "duplicate",
-                message: "This round was already saved.",
-              });
-            } else if (res.code === "SAVE_DISABLED") {
-              trackEvent("round_save_failed", { error_type: "config" });
-              setSaveError({
-                type: "config",
-                message:
-                  "Cloud save unavailable — your results are still shown below.",
-              });
-            } else if (res.code === "RATE_LIMITED") {
-              trackEvent("round_save_failed", { error_type: "rate_limited" });
-              setSaveError({
-                type: "rate_limited",
-                message: res.message,
-              });
-            } else if (
-              res.code === "VERIFICATION_REQUIRED" ||
-              res.code === "VERIFICATION_FAILED"
-            ) {
-              trackEvent("round_save_failed", {
-                error_type: "verification",
-              });
-              setSaveError({
-                type: "verification",
-                message: "Bot check failed. Your results are still shown below.",
-              });
-            } else {
-              console.error(
-                "[StrokesGained] Save failed:",
-                res.code,
-                res.message
-              );
-              trackEvent("round_save_failed", { error_type: "runtime" });
-              setSaveError({
-                type: "runtime",
-                message:
-                  "Round could not be saved. Your results are still shown below.",
-              });
-            }
-          } catch (err) {
-            if (requestId !== saveRequestIdRef.current) return;
-            setSavePhase(null);
-            console.error("[StrokesGained] Save transport failed:", err);
-            trackEvent("round_save_failed", { error_type: "network" });
-            setSaveError({
-              type: "runtime",
-              message:
-                "Round could not be saved. Your results are still shown below.",
-            });
-          }
-        })();
-      }
-    }
 
     // Smooth scroll to results
     setTimeout(() => {
@@ -631,6 +536,19 @@ export default function StrokesGainedClient({
       </section>
       <div className="mx-auto max-w-3xl px-4 pb-10 sm:pb-14">
 
+      {/* Last round recall banner */}
+      {storedRound && !result && (
+        <div className="mt-6">
+          <LastRoundBanner
+            courseName={storedRound.input.course}
+            score={storedRound.input.score}
+            date={storedRound.input.date}
+            onRestore={handleRestore}
+            onDismiss={handleDismiss}
+          />
+        </div>
+      )}
+
       <div
         className="mt-10 rounded-xl border border-cream-200 bg-white p-6 shadow-md sm:p-8"
         data-testid="form-wrapper"
@@ -645,166 +563,10 @@ export default function StrokesGainedClient({
       >
         <RoundInputForm
           onSubmit={handleFormSubmit}
-          onSavePreferenceChange={setSaveOptInSelected}
           initialValues={initialInput}
           isCalculating={isCalculating}
-          isSaving={savePhase !== null}
-          saveEnabled={saveEnabled}
-          isAuthenticated={!!user}
         />
       </div>
-
-      {saveEnabled && turnstileSiteKey && saveOptInSelected && (
-        <TurnstileWidget ref={turnstileRef} siteKey={turnstileSiteKey} />
-      )}
-
-      {savePhase && (
-        <div
-          data-testid="save-pending"
-          role="status"
-          className="mt-6 rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
-        >
-          {savePhase === "verifying"
-            ? "Verifying you're human..."
-            : "Saving round..."}
-        </div>
-      )}
-
-      {saveSuccess && savedRoundOwned && (
-        <div
-          data-testid="save-success-authed"
-          className="mt-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4"
-        >
-          <div className="flex items-center gap-2 text-sm font-medium text-green-800">
-            <CircleCheck className="h-5 w-5 shrink-0" />
-            Round added to your history.
-          </div>
-          <Link
-            href="/strokes-gained/history"
-            onClick={() => trackEvent("history_link_clicked", { surface: "post_save_confirmation" })}
-            className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
-          >
-            {isFromHistory ? "See updated history" : "View your trends"} &rarr;
-          </Link>
-        </div>
-      )}
-
-      {saveSuccess && !savedRoundOwned && (
-        <div
-          data-testid="save-success"
-          role="status"
-          className="mt-6 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
-        >
-          <CircleCheck className="h-5 w-5 shrink-0" />
-          Round saved.
-        </div>
-      )}
-
-      {/* Post-save claim CTA — shown only for truly anonymous users (no client session) */}
-      {savedRoundId && savedClaimToken && !savedRoundOwned && !user && claimStatus === "idle" && (
-        <div
-          data-testid="claim-cta"
-          className="mt-6 rounded-xl border border-brand-200 bg-brand-50/50 px-5 py-4"
-        >
-          <p className="text-sm font-medium text-neutral-900">
-            Keep this round and track what changes
-          </p>
-          <p className="mt-1 text-xs text-neutral-600">
-            Create a free account to keep this round and see your SG trends, biggest mover, and round history over time.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setClaimAuthModalOpen(true);
-              trackEvent("auth_modal_opened", { surface: "post_save_claim_cta" });
-            }}
-            data-testid="claim-cta-btn"
-            className="mt-3 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
-          >
-            Create account
-          </button>
-        </div>
-      )}
-
-      {claimStatus === "claiming" && (
-        <div
-          data-testid="claim-pending"
-          role="status"
-          className="mt-6 rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
-        >
-          Linking round to your account...
-        </div>
-      )}
-
-      {claimStatus === "claimed" && (
-        <div
-          data-testid="claim-success"
-          className="mt-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4"
-        >
-          <p className="text-sm font-medium text-green-800">
-            Round linked to your account!
-          </p>
-          <Link
-            href="/strokes-gained/history"
-            className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
-          >
-            View your round history &rarr;
-          </Link>
-        </div>
-      )}
-
-      {claimStatus === "failed" && (
-        <div
-          data-testid="claim-error"
-          role="alert"
-          className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-        >
-          Could not link round to your account. Your results are still saved.
-        </div>
-      )}
-
-      <AuthModal
-        open={claimAuthModalOpen}
-        onClose={() => setClaimAuthModalOpen(false)}
-        onSuccess={handleClaimAuthSuccess}
-        onGoogleAuthStart={() => {
-          // Persist claim context just before Google OAuth redirects away.
-          // This key is consumed on the next mount to resume the claim.
-          if (savedRoundId && savedClaimToken) {
-            try {
-              localStorage.setItem(
-                "pending-oauth-claim",
-                JSON.stringify({ roundId: savedRoundId, claimToken: savedClaimToken })
-              );
-            } catch { /* localStorage unavailable */ }
-          }
-        }}
-      />
-
-      {saveError && (
-        <div
-          data-testid="save-error"
-          role="alert"
-          className={`mt-6 flex items-center justify-between rounded-md px-4 py-3 text-sm ${
-            saveError.type === "config"
-              ? "border border-neutral-200 bg-neutral-50 text-neutral-600"
-              : "border border-amber-200 bg-amber-50 text-amber-800"
-          }`}
-        >
-          <span>{saveError.message}</span>
-          <button
-            type="button"
-            onClick={() => setSaveError(null)}
-            className={`ml-4 font-medium ${
-              saveError.type === "config"
-                ? "text-neutral-500 hover:text-neutral-700"
-                : "text-amber-600 hover:text-amber-800"
-            }`}
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {result && chartData && lastInput && (
         <div
@@ -926,6 +688,143 @@ export default function StrokesGainedClient({
             Shared links include your entered round stats in encoded (reversible)
             form.
           </p>
+
+          {/* Post-results save CTA */}
+          {!saveSuccess && saveEnabled && (
+            <PostResultsSaveCta
+              input={lastInput}
+              turnstileSiteKey={turnstileSiteKey}
+              isAuthenticated={!!user}
+              onSaveComplete={(res) => {
+                setSavedRoundId(res.roundId);
+                setSavedRoundOwned(res.isOwned);
+                setSaveSuccess(true);
+                if (res.isOwned) {
+                  void createShareToken(res.roundId).then((tokenRes) => {
+                    if (tokenRes.success) setShareToken(tokenRes.token);
+                  });
+                }
+                if (!res.isOwned) {
+                  saveSuccessTimerRef.current = setTimeout(() => setSaveSuccess(false), 3000);
+                }
+                if (res.claimToken && !res.isOwned) {
+                  setSavedClaimToken(res.claimToken);
+                  try { localStorage.setItem(`claim:${res.roundId}`, JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })); } catch { /* localStorage unavailable */ }
+                }
+              }}
+            />
+          )}
+
+          {/* Save success — authenticated */}
+          {saveSuccess && savedRoundOwned && (
+            <div
+              data-testid="save-success-authed"
+              className="rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+            >
+              <div className="flex items-center gap-2 text-sm font-medium text-green-800">
+                <CircleCheck className="h-5 w-5 shrink-0" />
+                Round added to your history.
+              </div>
+              <Link
+                href="/strokes-gained/history"
+                onClick={() => trackEvent("history_link_clicked", { surface: "post_save_confirmation" })}
+                className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+              >
+                {isFromHistory ? "See updated history" : "View your trends"} &rarr;
+              </Link>
+            </div>
+          )}
+
+          {/* Save success — anonymous */}
+          {saveSuccess && !savedRoundOwned && (
+            <div
+              data-testid="save-success"
+              role="status"
+              className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+            >
+              <CircleCheck className="h-5 w-5 shrink-0" />
+              Round saved.
+            </div>
+          )}
+
+          {/* Post-save claim CTA — shown only for truly anonymous users (no client session) */}
+          {savedRoundId && savedClaimToken && !savedRoundOwned && !user && claimStatus === "idle" && (
+            <div
+              data-testid="claim-cta"
+              className="rounded-xl border border-brand-200 bg-brand-50/50 px-5 py-4"
+            >
+              <p className="text-sm font-medium text-neutral-900">
+                Keep this round and track what changes
+              </p>
+              <p className="mt-1 text-xs text-neutral-600">
+                Create a free account to keep this round and see your SG trends, biggest mover, and round history over time.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setClaimAuthModalOpen(true);
+                  trackEvent("auth_modal_opened", { surface: "post_save_claim_cta" });
+                }}
+                data-testid="claim-cta-btn"
+                className="mt-3 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+              >
+                Create account
+              </button>
+            </div>
+          )}
+
+          {claimStatus === "claiming" && (
+            <div
+              data-testid="claim-pending"
+              role="status"
+              className="rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
+            >
+              Linking round to your account...
+            </div>
+          )}
+
+          {claimStatus === "claimed" && (
+            <div
+              data-testid="claim-success"
+              className="rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+            >
+              <p className="text-sm font-medium text-green-800">
+                Round linked to your account!
+              </p>
+              <Link
+                href="/strokes-gained/history"
+                className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+              >
+                View your round history &rarr;
+              </Link>
+            </div>
+          )}
+
+          {claimStatus === "failed" && (
+            <div
+              data-testid="claim-error"
+              role="alert"
+              className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+              Could not link round to your account. Your results are still saved.
+            </div>
+          )}
+
+          <AuthModal
+            open={claimAuthModalOpen}
+            onClose={() => setClaimAuthModalOpen(false)}
+            onSuccess={handleClaimAuthSuccess}
+            onGoogleAuthStart={() => {
+              if (savedRoundId && savedClaimToken) {
+                try {
+                  localStorage.setItem(
+                    "pending-oauth-claim",
+                    JSON.stringify({ roundId: savedRoundId, claimToken: savedClaimToken })
+                  );
+                } catch { /* localStorage unavailable */ }
+              }
+            }}
+          />
 
           {/* Off-screen share card for PNG capture */}
           <div className="fixed left-[-9999px] top-0" aria-hidden="true">

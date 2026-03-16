@@ -61,7 +61,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     expect(rightBox.y).toBeLessThan(leftBox.y + leftBox.height);
   });
 
-  test("form shows compact trust module and save consent defaults to unchecked", async ({
+  test("form shows compact trust module", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -345,14 +345,23 @@ test.describe("Strokes Gained Benchmarker", () => {
     ).toBeVisible();
   });
 
-  test("unchecked save consent computes results without save banners", async ({
+  test("results render without pre-submit save banners", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
 
+    // Results should render
+    await expect(
+      page.getByText("Your Proxy SG Breakdown")
+    ).toBeVisible({ timeout: 5000 });
+
+    // Old save banners should not appear (no pre-submit checkbox)
     await expect(page.getByTestId("save-success")).not.toBeVisible();
-    await expect(page.getByTestId("save-error")).not.toBeVisible();
+    // Save checkbox should not be in the form
+    await expect(
+      page.getByLabel("Save this round to track over time")
+    ).not.toBeVisible();
   });
 
   test("submit button shows Calculating... while processing", async ({
@@ -591,5 +600,96 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(
       page.getByText("Your Proxy SG Breakdown")
     ).not.toBeVisible();
+  });
+
+  test("submit round, reload page, banner appears with course/score", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+
+    // Results should render
+    await expect(
+      page.getByText("Your Proxy SG Breakdown")
+    ).toBeVisible({ timeout: 5000 });
+
+    // Reload page — banner should appear
+    await page.goto("/strokes-gained");
+    await expect(
+      page.getByTestId("last-round-banner")
+    ).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.getByTestId("last-round-banner").getByText("Pacifica Sharp Park")
+    ).toBeVisible();
+    await expect(
+      page.getByTestId("last-round-banner").getByText("87")
+    ).toBeVisible();
+  });
+
+  test("clicking View Results on banner restores results and updates URL", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+
+    // Reload
+    await page.goto("/strokes-gained");
+    await expect(page.getByTestId("last-round-banner")).toBeVisible({ timeout: 5000 });
+
+    // Click View Results
+    await page.getByTestId("last-round-banner").getByRole("button", { name: /view results/i }).click();
+
+    // Results should appear and URL should update
+    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+    expect(page.url()).toContain("?d=");
+
+    // Banner should disappear
+    await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
+  });
+
+  test("clicking Dismiss on banner removes it and clears localStorage", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+
+    // Reload
+    await page.goto("/strokes-gained");
+    await expect(page.getByTestId("last-round-banner")).toBeVisible({ timeout: 5000 });
+
+    // Click Dismiss
+    await page.getByTestId("last-round-banner").getByRole("button", { name: /dismiss/i }).click();
+    await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
+
+    // Reload again — banner should not appear
+    await page.goto("/strokes-gained");
+    // Wait for form to load, then verify no banner
+    await expect(page.getByTestId("form-wrapper")).toBeVisible();
+    await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
+  });
+
+  test("banner does not appear with ?d= param", async ({ page }) => {
+    // First submit to populate localStorage
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    const dParam = new URL(page.url()).searchParams.get("d");
+
+    // Navigate with ?d= — banner should not appear
+    await page.goto(`/strokes-gained?d=${dParam}`);
+    await expect(page.getByText("Your Proxy SG Breakdown")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
+  });
+
+  test("banner does not appear with from=history", async ({ page }) => {
+    // First submit to populate localStorage
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+
+    // Navigate with from=history — banner should not appear
+    await page.goto("/strokes-gained?from=history");
+    await expect(page.getByTestId("form-wrapper")).toBeVisible();
+    await expect(page.getByTestId("last-round-banner")).not.toBeVisible();
   });
 });
