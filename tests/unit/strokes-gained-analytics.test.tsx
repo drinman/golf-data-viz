@@ -247,7 +247,7 @@ function renderClient(
   props: Partial<ComponentProps<typeof StrokesGainedClient>> = {}
 ) {
   return render(
-    <StrokesGainedClient turnstileSiteKey="site-key" {...props} />
+    <StrokesGainedClient turnstileSiteKey="site-key" sampleInput={mockInput} samplePreview={{ total: -1.5, chartData: [] as never, categories: [] as never, courseName: "Test", handicap: 14.3, bracketLabel: "10–15 HCP" }} {...props} />
   );
 }
 
@@ -453,8 +453,8 @@ describe("from=history adaptation", () => {
   });
 
   it("hides sample preview when from=history", () => {
-    renderClient({ from: "history", samplePreview: { totalSg: -1.5, categories: [] as never, courseName: "Test", score: 87, handicap: 14.3, bracketLabel: "10–15 HCP" } });
-    expect(screen.queryByTestId("compact-sample-preview")).not.toBeInTheDocument();
+    renderClient({ from: "history", samplePreview: { total: -1.5, chartData: [] as never, categories: [] as never, courseName: "Test", handicap: 14.3, bracketLabel: "10–15 HCP" } });
+    expect(screen.queryByTestId("sample-result-preview")).not.toBeInTheDocument();
   });
 });
 

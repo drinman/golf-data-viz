@@ -42,6 +42,6 @@ test.describe("Round History", () => {
       page.getByText(/Back to History/)
     ).toBeVisible();
     // Sample preview should not be visible
-    await expect(page.getByTestId("compact-sample-preview")).not.toBeVisible();
+    await expect(page.getByTestId("sample-result-preview")).not.toBeVisible();
   });
 });

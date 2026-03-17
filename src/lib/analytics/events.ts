@@ -4,6 +4,7 @@ import type { TroubleCause } from "@/lib/golf/trouble-context";
 export type AnalyticsEvent =
   | "landing_cta_clicked"
   | "sample_preview_cta_clicked"
+  | "sample_data_tried"
   | "form_started"
   | "calculation_completed"
   | "download_png_clicked"
@@ -68,6 +69,7 @@ type EmptyPayload = Record<never, never>;
 export type AnalyticsEventProps = {
   landing_cta_clicked: { utm_source?: string };
   sample_preview_cta_clicked: { utm_source?: string };
+  sample_data_tried: { utm_source?: string };
   form_started: { utm_source?: string };
   calculation_completed: { utm_source?: string };
   download_png_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null };

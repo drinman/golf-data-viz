@@ -10,24 +10,50 @@ test.describe("Strokes Gained Benchmarker", () => {
   const plusDisclosurePattern =
     /estimated below scratch using extrapolated peer data|Category benchmarks use scratch \(0 HCP\) peer data/;
 
-  test("compact sample preview is visible on SG page", async ({ page }) => {
+  test("sample result preview with radar chart is visible on SG page", async ({ page }) => {
     await page.goto("/strokes-gained");
-    const preview = page.getByTestId("compact-sample-preview");
+    const preview = page.getByTestId("sample-result-preview");
     await expect(preview).toBeVisible();
     await expect(preview.getByText("Torrey Pines South")).toBeVisible();
-    // Verify category labels are shown
-    await expect(preview.getByText("Off the Tee")).toBeVisible();
-    await expect(preview.getByText("Putting")).toBeVisible();
+    // Verify category labels are shown (use .first() — labels appear in both radar SVG and grid)
+    await expect(preview.getByText("Off the Tee").first()).toBeVisible();
+    await expect(preview.getByText("Putting").first()).toBeVisible();
     // Verify real sample output is rendered (not just headings)
     await expect(preview.getByText("Total SG")).toBeVisible();
     await expect(preview.getByText(/[+-]\d+\.\d{2}/).first()).toBeVisible();
-    // Confirm no SVG chart in compact version
-    await expect(preview.locator("svg")).toHaveCount(0);
-    // Confirm compact preview appears before the trust panel
+    // Full preview includes SVG radar chart
+    await expect(preview.locator("svg").first()).toBeVisible();
+    // Confirm preview appears before the trust panel
     const previewBox = await preview.boundingBox();
     const trustPanel = page.locator('section[aria-label="What this is"]');
     const trustBox = await trustPanel.boundingBox();
     expect(previewBox!.y).toBeLessThan(trustBox!.y);
+  });
+
+  test("'Try with Sample Data' button produces results and hides preview", async ({ page }) => {
+    await page.goto("/strokes-gained");
+
+    // Button should be visible
+    const tryBtn = page.getByTestId("try-sample-btn");
+    await expect(tryBtn).toBeVisible();
+    await expect(tryBtn).toContainText("Try with Sample Data");
+
+    // Click it
+    await tryBtn.click();
+
+    // Results should appear
+    await expect(
+      page.getByText("Your Round Breakdown")
+    ).toBeVisible({ timeout: 5000 });
+
+    // Preview should be hidden
+    await expect(page.getByTestId("sample-result-preview")).not.toBeVisible();
+    await expect(tryBtn).not.toBeVisible();
+
+    // Form should be populated with sample data
+    await expect(page.locator('[name="course"]')).toHaveValue("Torrey Pines South");
+    await expect(page.locator('[name="score"]')).toHaveValue("87");
+    await expect(page.locator('[name="handicapIndex"]')).toHaveValue("14.3");
   });
 
   test("course info row stays in a two-column desktop layout", async ({
@@ -710,7 +736,8 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(headerBand).toBeVisible();
     await expect(headerBand.getByText("87")).toBeVisible();
     await expect(headerBand.getByText("Pacifica Sharp Park")).toBeVisible();
-    await expect(headerBand.getByText(/[+-]\d+\.\d{2}/)).toBeVisible();
+    // SG value renders twice (mobile inline + desktop circle badge); desktop one is last
+    await expect(headerBand.getByText(/[+-]\d+\.\d{2}/).last()).toBeVisible();
     await expect(headerBand.getByText(/14\.3 index/)).toBeVisible();
     await expect(headerBand.getByText(/10\u201315 HCP/)).toBeVisible();
   });

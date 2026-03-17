@@ -42,7 +42,7 @@ import { RadarChart } from "@/components/charts/radar-chart";
 import { readStoredRound, LAST_ROUND_KEY, type StoredRound } from "@/lib/golf/local-storage";
 import { saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
-import { CompactSamplePreview } from "@/components/compact-sample-preview";
+import { SampleResultPreview } from "@/components/sample-result-preview";
 import { ContourBg } from "@/components/contour-bg";
 import type { SamplePreviewData } from "@/lib/golf/sample-round";
 import { AuthModal } from "@/components/auth/auth-modal";
@@ -62,7 +62,8 @@ interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
   saveEnabled?: boolean;
   turnstileSiteKey?: string | null;
-  samplePreview?: SamplePreviewData;
+  samplePreview: SamplePreviewData;
+  sampleInput: RoundInput;
   from?: "history";
 }
 
@@ -81,6 +82,7 @@ export default function StrokesGainedClient({
   saveEnabled = true,
   turnstileSiteKey = null,
   samplePreview,
+  sampleInput,
   from,
 }: StrokesGainedClientProps) {
   // from=history adaptation: show returning-user copy unless viewing a shared link
@@ -126,6 +128,8 @@ export default function StrokesGainedClient({
   const [claimAuthModalOpen, setClaimAuthModalOpen] = useState(false);
   const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "failed">("idle");
   const [storedRound, setStoredRound] = useState<StoredRound | null>(null);
+  const [formKey, setFormKey] = useState(0);
+  const [formInitialValues, setFormInitialValues] = useState<RoundInput | null | undefined>(initialInput);
   const { user } = useSupabaseUser();
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
@@ -136,6 +140,7 @@ export default function StrokesGainedClient({
   const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+  const isSampleSubmitRef = useRef(false);
   const claimRequestInFlightRef = useRef(false);
 
   if (
@@ -272,6 +277,19 @@ export default function StrokesGainedClient({
     try { localStorage.removeItem(LAST_ROUND_KEY); } catch { /* ok */ }
   }
 
+  function handleTrySample() {
+    // Ensure form_started fires before calculation_completed for correct funnel ordering
+    if (!formStartedRef.current) {
+      formStartedRef.current = true;
+      trackEvent("form_started", { utm_source: getAttributionUtmSource() });
+    }
+    trackEvent("sample_data_tried", { utm_source: getAttributionUtmSource() });
+    isSampleSubmitRef.current = true;
+    setFormInitialValues(sampleInput);
+    setFormKey((k) => k + 1);
+    handleFormSubmit(sampleInput);
+  }
+
   function handleFormSubmit(input: RoundInput) {
     setIsCalculating(true);
 
@@ -343,16 +361,24 @@ export default function StrokesGainedClient({
       });
     }
 
-    // Update URL with shareable param (no navigation)
-    const encoded = encodeRound(input);
-    window.history.replaceState(null, "", `?d=${encoded}`);
+    // Skip URL and localStorage persistence for sample data — the user
+    // didn't enter this round so it shouldn't pollute their recall banner
+    // or produce a shareable URL with canned data.
+    const isSample = isSampleSubmitRef.current;
+    isSampleSubmitRef.current = false;
 
-    // Persist to localStorage for recall on return visits
-    try {
-      localStorage.setItem(LAST_ROUND_KEY, JSON.stringify({
-        input, result: sgResult, chartData: radar, timestamp: new Date().toISOString(),
-      }));
-    } catch { /* localStorage unavailable */ }
+    if (!isSample) {
+      // Update URL with shareable param (no navigation)
+      const encoded = encodeRound(input);
+      window.history.replaceState(null, "", `?d=${encoded}`);
+
+      // Persist to localStorage for recall on return visits
+      try {
+        localStorage.setItem(LAST_ROUND_KEY, JSON.stringify({
+          input, result: sgResult, chartData: radar, timestamp: new Date().toISOString(),
+        }));
+      } catch { /* localStorage unavailable */ }
+    }
 
     // Clear stored round banner if visible
     setStoredRound(null);
@@ -549,9 +575,18 @@ export default function StrokesGainedClient({
             </>
           )}
 
-          {!isFromHistory && samplePreview && (
-            <div className="mt-8">
-              <CompactSamplePreview {...samplePreview} />
+          {/* Hero cascade: h1=100ms, subhead=200ms, preview=300ms, button=400ms */}
+          {!isFromHistory && samplePreview && !result && (
+            <div className="animate-fade-up [animation-delay:300ms] mt-8">
+              <SampleResultPreview {...samplePreview} />
+              <button
+                type="button"
+                data-testid="try-sample-btn"
+                onClick={handleTrySample}
+                className="animate-fade-up [animation-delay:400ms] mt-4 w-full rounded-lg border-2 border-brand-800/20 bg-white px-4 py-3 text-sm font-semibold text-brand-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-800/40 hover:bg-brand-50 hover:shadow-md active:translate-y-0"
+              >
+                Try with Sample Data
+              </button>
             </div>
           )}
 
@@ -586,8 +621,9 @@ export default function StrokesGainedClient({
         }}
       >
         <RoundInputForm
+          key={formKey}
           onSubmit={handleFormSubmit}
-          initialValues={initialInput}
+          initialValues={formInitialValues}
           isCalculating={isCalculating}
         />
       </div>

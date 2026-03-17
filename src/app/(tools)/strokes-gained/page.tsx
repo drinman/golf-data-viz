@@ -95,6 +95,7 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
       saveEnabled={saveEnabled}
       turnstileSiteKey={turnstileSiteKey}
       samplePreview={sample.preview}
+      sampleInput={sample.input}
       from={from}
     />
   );
