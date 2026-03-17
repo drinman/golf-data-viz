@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getRoundByShareToken } from "@/lib/golf/round-queries";
 import { formatHandicap, findWeakestCategory } from "@/lib/golf/format";
 import { SharedRoundClient } from "./_components/shared-round-client";
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const snapshot = await getRoundByShareToken(token);
 
   if (!snapshot) {
-    return { title: "Round Not Found" };
+    return { title: "Round Not Found", robots: { index: false, follow: false } };
   }
 
   const title = `Shot ${snapshot.score} at ${snapshot.courseName}`;
@@ -46,16 +47,7 @@ export default async function SharedRoundPage({ params }: PageProps) {
   const snapshot = await getRoundByShareToken(token);
 
   if (!snapshot) {
-    return (
-      <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="font-display text-2xl text-neutral-950">
-          Round Not Available
-        </h1>
-        <p className="mt-2 text-neutral-500">
-          This shared round link is invalid or has been removed.
-        </p>
-      </main>
-    );
+    notFound();
   }
 
   return <SharedRoundClient snapshot={snapshot} />;

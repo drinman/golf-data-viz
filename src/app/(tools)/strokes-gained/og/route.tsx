@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
           </div>
         </div>
       ),
-      { ...SIZE, ...fontOption }
+      { ...SIZE, ...fontOption, headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } }
     );
   }
 
@@ -236,6 +236,6 @@ export async function GET(request: NextRequest) {
         </div>
       </div>
     ),
-    { ...SIZE, ...fontOption }
+    { ...SIZE, ...fontOption, headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } }
   );
 }

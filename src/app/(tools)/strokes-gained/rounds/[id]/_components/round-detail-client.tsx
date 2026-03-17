@@ -21,6 +21,9 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const [linkCopied, setLinkCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     trackEvent("round_detail_viewed", {
@@ -42,11 +45,37 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
 
   function handleCopyShareLink() {
     startTransition(async () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+
       const result = await createShareToken(snapshot.roundId);
       if (result.success) {
-        await navigator.clipboard.writeText(result.shareUrl);
-        setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
+        try {
+          await navigator.clipboard.writeText(result.shareUrl);
+          setCopyFailed(false);
+          setLinkCopied(true);
+          copyTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
+        } catch {
+          // Fallback: hidden textarea + execCommand
+          const textarea = document.createElement("textarea");
+          textarea.value = result.shareUrl;
+          textarea.style.position = "fixed";
+          textarea.style.left = "-9999px";
+          document.body.appendChild(textarea);
+          try {
+            textarea.select();
+            const ok = document.execCommand("copy");
+            if (!ok) throw new Error("execCommand returned false");
+            setCopyFailed(false);
+            setLinkCopied(true);
+            copyTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
+          } catch {
+            setLinkCopied(false);
+            setCopyFailed(true);
+            copyTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
+          } finally {
+            document.body.removeChild(textarea);
+          }
+        }
         trackEvent("share_link_copied", {
           round_id: snapshot.roundId,
           surface: "round_detail",
@@ -56,6 +85,9 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
             round_id: snapshot.roundId,
           });
         }
+      } else {
+        setCopyError(true);
+        copyTimerRef.current = setTimeout(() => setCopyError(false), 2000);
       }
     });
   }
@@ -100,9 +132,17 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
               type="button"
               onClick={handleCopyShareLink}
               disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-800 shadow-sm transition-colors hover:bg-brand-100 disabled:opacity-50"
+              className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 ${
+                copyFailed || copyError
+                  ? "border-red-200 bg-red-50 text-red-700"
+                  : "border-brand-200 bg-brand-50 text-brand-800 hover:bg-brand-100"
+              }`}
             >
-              {linkCopied ? (
+              {copyFailed ? (
+                "Failed to copy"
+              ) : copyError ? (
+                "Link failed"
+              ) : linkCopied ? (
                 <>
                   <Check className="h-4 w-4" />
                   Copied!
