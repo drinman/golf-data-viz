@@ -22,7 +22,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         <ContourBg className="text-brand-900" />
         <div
           data-testid="hero-content"
-          className="relative mx-auto max-w-4xl"
+          className="relative mx-auto max-w-3xl"
         >
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.18em] text-brand-800 sm:text-sm sm:tracking-[0.22em]">
             Strokes Gained Benchmarker
@@ -45,7 +45,10 @@ export default async function Home({ searchParams }: HomePageProps) {
 
       {/* Sample preview */}
       <section data-testid="sample-preview" className="border-t border-cream-200 px-4 py-14 sm:py-16">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
+            See what your scorecard reveals
+          </h2>
           <p className="mt-2 text-sm text-neutral-600">
             A strokes gained breakdown showing where your score separated from your peers.
           </p>
@@ -63,8 +66,8 @@ export default async function Home({ searchParams }: HomePageProps) {
       </section>
 
       {/* Social proof bar */}
-      <section data-testid="social-proof-bar" className="bg-brand-800 px-4 py-5">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center
+      <section data-testid="social-proof-bar" className="bg-brand-900 px-4 py-5">
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center
           gap-x-6 gap-y-2 text-xs font-medium uppercase tracking-[0.15em] text-cream-100/80 sm:gap-x-8">
           <span>Compared against amateur peers, not Tour pros</span>
           <span className="hidden sm:inline text-accent-500/60" aria-hidden="true">&bull;</span>
@@ -75,8 +78,8 @@ export default async function Home({ searchParams }: HomePageProps) {
       </section>
 
       {/* How it works */}
-      <section data-testid="how-it-works" className="border-t border-cream-200 px-4 py-20 sm:py-24">
-        <div className="mx-auto max-w-4xl">
+      <section data-testid="how-it-works" className="px-4 py-20 sm:py-24">
+        <div className="mx-auto max-w-3xl">
           <h2 className="animate-fade-up delay-3 font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
             How it works
           </h2>
@@ -125,11 +128,11 @@ export default async function Home({ searchParams }: HomePageProps) {
         data-testid="what-is-sg"
         className="border-t border-cream-200 px-4 py-20 sm:py-24"
       >
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-3xl">
           <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
             What is Strokes Gained?
           </h2>
-          <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-neutral-600 sm:text-base">
+          <div className="mt-6 space-y-4 text-sm leading-relaxed text-neutral-600 sm:text-base">
             <p>
               Strokes Gained breaks your score into categories and measures each
               against golfers at your level. Instead of just knowing your total,
