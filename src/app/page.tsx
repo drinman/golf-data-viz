@@ -63,13 +63,13 @@ export default async function Home({ searchParams }: HomePageProps) {
       </section>
 
       {/* Social proof bar */}
-      <section data-testid="social-proof-bar" className="border-t border-cream-200 bg-cream-100 px-4 py-5">
+      <section data-testid="social-proof-bar" className="bg-brand-900 px-4 py-5">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center
-          gap-x-8 gap-y-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
+          gap-x-6 gap-y-2 text-xs font-medium uppercase tracking-[0.15em] text-cream-100/80 sm:gap-x-8">
           <span>Compared against amateur peers, not Tour pros</span>
-          <span className="hidden sm:inline text-cream-200">|</span>
+          <span className="hidden sm:inline text-accent-500/60" aria-hidden="true">&bull;</span>
           <span>Open methodology &amp; published data sources</span>
-          <span className="hidden sm:inline text-cream-200">|</span>
+          <span className="hidden sm:inline text-accent-500/60" aria-hidden="true">&bull;</span>
           <span>Free — no account required</span>
         </div>
       </section>
