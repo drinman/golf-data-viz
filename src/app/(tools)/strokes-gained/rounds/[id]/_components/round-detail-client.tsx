@@ -21,9 +21,15 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const [linkCopied, setLinkCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
-  const [copyError, setCopyError] = useState(false);
+  const [clipboardFailed, setClipboardFailed] = useState(false);
+  const [tokenError, setTokenError] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     trackEvent("round_detail_viewed", {
@@ -49,11 +55,10 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
 
       const result = await createShareToken(snapshot.roundId);
       if (result.success) {
+        let copied = false;
         try {
           await navigator.clipboard.writeText(result.shareUrl);
-          setCopyFailed(false);
-          setLinkCopied(true);
-          copyTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
+          copied = true;
         } catch {
           // Fallback: hidden textarea + execCommand
           const textarea = document.createElement("textarea");
@@ -65,29 +70,36 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
             textarea.select();
             const ok = document.execCommand("copy");
             if (!ok) throw new Error("execCommand returned false");
-            setCopyFailed(false);
-            setLinkCopied(true);
-            copyTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
+            copied = true;
           } catch {
-            setLinkCopied(false);
-            setCopyFailed(true);
-            copyTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
+            // both methods failed
           } finally {
             document.body.removeChild(textarea);
           }
         }
-        trackEvent("share_link_copied", {
-          round_id: snapshot.roundId,
-          surface: "round_detail",
-        });
+
+        if (copied) {
+          setClipboardFailed(false);
+          setLinkCopied(true);
+          copyTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
+          trackEvent("share_link_copied", {
+            round_id: snapshot.roundId,
+            surface: "round_detail",
+          });
+        } else {
+          setLinkCopied(false);
+          setClipboardFailed(true);
+          copyTimerRef.current = setTimeout(() => setClipboardFailed(false), 2000);
+        }
+
         if (result.created) {
           trackEvent("share_token_created", {
             round_id: snapshot.roundId,
           });
         }
       } else {
-        setCopyError(true);
-        copyTimerRef.current = setTimeout(() => setCopyError(false), 2000);
+        setTokenError(true);
+        copyTimerRef.current = setTimeout(() => setTokenError(false), 2000);
       }
     });
   }
@@ -133,14 +145,14 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
               onClick={handleCopyShareLink}
               disabled={isPending}
               className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 ${
-                copyFailed || copyError
+                clipboardFailed || tokenError
                   ? "border-red-200 bg-red-50 text-red-700"
                   : "border-brand-200 bg-brand-50 text-brand-800 hover:bg-brand-100"
               }`}
             >
-              {copyFailed ? (
+              {clipboardFailed ? (
                 "Failed to copy"
-              ) : copyError ? (
+              ) : tokenError ? (
                 "Link failed"
               ) : linkCopied ? (
                 <>
