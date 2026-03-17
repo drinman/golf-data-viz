@@ -63,7 +63,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       </section>
 
       {/* Social proof bar */}
-      <section data-testid="social-proof-bar" className="bg-brand-900 px-4 py-5">
+      <section data-testid="social-proof-bar" className="bg-brand-800 px-4 py-5">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center
           gap-x-6 gap-y-2 text-xs font-medium uppercase tracking-[0.15em] text-cream-100/80 sm:gap-x-8">
           <span>Compared against amateur peers, not Tour pros</span>
