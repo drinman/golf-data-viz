@@ -774,4 +774,18 @@ test.describe("Strokes Gained Benchmarker", () => {
     await page.goto("/strokes-gained?from=history");
     await expect(page.getByTestId("shared-link-header")).not.toBeVisible();
   });
+
+  test("complete funnel: form submit → results with bracket label → share button available", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+
+    // Results prove calculation_completed path ran
+    await expect(page.getByText("Your Round Breakdown")).toBeVisible({ timeout: 5000 });
+    // Bracket label proves enriched context is available
+    await expect(page.getByText("Compared to 10\u201315 HCP")).toBeVisible();
+    // Share button proves share path is reachable
+    await expect(page.getByTestId("copy-link")).toBeVisible();
+  });
 });

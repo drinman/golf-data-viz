@@ -327,13 +327,17 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     });
   });
 
-  it("fires calculation_completed with utm attribution on submit", async () => {
+  it("fires calculation_completed with enriched payload on submit", async () => {
     renderClient();
 
     await userEvent.click(screen.getByTestId("mock-submit"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith("calculation_completed", {
       utm_source: "reddit",
+      handicap_bracket: "10-15",
+      has_course_rating: true,
+      total_sg: -1.5,
+      methodology_version: "3.0.0",
     });
   });
 

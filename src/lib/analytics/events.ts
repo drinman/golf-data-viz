@@ -62,7 +62,15 @@ export type AnalyticsEvent =
   | "narrative_copied"
   | "post_results_save_cta_viewed"
   | "post_results_save_cta_clicked"
-  | "local_round_restored";
+  | "local_round_restored"
+  | "download_receipt_clicked"
+  | "shared_round_cta_clicked"
+  | "recipient_started_own_calc"
+  | "recipient_completed_own_calc"
+  | "probability_calculated"
+  | "widget_cta_clicked"
+  | "referral_tier_unlocked"
+  | "pwa_installed";
 
 type EmptyPayload = Record<never, never>;
 
@@ -71,7 +79,13 @@ export type AnalyticsEventProps = {
   sample_preview_cta_clicked: { utm_source?: string };
   sample_data_tried: { utm_source?: string };
   form_started: { utm_source?: string };
-  calculation_completed: { utm_source?: string };
+  calculation_completed: {
+    utm_source?: string;
+    handicap_bracket: string;
+    has_course_rating: boolean;
+    total_sg: number;
+    methodology_version: string;
+  };
   download_png_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null };
   copy_link_clicked: { share_type: "canonical" | "encoded"; surface: "results_page"; utm_source?: string; headline_pattern?: string | null };
   shared_round_viewed: { referrer: string; utm_source: string };
@@ -193,6 +207,14 @@ export type AnalyticsEventProps = {
   post_results_save_cta_viewed: EmptyPayload;
   post_results_save_cta_clicked: EmptyPayload;
   local_round_restored: EmptyPayload;
+  download_receipt_clicked: EmptyPayload;
+  shared_round_cta_clicked: EmptyPayload;
+  recipient_started_own_calc: EmptyPayload;
+  recipient_completed_own_calc: EmptyPayload;
+  probability_calculated: EmptyPayload;
+  widget_cta_clicked: EmptyPayload;
+  referral_tier_unlocked: EmptyPayload;
+  pwa_installed: EmptyPayload;
 };
 
 type RequiredKeys<T extends object> = {
