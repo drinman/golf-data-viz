@@ -181,12 +181,13 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <footer className="mt-16 border-t border-neutral-200 pt-6 pb-8">
+      </div>
+
+      <footer className="mx-auto max-w-3xl px-4 mt-16 border-t border-neutral-200 pt-6 pb-8">
         <p className="text-xs italic leading-relaxed text-neutral-400">
           This policy applies to golfdataviz.com. Last updated {EFFECTIVE_DATE}.
         </p>
       </footer>
-      </div>
     </main>
   );
 }
