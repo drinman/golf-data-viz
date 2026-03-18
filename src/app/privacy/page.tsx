@@ -11,24 +11,29 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="font-display text-3xl tracking-tight text-neutral-950">
-        Privacy Policy
-      </h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        Effective {EFFECTIVE_DATE}
-      </p>
+    <main>
+      {/* ── Hero ── */}
+      <div className="border-b border-cream-200 bg-cream-50">
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+          <h1 className="font-display text-3xl tracking-tight text-neutral-950 sm:text-4xl">
+            Privacy Policy
+          </h1>
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-neutral-600">
+            Golf Data Viz is built by a golfer, for golfers. It is a free,
+            post-round benchmark built from the scorecard stats you enter
+            manually. We collect only what we need to show your peer-compared
+            results and support the product.
+          </p>
+          <p className="mt-3 text-sm text-neutral-500">
+            Effective {EFFECTIVE_DATE}
+          </p>
+        </div>
+      </div>
 
-      <p className="mt-6 text-sm text-neutral-600">
-        Golf Data Viz is built by a golfer, for golfers. It is a free,
-        post-round benchmark built from the scorecard stats you enter
-        manually. We collect only what we need to show your peer-compared
-        results and support the product.
-      </p>
-
+      <div className="mx-auto max-w-3xl px-4 py-10">
       {/* What we collect */}
       <section
-        className="mt-10 border-t border-cream-200 pt-8"
+        className="scroll-mt-8"
         data-testid="privacy-collect"
       >
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
@@ -179,10 +184,11 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <div className="mt-12 border-t border-neutral-200 pt-6">
-        <p className="text-xs italic text-neutral-400">
+      <footer className="mt-16 border-t border-neutral-200 pt-6 pb-8">
+        <p className="text-xs italic leading-relaxed text-neutral-400">
           This policy applies to golfdataviz.com. Last updated {EFFECTIVE_DATE}.
         </p>
+      </footer>
       </div>
     </main>
   );
