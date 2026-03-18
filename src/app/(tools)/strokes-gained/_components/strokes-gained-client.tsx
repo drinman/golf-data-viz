@@ -317,6 +317,10 @@ export default function StrokesGainedClient({
 
     trackEvent("calculation_completed", {
       utm_source: getAttributionUtmSource(),
+      handicap_bracket: sgResult.benchmarkBracket,
+      has_course_rating: input.courseRating > 0,
+      total_sg: sgResult.total,
+      methodology_version: sgResult.methodologyVersion,
     });
     if (sgResult.estimatedCategories.length > 0) {
       trackEvent("gir_estimated");
