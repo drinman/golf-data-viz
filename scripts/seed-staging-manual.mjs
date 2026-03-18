@@ -4,6 +4,8 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
 const DEFAULT_STAGING_BASE_URL = "https://staging.golfdataviz.com";
+const STAGING_SUPABASE_REF = "uxelgkeagzjnwmjspcda";
+const STAGING_SUPABASE_HOSTNAME = `${STAGING_SUPABASE_REF}.supabase.co`;
 const CURRENT_METHODOLOGY_VERSION = "3.1.0";
 const LEGACY_METHODOLOGY_VERSION = "2.0.0";
 const BENCHMARK_VERSION = "1.0.0";
@@ -70,6 +72,31 @@ function requireEnv(name) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
+}
+
+function assertStagingSupabaseUrl(stagingUrl) {
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(stagingUrl);
+  } catch {
+    throw new Error(
+      `STAGING_SUPABASE_URL must be a valid URL. Got: ${stagingUrl}`
+    );
+  }
+
+  if (parsedUrl.protocol !== "https:") {
+    throw new Error(
+      `STAGING_SUPABASE_URL must use https. Got: ${stagingUrl}`
+    );
+  }
+
+  if (parsedUrl.hostname !== STAGING_SUPABASE_HOSTNAME) {
+    throw new Error(
+      `STAGING_SUPABASE_URL must target ${STAGING_SUPABASE_HOSTNAME}. ` +
+      `Got hostname: ${parsedUrl.hostname}. Refusing to seed — this may be pointing at the wrong project.`
+    );
+  }
 }
 
 function createTimestamp(date, hour) {
@@ -677,7 +704,9 @@ async function expectNoError(step, promise) {
 
 async function findUserByEmail(supabase, email) {
   let page = 1;
-  const perPage = 200;
+  const perPage = 1;
+  let consecutiveEmptyPages = 0;
+  let skippedErrorPages = 0;
 
   while (true) {
     const { data, error } = await supabase.auth.admin.listUsers({
@@ -686,7 +715,13 @@ async function findUserByEmail(supabase, email) {
     });
 
     if (error) {
-      throw new Error(`Failed to list auth users: ${error.message}`);
+      skippedErrorPages += 1;
+      if (skippedErrorPages > 10) {
+        throw new Error(`Failed to list auth users: ${error.message}`);
+      }
+
+      page += 1;
+      continue;
     }
 
     const match = data.users.find((user) => user.email === email);
@@ -694,8 +729,13 @@ async function findUserByEmail(supabase, email) {
       return match;
     }
 
-    if (data.users.length < perPage) {
-      return null;
+    if (data.users.length === 0) {
+      consecutiveEmptyPages += 1;
+      if (consecutiveEmptyPages >= 3) {
+        return null;
+      }
+    } else {
+      consecutiveEmptyPages = 0;
     }
 
     page += 1;
@@ -826,13 +866,7 @@ async function main() {
     );
   }
 
-  const STAGING_SUPABASE_REF = "uxelgkeagzjnwmjspcda";
-  if (!stagingUrl.includes(STAGING_SUPABASE_REF)) {
-    throw new Error(
-      `STAGING_SUPABASE_URL does not contain the staging project ref (${STAGING_SUPABASE_REF}). ` +
-      `Got: ${stagingUrl}. Refusing to seed — this may be pointing at production.`
-    );
-  }
+  assertStagingSupabaseUrl(stagingUrl);
 
   const supabase = createClient(stagingUrl, serviceRoleKey, {
     auth: {

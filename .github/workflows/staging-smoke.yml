@@ -41,15 +41,16 @@ jobs:
           VERCEL_PROJECT_ID: prj_JEOpUisLp4LxNSF0o1qvuxR2QJl1
           VERCEL_TEAM_ID: team_AusQ5gpKE0lhKnMzvHXNp29m
           EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_REF: ${{ github.ref_name }}
         run: |
           for attempt in {1..60}; do
             # Staging branch deploys are preview deploys in Vercel (only main is "production").
-            # Query recent deployments without a target filter and match on commit SHA.
+            # Query recent deployments without a target filter and match on commit SHA + branch.
             deploy=$(curl -sS \
               -H "Authorization: Bearer ${VERCEL_TOKEN}" \
-              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=5" \
-              | jq -r --arg sha "${EXPECTED_SHA}" \
-                '.deployments[] | select(.meta.githubCommitSha == $sha) // empty')
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=20" \
+              | jq -c --arg sha "${EXPECTED_SHA}" --arg ref "${EXPECTED_REF}" \
+                '[.deployments[] | select(.meta.githubCommitSha == $sha and .meta.githubCommitRef == $ref)] | first // empty')
 
             if [ -n "${deploy}" ]; then
               state=$(echo "${deploy}" | jq -r '.readyState // empty')
@@ -58,9 +59,9 @@ jobs:
                 echo "staging deploy ${EXPECTED_SHA:0:7} is READY"
                 exit 0
               fi
-              echo "attempt ${attempt}: deploy found, state=${state} (want READY)"
+              echo "attempt ${attempt}: ${EXPECTED_REF} deployment found, state=${state} (want READY)"
             else
-              echo "attempt ${attempt}: no deployment for ${EXPECTED_SHA:0:7} yet"
+              echo "attempt ${attempt}: no ${EXPECTED_REF} deployment for ${EXPECTED_SHA:0:7} yet"
             fi
             sleep 10
           done
