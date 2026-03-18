@@ -34,22 +34,36 @@ jobs:
 
       - run: npx playwright install --with-deps chromium webkit
 
-      - name: Wait for protected staging deployment
+      - name: Wait for staging deployment matching this commit
         shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: prj_JEOpUisLp4LxNSF0o1qvuxR2QJl1
+          VERCEL_TEAM_ID: team_AusQ5gpKE0lhKnMzvHXNp29m
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
-          for attempt in {1..30}; do
-            status=$(curl -sS -o /dev/null -w "%{http_code}" \
-              -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
-              -H "x-vercel-set-bypass-cookie: true" \
-              "${PLAYWRIGHT_BASE_URL}/")
-            if [ "${status}" = "200" ]; then
-              echo "staging is ready"
-              exit 0
+          for attempt in {1..60}; do
+            # Query Vercel for the latest production deployment on this project
+            deploy=$(curl -sS \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&target=production&limit=1" \
+              | jq -r '.deployments[0] // empty')
+
+            if [ -n "${deploy}" ]; then
+              sha=$(echo "${deploy}" | jq -r '.meta.githubCommitSha // empty')
+              state=$(echo "${deploy}" | jq -r '.readyState // empty')
+
+              if [ "${sha}" = "${EXPECTED_SHA}" ] && [ "${state}" = "READY" ]; then
+                echo "staging deploy ${sha:0:7} is READY"
+                exit 0
+              fi
+              echo "attempt ${attempt}: latest deploy sha=${sha:0:7} state=${state} (want ${EXPECTED_SHA:0:7} READY)"
+            else
+              echo "attempt ${attempt}: no deployments found yet"
             fi
-            echo "staging not ready yet (status ${status}), retrying..."
             sleep 10
           done
-          echo "staging never became ready"
+          echo "timed out waiting for staging deploy of ${EXPECTED_SHA:0:7}"
           exit 1
 
       - name: Run remote browser smoke

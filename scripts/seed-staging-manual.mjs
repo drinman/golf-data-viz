@@ -826,6 +826,14 @@ async function main() {
     );
   }
 
+  const STAGING_SUPABASE_REF = "uxelgkeagzjnwmjspcda";
+  if (!stagingUrl.includes(STAGING_SUPABASE_REF)) {
+    throw new Error(
+      `STAGING_SUPABASE_URL does not contain the staging project ref (${STAGING_SUPABASE_REF}). ` +
+      `Got: ${stagingUrl}. Refusing to seed — this may be pointing at production.`
+    );
+  }
+
   const supabase = createClient(stagingUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
