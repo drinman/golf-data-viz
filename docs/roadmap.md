@@ -1,163 +1,137 @@
-# Golf Data Viz — Product Roadmap
+# Golf Data Viz — Product Roadmap (v2)
 
-## Vision
+> **Supersedes previous roadmap.** Based on 2-round research sprint completed 2026-03-17.
 
-Shareable golf analytics tools for the 14-handicap golfer. Build the visual language of amateur golf data — the way Kirk Goldsberry's shot charts became the visual language of basketball.
+## Thesis
 
-## Strategic Principles
+**GolfDataViz is the free golf analytics website** — a collection of fast, shareable golf tools that golfers find through search and share through group chats. Not a dashboard. Not a single calculator. A site where every output is designed to travel.
 
-1. **Ship shareable output first, features second.** The shareable image IS the growth engine. Design for screenshotting before designing for UX completeness.
-2. **Don't build Tool #2 until Tool #1 validates shareability.** The binary signal: do people organically screenshot and share the radar chart output?
-3. **Benchmark against peers, never Tour pros.** A 14-handicap comparing themselves to Scottie Scheffler is useless. Every visualization benchmarks against the user's handicap bracket.
-4. **Design the data layer for round history from day one.** The Blow-Up Hole Eliminator and Practice-Play Bridge require multi-round data. Schema supports this even if the MVP is single-round.
-5. **Use r/golf as the validation channel.** Nearly 1M subscribers, hostile to self-promo, receptive to genuinely useful tools. Organic sharing there is the signal.
-6. **Build tools that make content, not content about tools.** Users generate shareable visual content by using the tool. The tool output *is* the marketing.
+Four growth engines, not one:
+1. **SEO** — each tool and benchmark page is a landing page
+2. **Sharing** — every output is a shareable artifact
+3. **Embeds** — widget distribution through golf blogs
+4. **Community** — Reddit + newsletter (supplementary, not primary)
 
----
+## Strategic Shifts From v1
 
-## Now (Weeks 1–8): Strokes Gained Benchmarker → r/golf Validation
-
-The goal of this phase is a single thing: **ship a free web tool that produces a shareable visual showing where a golfer gains and loses strokes vs their handicap peers.**
-
-### Milestone 1: Working Calculator (Weeks 1–3)
-
-| Item | Description |
-|------|-------------|
-| SG calculation engine | Pure functions in `src/lib/golf/strokes-gained.ts`. Derive 4-category SG (OTT, approach, ATG, putting) from aggregate round stats + peer bracket benchmarks. Fully unit tested. |
-| Benchmark data loader | Load bracket JSON, look up correct bracket by handicap index. Snap-to-nearest for v1 (interpolation later). |
-| Round input form | Mobile-first form. All `RoundInput` fields. Progressive disclosure: basic stats first, "More Stats" expands optional fields. Zod validation with cross-field constraints (scoring must sum to 18, etc.). |
-| Radar chart | Nivo `@nivo/radar` wrapper. 4 axes. Two series: player vs peer average. Gain/loss color coding. Responsive 320px–1440px. |
-| End-to-end pipeline | Form → calculate → display. Working locally. |
-
-**Exit criteria:** A user can input their round, see a radar chart comparing them to their handicap peers, and understand where they gain/lose strokes.
-
-### Milestone 2: Shareable Output (Weeks 3–5)
-
-| Item | Description |
-|------|-------------|
-| PNG export | "Download as PNG" button. Clean branded image: radar chart + key stats + subtle watermark. Retina-quality. |
-| Summary card | "Spotify Wrapped" style card: radar chart + biggest strength/weakness callout + peer bracket label. Designed to look premium when screenshotted. |
-| OG image | Server-side Nivo SVG rendering at `/api/og` route. When someone shares a link, the preview shows their actual chart. |
-| Social meta tags | og:image, og:title, og:description, twitter:card for link previews on X, iMessage, Discord, Reddit. |
-| Shareable URL | Encode round data in URL params (or generate a short ID via Supabase) so shared links recreate the exact chart. |
-
-**Exit criteria:** A user can download their chart as a PNG, share a link that shows the chart in previews, and the shared output looks professional enough to post publicly.
-
-### Milestone 3: Polish & Launch (Weeks 5–8)
-
-| Item | Description |
-|------|-------------|
-| Landing page | Replace Next.js boilerplate. Hero + CTA → /strokes-gained. Explain what it does in one sentence. |
-| Mobile responsive | Full responsive audit. Primary use case: golfer on their phone after a round. |
-| Supabase auth | Optional account creation (magic link or Google OAuth). Save rounds for future multi-round features. Not required to use the tool. |
-| Deploy | Vercel deployment. Custom domain if ready. Basic analytics (Vercel Analytics or Plausible). |
-| r/golf launch | Write and post to r/golf. Not self-promotional — frame as "I built this free thing, here's my output, try it with your stats." |
-
-**Exit criteria:** Live on the internet. Posted to r/golf. Monitoring engagement.
-
-### Validation Gate
-
-**Do not proceed to "Next" until this question is answered:**
-
-> Do people organically share the tool output?
-
-Signals to measure:
-- **Primary:** 3+ organic shares (screenshots, link shares) on r/golf within 48 hours of launch post
-- **Secondary:** Return visits — same users come back with a second round within 7 days
-- **Secondary:** Direct image downloads or share button click rate >10% of completed calculations
-- **Negative signal:** People use it once and never come back, no one shares the output
-
-If the validation gate fails, diagnose why before building more tools. Possible pivots: different visualization style, different sharing mechanic, different audience framing.
+| v1 Assumption | v2 Position | Why |
+|---------------|-------------|-----|
+| Archetypes as headline share hook | Lead with peer percentiles and hard data | Spotify Wrapped 2024 proved personality labels backfire without brand equity |
+| Sharing as sole growth engine | SEO + sharing as co-equal channels | OmniCalculator hit 17M/mo through pure SEO; realistic K-factor is 0.05-0.15, not 0.3 |
+| Deepen single tool | Multi-tool strategy (3-5 tools) | 14-handicapper plays 20-30 rounds/year = 20-30 uses max; each tool is a new SEO entry point |
+| Results public by default | Private by default, share by choice | "Vanity handicap" culture; Strava's public-default caused backlash |
+| Build target-handicap platform | Don't compete on depth | Clippd already has this + Garmin API distribution; win on free/instant/shareable/zero-setup |
 
 ---
 
-## Next (Months 2–4): Expand If Validated
+## What's Already Shipped
 
-**Conditional: only proceed if Now phase validates shareability.**
+SG Benchmarker launched 2026-03-06. Since then: round history + trends, Stripe billing, lesson prep reports, saved round sharing, score-first share cards, plus handicap support, proxy SG 2.0, trust scoring, GA4 analytics (57+ events), benchmark interpolation, and more. Full list in git history.
 
-### Tool #2: AI Post-Round Narrative Generator
-
-Take round data and generate a natural-language analysis with embedded visualizations. Not "you lost 2.3 strokes on approach" but: *"Your round fell apart on holes 13–15, where approach shots from 150+ yards into the wind cost you 4.2 strokes against a 12-handicap benchmark."*
-
-- Uses Claude API for narrative generation
-- Produces a shareable "round recap" card
-- Addresses the Clippd review pain point: "I still struggle with Strokes Gained... I find the insights a little tricky to interpret"
-
-### Tool #3: Blow-Up Hole Eliminator
-
-Identify blow-up hole patterns across multiple rounds. *"You make double-or-worse 40% of the time from right rough on approach shots over 150 yards."*
-
-- Requires round history (hence the schema design in Now phase)
-- Emotionally resonant — every mid-handicapper feels this problem
-- Shareable content: "I've eliminated 3 blow-up holes per round using this tool"
-
-### Platform Features
-
-| Feature | Purpose |
-|---------|---------|
-| Round history & trends | Multi-round SG trends over time. Visual improvement tracking. |
-| Arccos API integration | Auto-import rounds for Arccos users (eliminate manual input friction). |
-| Garmin CSV import | Import from Garmin Golf exports for CT10 sensor users. |
+**Current state (2026-03-17):** 105 WAU, 73 visitors, 355 page views/week. 134/151 sessions are direct traffic — virtually zero organic search. Sharing features just shipped; viral loop hasn't had time to compound. Pre-flywheel.
 
 ---
 
-## Later (Months 4–8): Platform & Community
+## Phase 1 (Weeks 1-3): Data-First Share Quality + SEO Foundation
 
-### Tool #4: Interactive Course Strategy Visualizer
+**Goal: Make results worth sharing AND findable.**
 
-Visual course strategy maps personalized by handicap. Optimal landing zones, danger areas, club selection overlaid on satellite imagery. *"Here's how a 14-handicap should play Pacifica's Sharp Park, hole by hole, with today's wind."*
+| # | Feature | Notes |
+|---|---------|-------|
+| 1 | Peer percentile rankings on results | "Your putting is better than 82% of 14-handicappers." Primary share hook — concrete, credible, conversation-starting. Replaces archetype-first approach. |
+| 2 | GA4 key events configuration | Mark key events: `calculation_completed`, `copy_link_clicked`, `download_png_clicked`, `shared_round_viewed`, `round_saved`. Can't improve what you can't measure. |
+| 3 | SEO landing pages (`/learn/` + `/benchmarks/`) | `/learn/strokes-gained-calculator`, `/learn/strokes-gained-explained`, `/learn/average-strokes-gained-by-handicap`, programmatic `/benchmarks/{bracket}` pages. Schema markup, GSC, sitemap. |
+| 4 | Round Receipt share format | Receipt-style PNG: course name at top, SG categories as line items, total at bottom, QR code. Instagram/iMessage-native. Inspired by Receiptify (1M+ uses, zero marketing). |
+| 5 | Recipient-optimized shared link landing | Shared link shows results + "How do YOU compare?" CTA with pre-filled handicap. Closes the viral loop. Track conversion obsessively. |
+| 6 | 9:16 story card export | Vertical format for Instagram Stories alongside existing 600px card. |
 
-- Depends on course data API (Golf Intelligence/StrackaLine)
-- Highest complexity but highest viral potential
-- Arccos AI Strategy requires $300+ hardware and 90 rounds — this would be free
+## Phase 2 (Weeks 3-6): Multi-Tool + Distribution
 
-### Tool #5: The Practice-Play Bridge
+**Goal: Multiple entry points, multiple reasons to visit.**
 
-Converts SG analysis into structured weekly practice plans with time allocations. *"Spend 40% on approaches from 125–150 yards, 30% on lag putting, 20% on driving accuracy, 10% on short game."*
+| # | Feature | Notes |
+|---|---------|-------|
+| 7 | Tool #2: Golf Score Probability Calculator | "Given your handicap, what's the probability you break 80/90/100?" Simple input, shareable output, strong search intent. Weekend build. |
+| 8 | Tool #3: "Am I Good at Golf?" Quiz/Benchmark | Input handicap + a few stats, get a report card. Leverages existing benchmark data. Strong search intent. Shareable grade format. |
+| 9 | Embeddable Mini-SG Widget | `<script>` tag for golf blogs. Compact form, quick radar chart, CTA to full analysis. Target: Practical Golf, The DIY Golfer, MyGolfSpy. Each embed = backlink + acquisition. |
+| 10 | Tiered Referral System | Share 1 round = receipt format. Share 3 = custom themes. Share 5 = archetype analysis. Zero marginal cost. Referral CTA on every results page. |
+| 11 | PWA Capabilities | manifest.json + service worker. Install prompt after 2+ submissions. Low effort, outsized retention. |
 
-- Closes the "loop" between on-course data and practice
-- Natural premium feature (free analysis → paid practice plans)
-- Requires deepest data to be useful
+## Phase 3 (Weeks 5-8): Community + Retention
 
-### Monetization Exploration
+**Goal: Establish presence, build return behavior.**
 
-| Model | Price Point | Precedent |
-|-------|------------|-----------|
-| Premium tier (deeper AI analysis, unlimited reports, course strategy) | $5–8/month | Arccos $155/year, Break X Golf $19/month |
-| Community membership (exclusive tools + private Discord) | $60–90/year | NLU Nest $90/year, BTS $60–275/year |
-| Free forever: SG Benchmarker basic | $0 | This stays free — it's the top-of-funnel |
+| # | Feature | Notes |
+|---|---------|-------|
+| 12 | Reddit seeding | Launch channel, not sustained engine. 2-3 weeks of genuine r/golf participation, data insight posts, one launch post. Plan for one-time traffic bump. |
+| 13 | "Golf Data Brief" newsletter | Weekly email with anonymized aggregate data insights. Cross-promote via beehiiv Recommendations. Each issue drives tool traffic. |
+| 14 | Challenge a Friend flow | Async 1v1 SG comparison. Friend enters their stats, sees side-by-side. Social pressure drives account creation. |
+| 15 | Achievement badges | 5-8 badges: "First Round Logged," "Category Killer," "Improvement Arc," "Bracket Buster." Drives repeat usage. |
+| 16 | Trend visualization for saved rounds | For users with 3+ saved rounds, show improvement trends. The reason to come back and the upsell to saving rounds. |
 
-**Validation needed before building premium:** WTP survey with actual mid-handicap users. Do not assume the $5–8/month price point.
+## Phase 4 (Before October): Season Wrapped + Monetization Signal
 
-### Community
+**Goal: Capture annual moment, validate willingness to pay.**
 
-- Discord for mid-handicap golfers focused on data-driven improvement
-- Opt-in anonymized round data sharing → build community benchmarks
-- Weekly community data analyses ("This week, our 500 members averaged 1.8 three-putts per round")
-- Identity-based community: "we're the mid-handicap golfers who use data to get better"
-
----
-
-## Risks & Dependencies
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| Benchmark data inaccuracy (seed data is provisional) | High | High | Validate against Arccos/Shot Scope/USGA before launch. See `docs/benchmark-validation-plan.md`. |
-| SG methodology too simplified without shot-level data | Medium | Medium | Document limitations clearly. Iterate based on user feedback. "Directionally correct" is the bar for v1. |
-| Mid-handicap golfers don't share data visualizations | Medium | Critical | This is THE risk. Ship fast, test on r/golf, pivot if needed. |
-| Form too long / too much friction on mobile | Medium | High | Progressive disclosure. Smart defaults. Minimize required fields. |
-| Arccos API access denied to indie developer | Medium | Medium | Only needed for "Next" phase. Manual input works for MVP. Apply early to de-risk. |
-| Nivo server-side rendering complexity for OG images | Low | Medium | Client-side rendering first. SSR for OG images is a nice-to-have, not a blocker. |
-| Someone else ships this first | Low | High | Speed advantage via Claude Code. Ship in weeks, not months. |
+| # | Feature | Notes |
+|---|---------|-------|
+| 17 | Season Wrapped | Table stakes, not differentiator. GHIN Rewind and Golf Canada already do year-in-review. Still worth building for retention + sharing. |
+| 18 | Archetypes as optional fun layer | If demand exists, add "Your Golf Archetype" as secondary share card. Names: "The Surgeon," "The Closer," "The Grinder." Dessert, not main course. |
+| 19 | Early paid tier ($3-5/mo) | Unlimited saved rounds, trend tracking, custom share themes. Not to generate revenue — to validate that golfers will pay. |
 
 ---
 
-## Distribution Channels
+## Kill Criteria
 
-| Channel | Role | Timing |
-|---------|------|--------|
-| r/golf | Primary validation + organic growth | Launch day, weekly data posts |
-| X/Twitter | Data viz sharing, golf analytics community | Week 2+ |
-| Short-form video (TikTok/Shorts) | Screen recordings of tools in action | Month 2+ |
-| Discord | Community layer, retention | Month 3+ if validated |
-| Email list | Collected from tool users, for updates | From day one (simple signup) |
+Every bet has a threshold. If it doesn't hit, cut it and move on.
+
+| Bet | Success Signal | Kill If |
+|-----|---------------|---------|
+| Share cards (receipts + percentiles) | >12% share rate on `calculation_completed` | <8% after 200 calculations |
+| SEO pages | First non-brand clicks within 45 days | Zero impressions after 60 days |
+| Recipient conversion | >5% of `shared_round_viewed` -> own calculation | <3% after 100 shared views |
+| Multi-tool expansion | Tool #2 gets >30% of Tool #1 traffic within 30 days | <10% relative traffic |
+| Embeddable widget | >50 visits/month from embedded sources | Zero adoptions after outreach to 10 blogs |
+| Referral tiers | >10% of users trigger first referral tier | <5% after 30 days |
+
+---
+
+## Success Metrics
+
+| Metric | Now | 30-Day Target | 90-Day Target |
+|--------|-----|---------------|---------------|
+| Weekly active users | 105 | 250 | 800 |
+| Organic search visitors | ~0 | 100 | 500+ |
+| Share-to-visit rate | unknown | measure baseline | 10%+ |
+| Recipient-to-own-calc conversion | unknown | measure baseline | 5%+ |
+| r/golf referral visitors | 0 | 50 (one-time) | maintain |
+| Rounds saved (accounts) | ~low | 50 | 200 |
+| Bounce rate | 58% | 50% | 42% |
+| Number of golf tools | 1 | 2 | 3-4 |
+| Embeds on external sites | 0 | 0 | 3-5 |
+
+---
+
+## What NOT to Build
+
+- **Target-handicap platform.** Clippd already has this with Garmin API distribution. Racing to second place.
+- **Coach CRM.** Clippd has multi-year head start with coach seats and college packages.
+- **Shot-by-shot tracking.** Round-level summary input is the competitive advantage.
+- **Social network/feed.** GolfLync and similar social golf apps have not gained traction. Share on existing platforms.
+- **Tour analytics or betting tools.** Data Golf owns it.
+- **Public-by-default results.** Vanity handicap culture means private-first, share-by-choice.
+- **Personality labels as the headline.** Spotify proved this backfires without brand equity. Data first, always.
+- **Native mobile app.** Web-first is the advantage vs. Clippd/Arccos/Sportsbox. PWA handles the install case.
+
+---
+
+## Risks
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| SEO takes 3-6 months to compound | No organic traffic short-term | Sharing + Reddit provide bridge traffic while SEO builds |
+| Realistic K-factor (0.05-0.15) means slow viral growth | Can't depend on sharing alone | Four-engine model; SEO is the workhorse |
+| Multi-tool dilutes focus | Mediocre tools that don't convert | Kill criteria on each tool; only expand if Tool #1 share quality is proven |
+| Clippd gets Garmin distribution moat | Hardware-connected users never discover free alternatives | Win on zero-friction: free, instant, no signup, no hardware |
+| Golfers won't share weaknesses | Share rate stays low | Private-by-default; share cards emphasize strengths; receipt format is novel enough to share for the format itself |
+| Benchmark data accuracy questioned | Credibility hit on r/golf | Document methodology transparently; iterate on feedback |

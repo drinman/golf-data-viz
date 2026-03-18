@@ -18,21 +18,24 @@ export default function PrivacyPage() {
           <h1 className="font-display text-3xl tracking-tight text-neutral-950 sm:text-4xl">
             Privacy Policy
           </h1>
-          <p className="mt-2 text-sm text-neutral-500">
-            Effective {EFFECTIVE_DATE}
-          </p>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-neutral-600">
             Golf Data Viz is built by a golfer, for golfers. It is a free,
             post-round benchmark built from the scorecard stats you enter
             manually. We collect only what we need to show your peer-compared
             results and support the product.
           </p>
+          <p className="mt-3 text-sm text-neutral-500">
+            Effective {EFFECTIVE_DATE}
+          </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-10">
       {/* What we collect */}
-      <section data-testid="privacy-collect">
+      <section
+        className="scroll-mt-8"
+        data-testid="privacy-collect"
+      >
         <h2 className="font-display text-xl tracking-tight text-neutral-950">
           What We Collect
         </h2>
@@ -181,13 +184,12 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      </div>
-
-      <footer className="mx-auto max-w-3xl px-4 mt-16 border-t border-neutral-200 pt-6 pb-8">
+      <footer className="mt-16 border-t border-neutral-200 pt-6 pb-8">
         <p className="text-xs italic leading-relaxed text-neutral-400">
           This policy applies to golfdataviz.com. Last updated {EFFECTIVE_DATE}.
         </p>
       </footer>
+      </div>
     </main>
   );
 }

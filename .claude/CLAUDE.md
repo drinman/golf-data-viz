@@ -50,16 +50,18 @@ src/
 - `npm run dev` — Start dev server (Turbopack)
 - `npm run build` — Production build
 - `npm run lint` — ESLint
+- `npm run seed:staging:manual` — Reset QA accounts on staging (requires staging env vars)
 
 ## Environments (SDLC)
 
 | Environment | Vercel | Supabase | Sentry |
 |-------------|--------|----------|--------|
 | **Local** | `localhost:3000` | N/A (uses staging or local Supabase) | N/A |
-| **Staging** | Branch preview deploys (auto on push to non-`main` branches) | `uxelgkeagzjnwmjspcda` (`golf-data-viz-staging`) | `javascript-nextjs` (shared) |
+| **Staging** | `staging` branch → `staging.golfdataviz.com` | `uxelgkeagzjnwmjspcda` (`golf-data-viz-staging`) | `javascript-nextjs` (shared) |
 | **Prod** | Production deploy on `main` — `golfdataviz.com` | `wxlqnetdidreumtyzorz` (`golf-data-viz-prod`) | `javascript-nextjs` (shared) |
 
-- **Flow**: Local → Staging (PR branch) → Prod (merge to `main`)
+- **Flow**: Local → Staging (`staging` branch) → Prod (merge to `main`)
+- **Staging CI**: pushes to `staging` trigger `.github/workflows/staging-smoke.yml` (remote smoke + OAuth claim handoff)
 - **Vercel prod domains**: `golfdataviz.com`, `www.golfdataviz.com`, `golf-data-viz.vercel.app`
 - **Sentry**: Single project `javascript-nextjs` in org `dallas-inman` covers both staging and prod
 - **When verifying a deploy**: always match the environment — use staging Supabase ref for staging deploys, prod ref for prod deploys

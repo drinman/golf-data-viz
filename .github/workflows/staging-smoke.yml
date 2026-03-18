@@ -1,0 +1,77 @@
+name: Staging Smoke
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: staging-smoke
+  cancel-in-progress: true
+
+jobs:
+  staging-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: true
+      PLAYWRIGHT_SKIP_WEBSERVER: "true"
+      PLAYWRIGHT_BASE_URL: https://staging.golfdataviz.com
+      NEXT_PUBLIC_SUPABASE_URL: https://uxelgkeagzjnwmjspcda.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+      PLAYWRIGHT_E2E_EMAIL: ${{ secrets.STAGING_PLAYWRIGHT_E2E_EMAIL }}
+      PLAYWRIGHT_E2E_PASSWORD: ${{ secrets.STAGING_PLAYWRIGHT_E2E_PASSWORD }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium webkit
+
+      - name: Wait for staging deployment matching this commit
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: prj_JEOpUisLp4LxNSF0o1qvuxR2QJl1
+          VERCEL_TEAM_ID: team_AusQ5gpKE0lhKnMzvHXNp29m
+          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_REF: ${{ github.ref_name }}
+        run: |
+          for attempt in {1..60}; do
+            # Staging branch deploys are preview deploys in Vercel (only main is "production").
+            # Query recent deployments without a target filter and match on commit SHA + branch.
+            deploy=$(curl -sS \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=20" \
+              | jq -c --arg sha "${EXPECTED_SHA}" --arg ref "${EXPECTED_REF}" \
+                '[.deployments[] | select(.meta.githubCommitSha == $sha and .meta.githubCommitRef == $ref)] | first // empty')
+
+            if [ -n "${deploy}" ]; then
+              state=$(echo "${deploy}" | jq -r '.readyState // empty')
+
+              if [ "${state}" = "READY" ]; then
+                echo "staging deploy ${EXPECTED_SHA:0:7} is READY"
+                exit 0
+              fi
+              echo "attempt ${attempt}: ${EXPECTED_REF} deployment found, state=${state} (want READY)"
+            else
+              echo "attempt ${attempt}: no ${EXPECTED_REF} deployment for ${EXPECTED_SHA:0:7} yet"
+            fi
+            sleep 10
+          done
+          echo "timed out waiting for staging deploy of ${EXPECTED_SHA:0:7}"
+          exit 1
+
+      - name: Run remote browser smoke
+        shell: bash
+        run: npx playwright test tests/e2e/production-smoke.spec.ts --project=production-chromium --project=production-webkit
+
+      - name: Run OAuth claim handoff smoke
+        shell: bash
+        run: npx playwright test tests/e2e/oauth-claim-handoff.spec.ts --project=functional

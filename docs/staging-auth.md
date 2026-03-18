@@ -43,6 +43,7 @@ Required local/staging test env vars:
 
 - `PLAYWRIGHT_E2E_EMAIL`
 - `PLAYWRIGHT_E2E_PASSWORD`
+- `VERCEL_AUTOMATION_BYPASS_SECRET` when hitting the protected staging domain from automation
 
 Use a dedicated non-admin user in the same Supabase project as the app.
 
@@ -56,3 +57,48 @@ Use a dedicated non-admin user in the same Supabase project as the app.
 - Force a failed Google initiation and confirm `pending-oauth-claim` does not
   survive for a later visit.
 
+## Protected Staging Smoke
+
+GitHub Actions runs remote smoke coverage for `staging` pushes and manual
+dispatches via `.github/workflows/staging-smoke.yml`.
+
+Required repo secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_AUTOMATION_BYPASS_SECRET`
+- `STAGING_SUPABASE_SERVICE_ROLE_KEY`
+- `STAGING_PLAYWRIGHT_E2E_EMAIL`
+- `STAGING_PLAYWRIGHT_E2E_PASSWORD`
+
+The workflow hits `https://staging.golfdataviz.com` directly, bypasses Vercel
+deployment protection with the automation secret, runs the existing remote smoke
+spec, then runs the OAuth claim handoff spec with self-seeded ephemeral data.
+
+## Manual QA Seed
+
+Use the manual seed to reset the dedicated staging QA accounts to a deterministic
+baseline:
+
+```bash
+npm run seed:staging:manual
+```
+
+Required local env vars:
+
+- `STAGING_SUPABASE_URL`
+- `STAGING_SUPABASE_SERVICE_ROLE_KEY`
+- `STAGING_QA_PASSWORD`
+- `STAGING_BASE_URL` (optional, defaults to `https://staging.golfdataviz.com`)
+
+The seed is idempotent. Rerunning it only resets QA-owned staging rows for the
+dedicated QA accounts; it does not wipe the rest of staging.
+
+Seeded QA accounts:
+
+- `qa-empty@staging.golfdataviz.local` — free account with `0` rounds
+- `qa-starter@staging.golfdataviz.local` — free account with `2` rounds
+- `qa-history@staging.golfdataviz.local` — free account with `5` rounds, one
+  pre-created share token, one trouble-context round, and one legacy
+  methodology row
+- `qa-premium@staging.golfdataviz.local` — premium account with `8` rounds for
+  lesson prep flow validation
