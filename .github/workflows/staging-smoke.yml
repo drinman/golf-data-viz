@@ -43,23 +43,24 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           for attempt in {1..60}; do
-            # Query Vercel for the latest production deployment on this project
+            # Staging branch deploys are preview deploys in Vercel (only main is "production").
+            # Query recent deployments without a target filter and match on commit SHA.
             deploy=$(curl -sS \
               -H "Authorization: Bearer ${VERCEL_TOKEN}" \
-              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&target=production&limit=1" \
-              | jq -r '.deployments[0] // empty')
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=5" \
+              | jq -r --arg sha "${EXPECTED_SHA}" \
+                '.deployments[] | select(.meta.githubCommitSha == $sha) // empty')
 
             if [ -n "${deploy}" ]; then
-              sha=$(echo "${deploy}" | jq -r '.meta.githubCommitSha // empty')
               state=$(echo "${deploy}" | jq -r '.readyState // empty')
 
-              if [ "${sha}" = "${EXPECTED_SHA}" ] && [ "${state}" = "READY" ]; then
-                echo "staging deploy ${sha:0:7} is READY"
+              if [ "${state}" = "READY" ]; then
+                echo "staging deploy ${EXPECTED_SHA:0:7} is READY"
                 exit 0
               fi
-              echo "attempt ${attempt}: latest deploy sha=${sha:0:7} state=${state} (want ${EXPECTED_SHA:0:7} READY)"
+              echo "attempt ${attempt}: deploy found, state=${state} (want READY)"
             else
-              echo "attempt ${attempt}: no deployments found yet"
+              echo "attempt ${attempt}: no deployment for ${EXPECTED_SHA:0:7} yet"
             fi
             sleep 10
           done
