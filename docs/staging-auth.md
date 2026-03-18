@@ -64,6 +64,7 @@ dispatches via `.github/workflows/staging-smoke.yml`.
 
 Required repo secrets:
 
+- `VERCEL_TOKEN`
 - `VERCEL_AUTOMATION_BYPASS_SECRET`
 - `STAGING_SUPABASE_SERVICE_ROLE_KEY`
 - `STAGING_PLAYWRIGHT_E2E_EMAIL`
