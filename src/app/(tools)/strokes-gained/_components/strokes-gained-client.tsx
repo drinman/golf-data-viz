@@ -69,31 +69,18 @@ function getCalculator(mode: SgPhase2Mode) {
   return mode === "full" ? calculateStrokesGainedV3 : calculateStrokesGained;
 }
 
-function roundInputsMatch(a: RoundInput, b: RoundInput): boolean {
-  return (
-    a.course === b.course &&
-    a.date === b.date &&
-    a.score === b.score &&
-    a.handicapIndex === b.handicapIndex &&
-    a.courseRating === b.courseRating &&
-    a.slopeRating === b.slopeRating &&
-    (a.fairwaysHit ?? null) === (b.fairwaysHit ?? null) &&
-    a.fairwayAttempts === b.fairwayAttempts &&
-    (a.greensInRegulation ?? null) === (b.greensInRegulation ?? null) &&
-    a.totalPutts === b.totalPutts &&
-    a.penaltyStrokes === b.penaltyStrokes &&
-    a.eagles === b.eagles &&
-    a.birdies === b.birdies &&
-    a.pars === b.pars &&
-    a.bogeys === b.bogeys &&
-    a.doubleBogeys === b.doubleBogeys &&
-    a.triplePlus === b.triplePlus &&
-    (a.upAndDownAttempts ?? null) === (b.upAndDownAttempts ?? null) &&
-    (a.upAndDownConverted ?? null) === (b.upAndDownConverted ?? null) &&
-    (a.sandSaves ?? null) === (b.sandSaves ?? null) &&
-    (a.sandSaveAttempts ?? null) === (b.sandSaveAttempts ?? null) &&
-    (a.threePutts ?? null) === (b.threePutts ?? null)
+function serializeRoundInput(input: RoundInput): string {
+  return JSON.stringify(
+    Object.fromEntries(
+      Object.entries(input)
+        .filter(([, value]) => value !== undefined)
+        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+    )
   );
+}
+
+function roundInputsMatch(a: RoundInput, b: RoundInput): boolean {
+  return serializeRoundInput(a) === serializeRoundInput(b);
 }
 
 interface StrokesGainedClientProps {
@@ -319,7 +306,7 @@ export default function StrokesGainedClient({
     setSavedRoundId(storedClaim.roundId);
     setSavedClaimToken(storedClaim.claimToken);
     setSaveSuccess(true);
-  }, [initialInput]);
+  }, [initialInput]); // initialInput is server-derived and only changes when the shared URL payload changes
 
   // Read last round from localStorage on mount (no shared link, not from history)
   useEffect(() => {
@@ -1032,6 +1019,8 @@ export default function StrokesGainedClient({
                   if (res.claimToken && !res.isOwned && lastInput) {
                     setSavedClaimToken(res.claimToken);
                     try {
+                      // claim:{roundId} survives the OAuth redirect handoff, while
+                      // gdv:last-anon-claim restores the saved/claimable UI on reload.
                       localStorage.setItem(
                         `claim:${res.roundId}`,
                         JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })

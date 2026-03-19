@@ -666,7 +666,25 @@ describe("Anonymous claim rehydration", () => {
     mockStorage["gdv:last-anon-claim"] = JSON.stringify({
       roundId: "anon-round-1",
       claimToken: "anon-claim-1",
-      input: mockInput,
+      input: {
+        score: mockInput.score,
+        course: mockInput.course,
+        date: mockInput.date,
+        handicapIndex: mockInput.handicapIndex,
+        slopeRating: mockInput.slopeRating,
+        courseRating: mockInput.courseRating,
+        fairwayAttempts: mockInput.fairwayAttempts,
+        fairwaysHit: mockInput.fairwaysHit,
+        greensInRegulation: mockInput.greensInRegulation,
+        totalPutts: mockInput.totalPutts,
+        penaltyStrokes: mockInput.penaltyStrokes,
+        eagles: mockInput.eagles,
+        birdies: mockInput.birdies,
+        pars: mockInput.pars,
+        bogeys: mockInput.bogeys,
+        doubleBogeys: mockInput.doubleBogeys,
+        triplePlus: mockInput.triplePlus,
+      },
       timestamp: new Date().toISOString(),
     });
 
