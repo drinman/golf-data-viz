@@ -91,6 +91,8 @@ async function waitForUiPaint(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
+const MIN_CAPTURE_LOADING_MS = 600;
+
 export default function StrokesGainedClient({
   initialInput,
   saveEnabled = true,
@@ -464,9 +466,9 @@ export default function StrokesGainedClient({
       const blob = await captureElementAsPng(shareCardRef.current);
       downloadBlob(blob, "strokes-gained.png");
     } finally {
-      // Ensure loading state is visible for at least 300ms
+      // Keep the loading state long enough to be perceptible on fast captures.
       const elapsed = Date.now() - start;
-      const remaining = Math.max(0, 300 - elapsed);
+      const remaining = Math.max(0, MIN_CAPTURE_LOADING_MS - elapsed);
       setTimeout(() => setDownloading(false), remaining);
     }
   }, [downloading, shareHeadline]);
@@ -487,7 +489,7 @@ export default function StrokesGainedClient({
       downloadBlob(blob, `${courseSlug}-receipt.png`);
     } finally {
       const elapsed = Date.now() - start;
-      const remaining = Math.max(0, 300 - elapsed);
+      const remaining = Math.max(0, MIN_CAPTURE_LOADING_MS - elapsed);
       setTimeout(() => setDownloadingReceipt(false), remaining);
     }
   }, [downloadingReceipt, shareHeadline, lastInput]);
@@ -508,7 +510,7 @@ export default function StrokesGainedClient({
       downloadBlob(blob, `${courseSlug}-story.png`);
     } finally {
       const elapsed = Date.now() - start;
-      const remaining = Math.max(0, 300 - elapsed);
+      const remaining = Math.max(0, MIN_CAPTURE_LOADING_MS - elapsed);
       setTimeout(() => setDownloadingStory(false), remaining);
     }
   }, [downloadingStory, shareHeadline, lastInput]);

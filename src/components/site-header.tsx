@@ -102,10 +102,10 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2 whitespace-nowrap text-neutral-950"
+            className="flex min-w-0 items-center gap-2 text-neutral-950"
           >
             <Logo size={28} variant="mark" />
-            <span className="font-display text-lg tracking-tight">
+            <span className="max-w-[calc(100vw-9rem)] truncate font-display text-lg tracking-tight sm:max-w-none">
               Golf Data Viz
             </span>
           </Link>
