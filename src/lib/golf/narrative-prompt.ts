@@ -21,8 +21,8 @@ Rules:
 - If trouble context is provided, incorporate it into the narrative
 - Include confidence caveats when a category has "low" confidence
 - If a category is marked [PEER AVERAGE], describe it as neutral — matching the peer group. Do not praise or criticize peer-average categories.
-- If all categories are peer-average, describe the round as broadly matching the peer group rather than implying a benchmark copy.
-- End with one sentence about the single most impactful area for improvement, framed as observation not advice ("your biggest opportunity is..." not "you should...")`;
+- If all categories are peer-average, describe the round as broadly matching the peer group rather than implying a benchmark copy. Do not invent a weakness.
+- If at least one category is clearly negative (not peer-average), end with one sentence about the single most impactful area for improvement, framed as observation not advice ("your biggest opportunity is..." not "you should..."). If all categories are peer-average, skip this sentence.`;
 
 export function buildNarrativeUserPrompt(
   input: RoundInput,

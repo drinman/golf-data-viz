@@ -204,6 +204,8 @@ describe("buildNarrativeUserPrompt", () => {
   it("system prompt includes peer-average guidance", () => {
     expect(NARRATIVE_SYSTEM_PROMPT).toContain("PEER AVERAGE");
     expect(NARRATIVE_SYSTEM_PROMPT).toContain("Do not praise or criticize peer-average categories");
+    expect(NARRATIVE_SYSTEM_PROMPT).toContain("Do not invent a weakness");
+    expect(NARRATIVE_SYSTEM_PROMPT).toContain("If all categories are peer-average, skip this sentence");
   });
 
   it("omits trouble context when empty", () => {

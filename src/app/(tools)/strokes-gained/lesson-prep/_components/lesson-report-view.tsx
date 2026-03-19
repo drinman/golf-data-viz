@@ -268,12 +268,21 @@ export function LessonReportView({
                 interactive={false}
               />
             </div>
-            <p className="mt-2 font-mono text-lg text-data-negative">
-              {formatSG(report.focusArea.averageSg)}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-              The most negative average category with usable confidence across these rounds.
-            </p>
+            {(() => {
+              const sg = presentSG(report.focusArea.averageSg);
+              return (
+              <>
+              <p className={`mt-2 font-mono text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}>
+                {sg.formatted}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                {sg.isPeerAverage
+                  ? "This category is at peer average across the selected rounds."
+                  : "The most negative average category with usable confidence across these rounds."}
+              </p>
+              </>
+              );
+            })()}
           </div>
 
           <div className="rounded-2xl border border-card-border bg-white p-5 shadow-sm">
@@ -290,12 +299,21 @@ export function LessonReportView({
                 interactive={false}
               />
             </div>
-            <p className="mt-2 font-mono text-lg text-data-positive">
-              {formatSG(report.strongestArea.averageSg)}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-              Your most positive average category across the selected rounds.
-            </p>
+            {(() => {
+              const sg = presentSG(report.strongestArea.averageSg);
+              return (
+              <>
+              <p className={`mt-2 font-mono text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}>
+                {sg.formatted}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                {sg.isPeerAverage
+                  ? "This category is at peer average across the selected rounds."
+                  : "Your most positive average category across the selected rounds."}
+              </p>
+              </>
+              );
+            })()}
           </div>
 
           <div className="rounded-2xl border border-card-border bg-white p-5 shadow-sm">
