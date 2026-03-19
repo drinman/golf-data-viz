@@ -53,3 +53,8 @@ next-env.d.ts
 
 # playwright MCP debug logs
 .playwright-mcp/
+
+# local-only planning docs (specs, research, feedback)
+/docs/specs/
+/research/
+/feedback/research/
