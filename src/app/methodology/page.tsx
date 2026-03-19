@@ -260,7 +260,15 @@ export default function MethodologyPage() {
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-neutral-600">
             Golf Data Viz estimates strokes gained from round-level
             scorecard stats. This page explains the formulas, data sources,
-            confidence levels, and known limitations.
+            confidence levels, and known limitations. New to strokes gained?
+            Start with our{" "}
+            <a
+              href="/learn/strokes-gained-explained"
+              className="text-brand-800 underline hover:text-brand-900"
+            >
+              beginner&apos;s guide
+            </a>
+            .
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="rounded-full border border-brand-100 bg-white px-3 py-1 text-xs font-medium text-brand-800">

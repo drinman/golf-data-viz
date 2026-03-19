@@ -261,7 +261,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.locator('[data-testid="sg-results"]')).not.toBeVisible();
   });
 
-  test("results show trust signals and Benchmarks link to methodology", async ({
+  test("results show trust signals and Benchmarks link to benchmark bracket", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -296,19 +296,16 @@ test.describe("Strokes Gained Benchmarker", () => {
       sgResults.getByText("Focus on your weakest category — that's where practice helps most.")
     ).toBeVisible();
 
-    // Benchmarks link navigates to methodology page (first = visible summary)
+    // Benchmarks link navigates to bracket benchmark page (submitFullRound uses 14.3 HCP → 10-15)
     const benchmarksLink = sgResults
       .getByRole("link", { name: /Benchmarks/i })
       .first();
     await expect(benchmarksLink).toBeVisible();
     await benchmarksLink.click();
 
-    // Methodology page renders with key content
-    await expect(page.locator("h1")).toContainText("Methodology");
-    // SG formulas section uses card layout with h3 headings
-    await expect(page.getByRole("heading", { name: "Off the Tee", level: 3 })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Putting", level: 3 })).toBeVisible();
-    await expect(page.getByText(/scorecard-based model/i).first()).toBeVisible();
+    // Bracket benchmark page renders with correct content
+    await expect(page.locator("h1")).toContainText("10\u201315");
+    await expect(page.getByTestId("benchmark-data-table")).toBeVisible();
   });
 
   test("V3 results show Course-Adjusted badge and methodology tooltip with signal breakdown", async ({

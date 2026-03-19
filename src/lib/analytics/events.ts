@@ -70,6 +70,7 @@ export type AnalyticsEvent =
   | "probability_calculated"
   | "widget_cta_clicked"
   | "referral_tier_unlocked"
+  | "seo_cta_clicked"
   | "pwa_installed";
 
 type EmptyPayload = Record<never, never>;
@@ -214,6 +215,7 @@ export type AnalyticsEventProps = {
   probability_calculated: EmptyPayload;
   widget_cta_clicked: EmptyPayload;
   referral_tier_unlocked: EmptyPayload;
+  seo_cta_clicked: { surface: string; source_path: string };
   pwa_installed: EmptyPayload;
 };
 

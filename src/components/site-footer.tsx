@@ -20,6 +20,18 @@ export function SiteFooter() {
             Methodology
           </Link>
           <Link
+            href="/learn"
+            className="text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+          >
+            Learn
+          </Link>
+          <Link
+            href="/benchmarks"
+            className="text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+          >
+            Benchmarks
+          </Link>
+          <Link
             href="/privacy"
             className="text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
           >
