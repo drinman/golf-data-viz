@@ -626,3 +626,92 @@ describe("OAuth claim rehydration", () => {
     });
   });
 });
+
+describe("Anonymous claim rehydration", () => {
+  let mockStorage: Record<string, string>;
+  let originalLocalStorage: Storage;
+
+  beforeEach(() => {
+    mockStorage = {};
+    originalLocalStorage = globalThis.localStorage;
+
+    Object.defineProperty(globalThis, "localStorage", {
+      value: {
+        getItem: (key: string) => mockStorage[key] ?? null,
+        setItem: (key: string, value: string) => { mockStorage[key] = value; },
+        removeItem: (key: string) => { delete mockStorage[key]; },
+        get length() { return Object.keys(mockStorage).length; },
+        key: (i: number) => Object.keys(mockStorage)[i] ?? null,
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    mockTrackEvent.mockClear();
+    mockClaimRound.mockClear();
+    mockUser.current = null;
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    Object.defineProperty(globalThis, "localStorage", {
+      value: originalLocalStorage,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it("rehydrates the anonymous claim CTA for a matching saved round", async () => {
+    mockStorage["gdv:last-anon-claim"] = JSON.stringify({
+      roundId: "anon-round-1",
+      claimToken: "anon-claim-1",
+      input: {
+        score: mockInput.score,
+        course: mockInput.course,
+        date: mockInput.date,
+        handicapIndex: mockInput.handicapIndex,
+        slopeRating: mockInput.slopeRating,
+        courseRating: mockInput.courseRating,
+        fairwayAttempts: mockInput.fairwayAttempts,
+        fairwaysHit: mockInput.fairwaysHit,
+        greensInRegulation: mockInput.greensInRegulation,
+        totalPutts: mockInput.totalPutts,
+        penaltyStrokes: mockInput.penaltyStrokes,
+        eagles: mockInput.eagles,
+        birdies: mockInput.birdies,
+        pars: mockInput.pars,
+        bogeys: mockInput.bogeys,
+        doubleBogeys: mockInput.doubleBogeys,
+        triplePlus: mockInput.triplePlus,
+      },
+      timestamp: new Date().toISOString(),
+    });
+
+    renderClient({ initialInput: mockInput });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("claim-cta")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("mock-post-results-save-cta")).toBeNull();
+    expect(screen.getByRole("button", { name: "Create account" })).toBeInTheDocument();
+  });
+
+  it("does not rehydrate anonymous claim CTA for a different round", async () => {
+    mockStorage["gdv:last-anon-claim"] = JSON.stringify({
+      roundId: "anon-round-2",
+      claimToken: "anon-claim-2",
+      input: { ...mockInput, course: "Different Course" },
+      timestamp: new Date().toISOString(),
+    });
+
+    renderClient({ initialInput: mockInput });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("mock-post-results-save-cta")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("claim-cta")).toBeNull();
+  });
+});

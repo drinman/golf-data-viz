@@ -43,7 +43,14 @@ import { NarrativeBlock } from "./narrative-block";
 import { PostResultsSaveCta } from "./post-results-save-cta";
 import { LastRoundBanner } from "./last-round-banner";
 import { RadarChart } from "@/components/charts/radar-chart";
-import { readStoredRound, LAST_ROUND_KEY, type StoredRound } from "@/lib/golf/local-storage";
+import {
+  readStoredRound,
+  readStoredAnonClaim,
+  writeStoredAnonClaim,
+  clearStoredAnonClaim,
+  LAST_ROUND_KEY,
+  type StoredRound,
+} from "@/lib/golf/local-storage";
 import { saveTroubleContext, clearTroubleContext, claimRound, createShareToken } from "../actions";
 import { LaunchTrustPanel } from "./launch-trust-panel";
 import { SampleResultPreview } from "@/components/sample-result-preview";
@@ -60,6 +67,20 @@ function getClientPhase2Mode(): SgPhase2Mode {
 
 function getCalculator(mode: SgPhase2Mode) {
   return mode === "full" ? calculateStrokesGainedV3 : calculateStrokesGained;
+}
+
+function serializeRoundInput(input: RoundInput): string {
+  return JSON.stringify(
+    Object.fromEntries(
+      Object.entries(input)
+        .filter(([, value]) => value !== undefined)
+        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+    )
+  );
+}
+
+function roundInputsMatch(a: RoundInput, b: RoundInput): boolean {
+  return serializeRoundInput(a) === serializeRoundInput(b);
 }
 
 interface StrokesGainedClientProps {
@@ -163,9 +184,6 @@ export default function StrokesGainedClient({
   const sharedRoundViewedRef = useRef(false);
   const attributionUtmSourceRef = useRef<string | undefined>(undefined);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
   const isSampleSubmitRef = useRef(false);
   const claimRequestInFlightRef = useRef(false);
 
@@ -242,8 +260,6 @@ export default function StrokesGainedClient({
   useEffect(() => {
     return () => {
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-      if (saveSuccessTimerRef.current)
-        clearTimeout(saveSuccessTimerRef.current);
     };
   }, []);
 
@@ -279,6 +295,18 @@ export default function StrokesGainedClient({
       }
     } catch { /* localStorage unavailable or corrupt entry */ }
   }, []);
+
+  useEffect(() => {
+    if (!initialInput) return;
+
+    const storedClaim = readStoredAnonClaim();
+    if (!storedClaim) return;
+    if (!roundInputsMatch(storedClaim.input, initialInput)) return;
+
+    setSavedRoundId(storedClaim.roundId);
+    setSavedClaimToken(storedClaim.claimToken);
+    setSaveSuccess(true);
+  }, [initialInput]); // initialInput is server-derived and only changes when the shared URL payload changes
 
   // Read last round from localStorage on mount (no shared link, not from history)
   useEffect(() => {
@@ -346,8 +374,6 @@ export default function StrokesGainedClient({
     setShareToken(null);
     setClaimStatus("idle");
     claimRequestInFlightRef.current = false;
-    if (saveSuccessTimerRef.current)
-      clearTimeout(saveSuccessTimerRef.current);
 
     trackEvent("calculation_completed", {
       utm_source: getAttributionUtmSource(),
@@ -586,6 +612,7 @@ export default function StrokesGainedClient({
           localStorage.removeItem(`claim:${savedRoundId}`);
           localStorage.removeItem("pending-oauth-claim");
         } catch { /* localStorage unavailable */ }
+        clearStoredAnonClaim();
       } else {
         setClaimStatus("failed");
         trackEvent("round_claim_failed", { reason: result.code });
@@ -984,16 +1011,27 @@ export default function StrokesGainedClient({
                   setSavedRoundOwned(res.isOwned);
                   setSaveSuccess(true);
                   if (res.isOwned) {
+                    clearStoredAnonClaim();
                     void createShareToken(res.roundId).then((tokenRes) => {
                       if (tokenRes.success) setShareToken(tokenRes.token);
                     });
                   }
-                  if (!res.isOwned) {
-                    saveSuccessTimerRef.current = setTimeout(() => setSaveSuccess(false), 3000);
-                  }
-                  if (res.claimToken && !res.isOwned) {
+                  if (res.claimToken && !res.isOwned && lastInput) {
                     setSavedClaimToken(res.claimToken);
-                    try { localStorage.setItem(`claim:${res.roundId}`, JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })); } catch { /* localStorage unavailable */ }
+                    try {
+                      // claim:{roundId} survives the OAuth redirect handoff, while
+                      // gdv:last-anon-claim restores the saved/claimable UI on reload.
+                      localStorage.setItem(
+                        `claim:${res.roundId}`,
+                        JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })
+                      );
+                    } catch { /* localStorage unavailable */ }
+                    writeStoredAnonClaim({
+                      roundId: res.roundId,
+                      claimToken: res.claimToken,
+                      input: lastInput,
+                      timestamp: new Date().toISOString(),
+                    });
                   }
                 }}
               />

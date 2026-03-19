@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
-import { readStoredRound, LAST_ROUND_KEY } from "@/lib/golf/local-storage";
+import {
+  readStoredRound,
+  readStoredAnonClaim,
+  writeStoredAnonClaim,
+  clearStoredAnonClaim,
+  LAST_ROUND_KEY,
+  LAST_ANON_CLAIM_KEY,
+} from "@/lib/golf/local-storage";
 
 // jsdom localStorage stub
 const store: Record<string, string> = {};
@@ -62,5 +69,56 @@ describe("readStoredRound", () => {
     store[LAST_ROUND_KEY] = JSON.stringify({ foo: "bar" });
     expect(readStoredRound()).toBeNull();
     expect(mockStorage.removeItem).toHaveBeenCalledWith(LAST_ROUND_KEY);
+  });
+});
+
+describe("stored anonymous claim helpers", () => {
+  const sampleClaim = {
+    roundId: "round-123",
+    claimToken: "claim-abc",
+    input: {
+      course: "Pebble Beach",
+      date: "2026-03-15",
+      score: 87,
+      handicapIndex: 14.3,
+      courseRating: 72.1,
+      slopeRating: 132,
+      fairwayAttempts: 14,
+      totalPutts: 33,
+      penaltyStrokes: 2,
+      eagles: 0,
+      birdies: 1,
+      pars: 7,
+      bogeys: 7,
+      doubleBogeys: 2,
+      triplePlus: 1,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  it("roundtrips anonymous claim storage", () => {
+    writeStoredAnonClaim(sampleClaim);
+    expect(readStoredAnonClaim()).toEqual(sampleClaim);
+  });
+
+  it("clears malformed anonymous claims", () => {
+    store[LAST_ANON_CLAIM_KEY] = JSON.stringify({ roundId: "bad" });
+    expect(readStoredAnonClaim()).toBeNull();
+    expect(mockStorage.removeItem).toHaveBeenCalledWith(LAST_ANON_CLAIM_KEY);
+  });
+
+  it("clears expired anonymous claims", () => {
+    store[LAST_ANON_CLAIM_KEY] = JSON.stringify({
+      ...sampleClaim,
+      timestamp: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    expect(readStoredAnonClaim()).toBeNull();
+    expect(mockStorage.removeItem).toHaveBeenCalledWith(LAST_ANON_CLAIM_KEY);
+  });
+
+  it("removes the stored anonymous claim", () => {
+    store[LAST_ANON_CLAIM_KEY] = JSON.stringify(sampleClaim);
+    clearStoredAnonClaim();
+    expect(store[LAST_ANON_CLAIM_KEY]).toBeUndefined();
   });
 });
