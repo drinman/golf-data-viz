@@ -1,8 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { buildShareUrl, type ShareMedium } from "@/lib/golf/share-url";
 
 describe("buildShareUrl", () => {
   const payload = "eyJjb3Vyc2UiOiJUZXN0In0";
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
 
   it("contains ?d=<payload> and all three UTM params", () => {
     const url = buildShareUrl({ encodedPayload: payload, medium: "copy_link" });
@@ -44,8 +48,16 @@ describe("buildShareUrl", () => {
     expect(parsed.searchParams.get("d")).toBe(specialPayload);
   });
 
-  it("defaults to golfdataviz.com/strokes-gained as baseUrl", () => {
+  it("uses NEXT_PUBLIC_BASE_URL when set", () => {
+    vi.stubEnv("NEXT_PUBLIC_BASE_URL", "https://staging.golfdataviz.com");
     const url = buildShareUrl({ encodedPayload: payload, medium: "receipt_qr" });
-    expect(url).toContain("https://golfdataviz.com/strokes-gained");
+    expect(url).toContain("https://staging.golfdataviz.com/strokes-gained");
+  });
+
+  it("falls back to window.location.origin in browser context", () => {
+    // jsdom sets window.location.origin to http://localhost
+    const url = buildShareUrl({ encodedPayload: payload, medium: "receipt_qr" });
+    expect(url).toContain("/strokes-gained");
+    expect(new URL(url).searchParams.get("d")).toBe(payload);
   });
 });

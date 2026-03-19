@@ -228,11 +228,10 @@ export default function StrokesGainedClient({
     }
   }, [initialInput]);
 
-  // Gate encoded-share recipient CTA on client (avoids hydration mismatch)
+  // Show recipient CTA for all shared links (avoids hydration mismatch via useEffect)
   useEffect(() => {
     if (isSharedLink) {
-      const utmSource = new URLSearchParams(window.location.search).get("utm_source");
-      setShowEncodedRecipientCta(utmSource === "share");
+      setShowEncodedRecipientCta(true);
     }
   }, [isSharedLink]);
 

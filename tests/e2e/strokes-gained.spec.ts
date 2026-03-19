@@ -760,7 +760,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     ).toBeVisible();
   });
 
-  test("encoded share without UTM hides recipient CTA", async ({
+  test("encoded share without UTM still shows recipient CTA (legacy compatibility)", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
@@ -773,7 +773,11 @@ test.describe("Strokes Gained Benchmarker", () => {
       page.getByText("Your Round Breakdown")
     ).toBeVisible({ timeout: 5000 });
 
-    await expect(page.getByTestId("recipient-cta")).not.toBeVisible();
+    const cta = page.getByTestId("recipient-cta");
+    await expect(cta).toBeVisible();
+    await expect(
+      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare)/)
+    ).toBeVisible();
   });
 
   test("shared link header does NOT appear for user-submitted results", async ({
