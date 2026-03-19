@@ -64,7 +64,7 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
 
   useEffect(() => {
     const el = inlineRef.current;
-    if (!el) return;
+    if (!el || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
