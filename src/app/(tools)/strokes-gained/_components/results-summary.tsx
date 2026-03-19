@@ -13,6 +13,7 @@ import { getEmphasizedCategories } from "@/lib/golf/emphasis";
 import { calculatePercentiles } from "@/lib/golf/percentile";
 import { generateTroubleNarrative, type RoundTroubleContext } from "@/lib/golf/trouble-context";
 import { trackEvent } from "@/lib/analytics/client";
+import { bracketToSlug } from "@/lib/seo/slugs";
 import { ConfidenceBadge } from "./confidence-badge";
 import { MethodologyTooltip } from "./methodology-tooltip";
 import { TroubleContextNarrative } from "./trouble-context-narrative";
@@ -181,7 +182,7 @@ export function ResultsSummary({ result, benchmarkMeta, troubleContext, onRemove
           </span>
         )}
         {" "}&middot;{" "}
-        <Link href="/methodology" className="underline hover:text-neutral-600">
+        <Link href={"/benchmarks/" + bracketToSlug(result.benchmarkBracket)} className="underline hover:text-neutral-600">
           Benchmarks
         </Link>{" "}
         v{benchmarkMeta.version}
