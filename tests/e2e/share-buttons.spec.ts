@@ -85,6 +85,14 @@ test.describe("Share buttons layout", () => {
     expect(clipboardText).not.toContain("\n");
   });
 
+  test("copy link shows Copied feedback", async ({ page }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+
+    await page.getByTestId("copy-link").click();
+    await expect(page.getByText("Copied!")).toBeVisible({ timeout: 2000 });
+  });
+
   test("receipt discovery section renders with CTA", async ({ page }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
