@@ -177,11 +177,6 @@ export async function saveRound(
       return fail("SAVE_DISABLED", SAVE_DISABLED_MESSAGE);
     }
 
-    const token = verification.turnstileToken?.trim() ?? "";
-    if (!token) {
-      return fail("VERIFICATION_REQUIRED", VERIFICATION_REQUIRED_MESSAGE);
-    }
-
     // Rate limiting: fixed window per IP
     const hdrs = await headers();
     const ip = extractClientIp(hdrs);
@@ -211,18 +206,29 @@ export async function saveRound(
       return fail("VALIDATION", message);
     }
 
-    const turnstileResult = await verifyTurnstileToken({
-      token,
-      remoteIp: ip,
-      expectedHostname: hostHeader,
-    });
+    // Turnstile verification: skip for authenticated users (already proven
+    // identity via OAuth). Only enforce for anonymous saves to prevent bot spam.
+    const user = await getUser();
+    const token = verification.turnstileToken?.trim() ?? "";
 
-    if (!turnstileResult.ok) {
-      console.warn("[saveRound] Turnstile verification failed", {
-        reason: turnstileResult.reason,
-        errorCodes: turnstileResult.result.errorCodes,
+    if (!user) {
+      if (!token) {
+        return fail("VERIFICATION_REQUIRED", VERIFICATION_REQUIRED_MESSAGE);
+      }
+
+      const turnstileResult = await verifyTurnstileToken({
+        token,
+        remoteIp: ip,
+        expectedHostname: hostHeader,
       });
-      return fail("VERIFICATION_FAILED", VERIFICATION_FAILED_MESSAGE);
+
+      if (!turnstileResult.ok) {
+        console.warn("[saveRound] Turnstile verification failed", {
+          reason: turnstileResult.reason,
+          errorCodes: turnstileResult.result.errorCodes,
+        });
+        return fail("VERIFICATION_FAILED", VERIFICATION_FAILED_MESSAGE);
+      }
     }
 
     // Recalculate SG server-side — never trust client-supplied values
@@ -237,7 +243,6 @@ export async function saveRound(
 
     const supabase = createAdminClient();
     const row = toRoundInsert(validatedInput, sg);
-    const user = await getUser();
     const baseInsert = {
       ...row,
       user_id: user?.id ?? null,

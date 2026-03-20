@@ -59,24 +59,30 @@ export function PostResultsSaveCta({
   async function handleSave() {
     trackEvent("post_results_save_cta_clicked");
 
-    if (!turnstileSiteKey || !turnstileRef.current) {
-      trackEvent("round_save_failed", { error_type: "config" });
-      setPhase("error");
-      setErrorMessage("Save unavailable — please try again later.");
-      return;
-    }
-
-    setPhase("verifying");
+    setPhase(isAuthenticated ? "saving" : "verifying");
     setErrorMessage(null);
 
-    let token: string;
-    try {
-      token = await turnstileRef.current.execute();
-    } catch {
-      trackEvent("round_save_failed", { error_type: "verification" });
-      setPhase("error");
-      setErrorMessage("Bot check failed. Please try again.");
-      return;
+    // Authenticated users skip Turnstile — they've already proven identity via OAuth.
+    // Turnstile is only needed for anonymous saves to prevent bot spam.
+    let token: string | null = null;
+    if (!isAuthenticated) {
+      if (!turnstileSiteKey || !turnstileRef.current) {
+        trackEvent("round_save_failed", { error_type: "config" });
+        setPhase("error");
+        setErrorMessage("Save unavailable — please try again later.");
+        return;
+      }
+
+      try {
+        token = await turnstileRef.current.execute();
+      } catch {
+        trackEvent("round_save_failed", { error_type: "verification" });
+        setPhase("error");
+        setErrorMessage(
+          "Verification blocked — your ad blocker may be preventing the bot check. Try disabling it or saving from a different browser."
+        );
+        return;
+      }
     }
 
     setPhase("saving");
@@ -203,30 +209,34 @@ export function PostResultsSaveCta({
         )}
       </div>
 
-      <p className="mt-3 text-xs text-neutral-500">
-        Cloudflare Turnstile verifies you&apos;re human.{" "}
-        <a
-          href="https://www.cloudflare.com/privacypolicy/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-neutral-700"
-        >
-          Privacy Policy
-        </a>{" "}
-        and{" "}
-        <a
-          href="https://www.cloudflare.com/website-terms/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-neutral-700"
-        >
-          Terms
-        </a>
-        .
-      </p>
+      {!isAuthenticated && (
+        <>
+          <p className="mt-3 text-xs text-neutral-500">
+            Cloudflare Turnstile verifies you&apos;re human.{" "}
+            <a
+              href="https://www.cloudflare.com/privacypolicy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-neutral-700"
+            >
+              Privacy Policy
+            </a>{" "}
+            and{" "}
+            <a
+              href="https://www.cloudflare.com/website-terms/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-neutral-700"
+            >
+              Terms
+            </a>
+            .
+          </p>
 
-      {turnstileSiteKey && (
-        <TurnstileWidget ref={turnstileRef} siteKey={turnstileSiteKey} />
+          {turnstileSiteKey && (
+            <TurnstileWidget ref={turnstileRef} siteKey={turnstileSiteKey} />
+          )}
+        </>
       )}
     </div>
   );

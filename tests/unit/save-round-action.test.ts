@@ -508,7 +508,8 @@ describe("saveRound server action", () => {
     expect(insertedRow.three_putts).toBeNull();
   });
 
-  it("returns VERIFICATION_REQUIRED when the Turnstile token is missing", async () => {
+  it("returns VERIFICATION_REQUIRED when the Turnstile token is missing for anonymous user", async () => {
+    mockGetUser.mockResolvedValue(null);
     const result = await saveRound(makeRound(), { turnstileToken: null });
 
     expect(result).toEqual({
@@ -516,9 +517,17 @@ describe("saveRound server action", () => {
       code: "VERIFICATION_REQUIRED",
       message: "Complete the bot check to save anonymously.",
     });
-    expect(mockCheckRateLimit).not.toHaveBeenCalled();
     expect(mockVerifyTurnstileToken).not.toHaveBeenCalled();
     expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("skips Turnstile verification for authenticated users", async () => {
+    mockGetUser.mockResolvedValue({ id: "user-123" });
+    const result = await saveRound(makeRound(), { turnstileToken: null });
+
+    expect(result.success).toBe(true);
+    expect(mockVerifyTurnstileToken).not.toHaveBeenCalled();
+    expect(mockInsert).toHaveBeenCalled();
   });
 
   it("returns VERIFICATION_FAILED when Turnstile verification rejects the request", async () => {
