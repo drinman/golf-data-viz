@@ -64,7 +64,6 @@ export type AnalyticsEvent =
   | "post_results_save_cta_clicked"
   | "local_round_restored"
   | "download_receipt_clicked"
-  | "download_story_clicked"
   | "shared_round_cta_clicked"
   | "recipient_started_own_calc"
   | "recipient_completed_own_calc"
@@ -88,7 +87,7 @@ export type AnalyticsEventProps = {
     total_sg: number;
     methodology_version: string;
   };
-  download_png_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null };
+  download_png_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null; share_method?: "native" | "download" | "cancelled" };
   copy_link_clicked: { share_type: "canonical" | "encoded"; surface: "results_page"; utm_source?: string; headline_pattern?: string | null };
   shared_round_viewed: { referrer: string; utm_source: string };
   round_saved: EmptyPayload;
@@ -209,8 +208,7 @@ export type AnalyticsEventProps = {
   post_results_save_cta_viewed: EmptyPayload;
   post_results_save_cta_clicked: EmptyPayload;
   local_round_restored: EmptyPayload;
-  download_receipt_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null };
-  download_story_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null };
+  download_receipt_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null; share_method?: "native" | "download" | "cancelled" };
   shared_round_cta_clicked: { surface: "encoded_share" | "token_share"; sentiment: "positive" | "negative" | "neutral" };
   recipient_started_own_calc: { utm_source?: string; utm_medium?: string };
   recipient_completed_own_calc: { utm_source?: string; utm_medium?: string; handicap_bracket: string };
