@@ -249,41 +249,31 @@ export async function saveRound(
     };
     let persistedPayload: RoundWritePayload = insertWithTrust;
 
+    // Backward-compat retry loop: if the DB schema is behind the app code
+    // (e.g. migration hasn't run yet), progressively strip unknown columns
+    // and retry.  Each stripper is tried at most once; order doesn't matter
+    // because each targets a disjoint set of columns.
+    const schemaFallbacks: Array<{
+      test: (e: SupabaseInsertError | null) => boolean;
+      strip: (p: RoundWritePayload) => RoundWritePayload;
+      label: string;
+    }> = [
+      { test: isMissingTrustSchemaError, strip: () => baseInsert, label: "trust metadata" },
+      { test: isMissingPhase2SchemaError, strip: stripPhase2Fields, label: "Phase 2 columns" },
+      { test: isMissingOnePuttsSchemaError, strip: stripOnePuttsField, label: "one_putts" },
+    ];
+
     let { error, data: insertedRows } = await supabase
       .from("rounds")
       .insert(persistedPayload)
       .select("id");
 
-    // Backward-compat: retry without trust columns if schema is behind
-    if (isMissingTrustSchemaError(error)) {
+    for (const fallback of schemaFallbacks) {
+      if (!fallback.test(error)) continue;
       console.warn(
-        "[saveRound] Retrying insert without trust metadata because the DB schema is behind app code"
+        `[saveRound] Retrying insert without ${fallback.label} because the DB schema is behind app code`
       );
-      persistedPayload = baseInsert;
-      ({ error, data: insertedRows } = await supabase
-        .from("rounds")
-        .insert(persistedPayload)
-        .select("id"));
-    }
-
-    // Backward-compat: retry without Phase 2 columns if schema is behind
-    if (isMissingPhase2SchemaError(error)) {
-      console.warn(
-        "[saveRound] Retrying insert without Phase 2 columns because the DB schema is behind app code"
-      );
-      persistedPayload = stripPhase2Fields(persistedPayload);
-      ({ error, data: insertedRows } = await supabase
-        .from("rounds")
-        .insert(persistedPayload)
-        .select("id"));
-    }
-
-    // Backward-compat: retry without one_putts column if schema is behind
-    if (isMissingOnePuttsSchemaError(error)) {
-      console.warn(
-        "[saveRound] Retrying insert without one_putts because the DB schema is behind app code"
-      );
-      persistedPayload = stripOnePuttsField(persistedPayload);
+      persistedPayload = fallback.strip(persistedPayload);
       ({ error, data: insertedRows } = await supabase
         .from("rounds")
         .insert(persistedPayload)

@@ -63,7 +63,7 @@ test.describe("Share buttons layout", () => {
     await expect(page.getByTestId("download-png")).not.toBeVisible();
   });
 
-  test("copy link icon button copies URL-only", async ({
+  test("copy link copies single-line headline + URL", async ({
     page,
     context,
   }) => {
@@ -80,9 +80,10 @@ test.describe("Share buttons layout", () => {
       navigator.clipboard.readText()
     );
 
-    // URL-only, no headline prefix, no newlines
-    expect(clipboardText).toMatch(/^https?:\/\//);
+    // Single-line: "Shot 82 at Torrey Pines South 🏆 — https://..."
     expect(clipboardText).not.toContain("\n");
+    expect(clipboardText).toContain(" — ");
+    expect(clipboardText).toMatch(/https?:\/\//);
   });
 
   test("copy link shows Copied feedback", async ({ page }) => {
