@@ -63,7 +63,7 @@ test.describe("Share buttons layout", () => {
     await expect(page.getByTestId("download-png")).not.toBeVisible();
   });
 
-  test("copy link copies single-line headline + URL", async ({
+  test("copy link copies URL only", async ({
     page,
     context,
   }) => {
@@ -80,10 +80,9 @@ test.describe("Share buttons layout", () => {
       navigator.clipboard.readText()
     );
 
-    // Single-line: "Shot 82 at Torrey Pines South 🏆 — https://..."
-    expect(clipboardText).not.toContain("\n");
-    expect(clipboardText).toContain(" — ");
-    expect(clipboardText).toMatch(/https?:\/\//);
+    // URL-only: prepending headlines caused browsers to Google-search instead of navigate
+    expect(clipboardText).toMatch(/^https?:\/\//);
+    expect(clipboardText).not.toContain(" — ");
   });
 
   test("copy link shows Copied feedback", async ({ page }) => {

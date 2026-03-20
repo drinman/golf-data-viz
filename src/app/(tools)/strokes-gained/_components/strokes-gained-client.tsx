@@ -596,12 +596,7 @@ export default function StrokesGainedClient({
         ? buildShareUrl({ encodedPayload: encodeRound(lastInput), medium: "copy_link" })
         : window.location.href;
 
-    // Single-line format: "Shot 82 at Pebble Beach 🏆 — golfdataviz.com/..."
-    // Keeps context when pasting into group chats without the newline that
-    // caused browsers to treat multi-line pastes as search queries.
-    const text = shareHeadline
-      ? `${shareHeadline.clipboardPrefix} — ${url}`
-      : url;
+    const text = url;
 
     trackEvent("copy_link_clicked", {
       share_type: shareToken ? "canonical" : "encoded",
