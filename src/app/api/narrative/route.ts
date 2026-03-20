@@ -104,6 +104,10 @@ export async function POST(request: NextRequest) {
   const input = parsed.data;
   const benchmark = getInterpolatedBenchmark(input.handicapIndex);
   const result = calculateStrokesGainedV3(input, benchmark);
+  // Safety net: NarrativeBlock bails client-side for caveated/quarantined
+  // rounds, so these branches are not reached in the current UI flow. They
+  // guard against direct API callers and future surfaces that may not have
+  // the same client-side gating.
   if (isPresentationTrustEnabled()) {
     const presentationTrust = derivePresentationTrust({ input, result });
 

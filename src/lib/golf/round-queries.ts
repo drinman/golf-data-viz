@@ -427,5 +427,8 @@ export const getLessonReportByShareToken = cache(async function getLessonReportB
   if (hasTrustAwareLessonReportData(snapshot.reportData)) {
     return snapshot;
   }
+  // No userId filter: admin client bypasses RLS and the share token already
+  // authorized access to this report. persist: false avoids writes from
+  // unauthenticated viewers.
   return rebuildLessonReportSnapshot(snapshot, { supabase, persist: false });
 });

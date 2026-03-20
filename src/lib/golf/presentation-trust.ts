@@ -60,6 +60,14 @@ function deriveLowGirPuttingCaveat(
   return gir / 18 < benchmark.girPercentage / 100 - 0.1;
 }
 
+/**
+ * Absolute per-round count difference of doubles+triples vs benchmark averages.
+ * Both sides are per-round values (input is a single round, benchmark rates are
+ * per-round averages), so this is already a rate comparison. The >= 1.5 threshold
+ * scales naturally across brackets: a 30+ hcp with 3.0 benchmark doubles needs
+ * 5+ doubles to trigger, which is proportionally similar to a 14-hcp needing
+ * 3+ doubles against a 1.5 benchmark.
+ */
 function deriveScoringDivergence(
   input: RoundInput,
   result: StrokesGainedResult

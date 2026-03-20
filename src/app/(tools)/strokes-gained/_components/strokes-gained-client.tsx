@@ -435,6 +435,8 @@ export default function StrokesGainedClient({
     }, 100);
   }
 
+  // isPresentationTrustEnabled() reads a NEXT_PUBLIC_ env var that is
+  // inlined at build time, so it is stable for the lifetime of the bundle.
   const presentationTrust = useMemo(() => {
     if (!result || !lastInput || !isPresentationTrustEnabled()) {
       return undefined;
