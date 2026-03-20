@@ -74,6 +74,6 @@ test("mobile user can submit a round and reach share actions", async ({
   await expect(page.getByText("Your Round Breakdown")).toBeVisible({
     timeout: 5000,
   });
-  await expect(page.getByTestId("download-png")).toBeVisible();
+  await expect(page.getByTestId("share-image")).toBeVisible();
   await expect(page.getByTestId("copy-link")).toBeVisible();
 });

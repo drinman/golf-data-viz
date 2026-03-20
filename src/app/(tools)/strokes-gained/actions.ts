@@ -92,6 +92,19 @@ function isMissingPhase2SchemaError(error: SupabaseInsertError | null): boolean 
   );
 }
 
+function isMissingOnePuttsSchemaError(error: SupabaseInsertError | null): boolean {
+  return (
+    error?.code === "PGRST204" &&
+    /one_putts/.test(error.message ?? "")
+  );
+}
+
+function stripOnePuttsField(payload: RoundWritePayload): RoundWritePayload {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { one_putts: _omitted, ...rest } = payload as RoundWritePayload & { one_putts?: unknown };
+  return rest as RoundWritePayload;
+}
+
 function stripPhase2Fields(payload: RoundWritePayload): RoundWritePayload {
   const sanitized = { ...payload };
 
@@ -259,6 +272,18 @@ export async function saveRound(
         "[saveRound] Retrying insert without Phase 2 columns because the DB schema is behind app code"
       );
       persistedPayload = stripPhase2Fields(persistedPayload);
+      ({ error, data: insertedRows } = await supabase
+        .from("rounds")
+        .insert(persistedPayload)
+        .select("id"));
+    }
+
+    // Backward-compat: retry without one_putts column if schema is behind
+    if (isMissingOnePuttsSchemaError(error)) {
+      console.warn(
+        "[saveRound] Retrying insert without one_putts because the DB schema is behind app code"
+      );
+      persistedPayload = stripOnePuttsField(persistedPayload);
       ({ error, data: insertedRows } = await supabase
         .from("rounds")
         .insert(persistedPayload)

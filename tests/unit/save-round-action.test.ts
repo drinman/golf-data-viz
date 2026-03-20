@@ -556,6 +556,41 @@ describe("saveRound server action", () => {
     });
   });
 
+  it("retries without one_putts when production schema is behind app code", async () => {
+    mockInsert
+      .mockReturnValueOnce({
+        select: vi.fn().mockResolvedValue({
+          error: {
+            message:
+              "Could not find the 'one_putts' column of 'rounds' in the schema cache",
+            code: "PGRST204",
+          },
+          data: null,
+        }),
+      })
+      .mockReturnValueOnce({
+        select: vi.fn().mockResolvedValue({ error: null, data: [{ id: "test-round-id" }] }),
+      });
+
+    const result = await saveRound(makeRound({ onePutts: 5 }), verification);
+
+    expect(result).toEqual({
+      success: true,
+      roundId: "test-round-id",
+      claimToken: FAKE_CLAIM_TOKEN,
+      isOwned: false,
+    });
+    expect(mockInsert).toHaveBeenCalledTimes(2);
+    // First attempt includes one_putts
+    expect(mockInsert.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ one_putts: 5 })
+    );
+    // Retry should NOT include one_putts
+    expect(mockInsert.mock.calls[1][0]).toEqual(
+      expect.not.objectContaining({ one_putts: expect.anything() })
+    );
+  });
+
   it("sets user_id when authenticated user saves a round", async () => {
     mockGetUser.mockResolvedValue({ id: "user-123" });
 

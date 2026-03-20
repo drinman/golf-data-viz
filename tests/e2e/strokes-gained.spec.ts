@@ -202,13 +202,13 @@ test.describe("Strokes Gained Benchmarker", () => {
     );
   });
 
-  test("PNG download button triggers file download", async ({ page }) => {
+  test("Share button triggers file download on desktop (native share fallback)", async ({ page }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
 
-    // Click download and verify a download event fires
+    // Click share and verify a download event fires (headless has no navigator.canShare)
     const downloadPromise = page.waitForEvent("download");
-    await page.click('[data-testid="download-png"]');
+    await page.click('[data-testid="share-image"]');
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe("strokes-gained.png");
   });
@@ -408,25 +408,25 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(submitBtn).toBeEnabled();
   });
 
-  test("PNG download button shows Preparing... while capturing", async ({
+  test("Share button shows Preparing... while capturing", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
 
-    const dlBtn = page.getByTestId("download-png");
-    await expect(dlBtn).toContainText("Download PNG");
+    const shareBtn = page.getByTestId("share-image");
+    await expect(shareBtn).toContainText("Share");
 
-    // Click download — button should flip to loading state
+    // Click share — button should flip to loading state
     const downloadPromise = page.waitForEvent("download");
-    await dlBtn.click();
-    await expect(dlBtn).toContainText("Preparing...");
-    await expect(dlBtn).toBeDisabled();
+    await shareBtn.click();
+    await expect(shareBtn).toContainText("Preparing...");
+    await expect(shareBtn).toBeDisabled();
 
     // After download completes, button resets
     await downloadPromise;
-    await expect(dlBtn).toContainText("Download PNG", { timeout: 5000 });
-    await expect(dlBtn).toBeEnabled();
+    await expect(shareBtn).toContainText("Share", { timeout: 5000 });
+    await expect(shareBtn).toBeEnabled();
   });
 
   test("plus handicap: toggle to +, enter 2.3, submit and see Plus HCP disclosure", async ({
@@ -807,44 +807,23 @@ test.describe("Strokes Gained Benchmarker", () => {
     expect(download.suggestedFilename()).toMatch(/-receipt\.png$/);
   });
 
-  test("story download triggers file download with -story.png suffix", async ({
+  test("share section shows two-tier layout: Share + link icon, then receipt discovery", async ({
     page,
   }) => {
     await page.goto("/strokes-gained");
     await submitFullRound(page);
 
-    const downloadPromise = page.waitForEvent("download");
-    await page.click('[data-testid="download-story"]');
-    const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/-story\.png$/);
-  });
-
-  test("share buttons appear in correct order: Receipt, Story, PNG, Copy Link", async ({
-    page,
-  }) => {
-    await page.goto("/strokes-gained");
-    await submitFullRound(page);
-
-    const receipt = page.getByTestId("download-receipt");
-    const story = page.getByTestId("download-story");
-    const png = page.getByTestId("download-png");
+    const shareBtn = page.getByTestId("share-image");
     const copyLink = page.getByTestId("copy-link");
+    const receipt = page.getByTestId("receipt-discovery");
 
-    await expect(receipt).toBeVisible();
-    await expect(story).toBeVisible();
-    await expect(png).toBeVisible();
+    await expect(shareBtn).toBeVisible();
     await expect(copyLink).toBeVisible();
+    await expect(receipt).toBeVisible();
 
-    // Verify order via bounding boxes
-    const receiptBox = await receipt.boundingBox();
-    const storyBox = await story.boundingBox();
-    const pngBox = await png.boundingBox();
-    const copyBox = await copyLink.boundingBox();
-
-    expect(receiptBox!.x).toBeLessThan(storyBox!.x);
-    expect(storyBox!.x).toBeLessThan(pngBox!.x);
-    // Copy link may wrap to next row on narrow screens, just verify it exists
-    expect(copyBox).toBeTruthy();
+    // Old buttons should not exist
+    await expect(page.getByTestId("download-story")).not.toBeVisible();
+    await expect(page.getByTestId("download-png")).not.toBeVisible();
   });
 
   test("CTA links to calculator with handicap prefill", async ({

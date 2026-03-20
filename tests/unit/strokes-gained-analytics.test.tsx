@@ -321,10 +321,10 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     expect(mockTrackEvent).not.toHaveBeenCalledWith("form_started");
   });
 
-  it("fires download_png_clicked when download button is clicked", async () => {
+  it("fires download_png_clicked when share button is clicked", async () => {
     renderClient({ initialInput: mockInput });
 
-    await userEvent.click(screen.getByTestId("download-png"));
+    await userEvent.click(screen.getByTestId("share-image"));
 
     await waitFor(() => {
       expect(mockTrackEvent).toHaveBeenCalledWith(
@@ -333,6 +333,7 @@ describe("StrokesGainedClient analytics instrumentation", () => {
           has_share_param: true,
           utm_source: "reddit",
           headline_pattern: expect.any(String),
+          share_method: "download",
           ...expectedRoundAnalyticsContext,
         })
       );
@@ -429,7 +430,7 @@ describe("StrokesGainedClient analytics instrumentation", () => {
     expect(window.location.search).toBe("?d=encoded-test-data");
 
     await userEvent.click(screen.getByTestId("copy-link"));
-    await userEvent.click(screen.getByTestId("download-png"));
+    await userEvent.click(screen.getByTestId("share-image"));
 
     expect(mockTrackEvent).toHaveBeenCalledWith(
       "copy_link_clicked",
@@ -513,10 +514,9 @@ describe("Copy Link error handling", () => {
     });
 
     renderClient({ initialInput: mockInput });
-    const copyBtn = screen.getByTestId("copy-link");
-    await userEvent.click(copyBtn);
+    await userEvent.click(screen.getByTestId("copy-link"));
 
-    expect(copyBtn).toHaveTextContent("Copied!");
+    expect(screen.getByText("Copied!")).toBeInTheDocument();
   });
 
   it("shows 'Copied!' via execCommand fallback when clipboard API throws", async () => {
@@ -529,13 +529,12 @@ describe("Copy Link error handling", () => {
     document.execCommand = vi.fn(() => true);
 
     renderClient({ initialInput: mockInput });
-    const copyBtn = screen.getByTestId("copy-link");
-    await userEvent.click(copyBtn);
+    await userEvent.click(screen.getByTestId("copy-link"));
 
-    expect(copyBtn).toHaveTextContent("Copied!");
+    expect(screen.getByText("Copied!")).toBeInTheDocument();
   });
 
-  it("shows 'Failed to copy' when both clipboard and execCommand fail", async () => {
+  it("shows 'Failed' when both clipboard and execCommand fail", async () => {
     Object.defineProperty(navigator, "clipboard", {
       value: {
         writeText: vi.fn(() => Promise.reject(new Error("Not allowed"))),
@@ -545,10 +544,9 @@ describe("Copy Link error handling", () => {
     document.execCommand = vi.fn(() => false);
 
     renderClient({ initialInput: mockInput });
-    const copyBtn = screen.getByTestId("copy-link");
-    await userEvent.click(copyBtn);
+    await userEvent.click(screen.getByTestId("copy-link"));
 
-    expect(copyBtn).toHaveTextContent("Failed to copy");
+    expect(screen.getByText("Failed")).toBeInTheDocument();
   });
 });
 

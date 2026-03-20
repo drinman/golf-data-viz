@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { CircleCheck, Smartphone } from "lucide-react";
+import { CircleCheck, Link2 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/client";
 import { buildRoundAnalyticsContext } from "@/lib/golf/analytics";
 import type {
@@ -35,12 +35,12 @@ import {
 } from "@/lib/golf/presentation-trust";
 import { buildShareUrl } from "@/lib/golf/share-url";
 import { generateShareHeadline } from "@/lib/golf/share-headline";
-import { captureElementAsPng, downloadBlob } from "@/lib/capture";
+import { captureElementAsPng } from "@/lib/capture";
+import { shareImage } from "@/lib/share";
 import { RoundInputForm } from "./round-input-form";
 import { ResultsSummary } from "./results-summary";
 import { ShareCard } from "./share-card";
 import { ReceiptCard } from "./receipt-card";
-import { StoryCard } from "./story-card";
 import { RecipientCta } from "./recipient-cta";
 import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
@@ -178,7 +178,6 @@ export default function StrokesGainedClient({
   const [isCalculating, setIsCalculating] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadingReceipt, setDownloadingReceipt] = useState(false);
-  const [downloadingStory, setDownloadingStory] = useState(false);
   const [troubleContext, setTroubleContext] = useState<RoundTroubleContext | null>(null);
   const [troubleModalOpen, setTroubleModalOpen] = useState(false);
   const [troublePromptDismissed, setTroublePromptDismissed] = useState(false);
@@ -197,7 +196,6 @@ export default function StrokesGainedClient({
   const resultsRef = useRef<HTMLDivElement>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const receiptCardRef = useRef<HTMLDivElement>(null);
-  const storyCardRef = useRef<HTMLDivElement>(null);
   const formStartedRef = useRef(false);
   const recipientStartedRef = useRef(false);
   const sharedRoundViewedRef = useRef(false);
@@ -530,72 +528,51 @@ export default function StrokesGainedClient({
     [lastInput, presentationTrust, result],
   );
 
-  const handleDownloadPng = useCallback(async () => {
+  const handleShare = useCallback(async () => {
     if (!shareCardRef.current || downloading) return;
     setDownloading(true);
     await waitForUiPaint();
     await new Promise<void>((resolve) => setTimeout(resolve, CAPTURE_PREP_DELAY_MS));
     const start = Date.now();
     try {
+      const blob = await captureElementAsPng(shareCardRef.current);
+      const wasNative = await shareImage(blob, "strokes-gained.png", shareHeadline?.line);
       trackEvent("download_png_clicked", {
         has_share_param: window.location.search.includes("d="),
         utm_source: getAttributionUtmSource(),
         headline_pattern: shareHeadline?.pattern ?? null,
+        share_method: wasNative ? "native" : "download",
         ...(roundAnalyticsContext ?? {}),
       });
-      const blob = await captureElementAsPng(shareCardRef.current);
-      downloadBlob(blob, "strokes-gained.png");
     } finally {
-      // Keep the loading state long enough to be perceptible on fast captures.
       const elapsed = Date.now() - start;
       const remaining = Math.max(0, MIN_CAPTURE_LOADING_MS - elapsed);
       setTimeout(() => setDownloading(false), remaining);
     }
   }, [downloading, roundAnalyticsContext, shareHeadline]);
 
-  const handleDownloadReceipt = useCallback(async () => {
+  const handleShareReceipt = useCallback(async () => {
     if (!receiptCardRef.current || downloadingReceipt) return;
     setDownloadingReceipt(true);
     await waitForUiPaint();
     await new Promise<void>((resolve) => setTimeout(resolve, CAPTURE_PREP_DELAY_MS));
     const start = Date.now();
     try {
+      const blob = await captureElementAsPng(receiptCardRef.current, { pixelRatio: 1 });
+      const courseSlug = lastInput?.course.replace(/\s+/g, "-").toLowerCase() ?? "round";
+      const wasNative = await shareImage(blob, `${courseSlug}-receipt.png`);
       trackEvent("download_receipt_clicked", {
         has_share_param: window.location.search.includes("d="),
         utm_source: getAttributionUtmSource(),
         headline_pattern: shareHeadline?.pattern ?? null,
+        share_method: wasNative ? "native" : "download",
       });
-      const blob = await captureElementAsPng(receiptCardRef.current, { pixelRatio: 1 });
-      const courseSlug = lastInput?.course.replace(/\s+/g, "-").toLowerCase() ?? "round";
-      downloadBlob(blob, `${courseSlug}-receipt.png`);
     } finally {
       const elapsed = Date.now() - start;
       const remaining = Math.max(0, MIN_CAPTURE_LOADING_MS - elapsed);
       setTimeout(() => setDownloadingReceipt(false), remaining);
     }
   }, [downloadingReceipt, shareHeadline, lastInput]);
-
-  const handleDownloadStory = useCallback(async () => {
-    if (!storyCardRef.current || downloadingStory) return;
-    setDownloadingStory(true);
-    await waitForUiPaint();
-    await new Promise<void>((resolve) => setTimeout(resolve, CAPTURE_PREP_DELAY_MS));
-    const start = Date.now();
-    try {
-      trackEvent("download_story_clicked", {
-        has_share_param: window.location.search.includes("d="),
-        utm_source: getAttributionUtmSource(),
-        headline_pattern: shareHeadline?.pattern ?? null,
-      });
-      const blob = await captureElementAsPng(storyCardRef.current, { pixelRatio: 1 });
-      const courseSlug = lastInput?.course.replace(/\s+/g, "-").toLowerCase() ?? "round";
-      downloadBlob(blob, `${courseSlug}-story.png`);
-    } finally {
-      const elapsed = Date.now() - start;
-      const remaining = Math.max(0, MIN_CAPTURE_LOADING_MS - elapsed);
-      setTimeout(() => setDownloadingStory(false), remaining);
-    }
-  }, [downloadingStory, shareHeadline, lastInput]);
 
   const handleCopyLink = useCallback(async () => {
     const url = shareToken
@@ -604,9 +581,7 @@ export default function StrokesGainedClient({
         ? buildShareUrl({ encodedPayload: encodeRound(lastInput), medium: "copy_link" })
         : window.location.href;
 
-    const text = shareHeadline
-      ? `${shareHeadline.clipboardPrefix}\n${url}`
-      : url;
+    const text = url;
 
     trackEvent("copy_link_clicked", {
       share_type: shareToken ? "canonical" : "encoded",
@@ -688,12 +663,6 @@ export default function StrokesGainedClient({
       void attemptClaim();
     }
   }, [user, savedRoundId, savedClaimToken, savedRoundOwned, claimStatus, attemptClaim]);
-
-  const copyButtonText = copyFailed
-    ? "Failed to copy"
-    : copied
-      ? "Copied!"
-      : "Copy Link";
 
   const troubleEligible = result && lastInput
     ? shouldShowTroubleContextPrompt(
@@ -1009,51 +978,83 @@ export default function StrokesGainedClient({
 
           {/* ── CHAPTER 4: SHARE & SAVE ── */}
           <div className="mt-10 space-y-5">
-            {/* Share actions — Receipt (primary), Story, PNG, Copy Link (secondary) */}
-            <div className="animate-fade-up flex flex-wrap gap-3" style={{ animationDelay: "450ms" }}>
+            {/* Tier 1: Primary share row */}
+            <div className="animate-fade-up flex items-center gap-3" style={{ animationDelay: "450ms" }}>
               <button
                 type="button"
-                data-testid="download-receipt"
-                onClick={handleDownloadReceipt}
-                disabled={downloadingReceipt}
-                className="rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {downloadingReceipt ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button
-                type="button"
-                data-testid="download-story"
-                onClick={handleDownloadStory}
-                disabled={downloadingStory}
-                className="inline-flex items-center gap-1.5 rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Smartphone className="h-4 w-4" />
-                {downloadingStory ? "Preparing..." : "Story"}
-              </button>
-              <button
-                type="button"
-                data-testid="download-png"
-                onClick={handleDownloadPng}
+                data-testid="share-image"
+                onClick={handleShare}
                 disabled={downloading}
-                className="rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {downloading ? "Preparing..." : "Download PNG"}
+                {downloading ? "Preparing..." : "Share"}
               </button>
               <button
                 type="button"
                 data-testid="copy-link"
                 onClick={handleCopyLink}
-                className={`rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
-                  copyFailed ? "text-red-600" : "text-neutral-800"
+                aria-label={copyFailed ? "Failed to copy" : copied ? "Copied" : "Copy link"}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-cream-200 bg-white transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
+                  copyFailed ? "text-red-600" : copied ? "text-brand-800" : "text-neutral-500"
                 }`}
               >
-                {copyButtonText}
+                {copied ? (
+                  <CircleCheck className="h-4 w-4" />
+                ) : (
+                  <Link2 className="h-4 w-4" />
+                )}
               </button>
+              {copied && (
+                <span className="text-xs font-medium text-brand-800">Copied!</span>
+              )}
+              {copyFailed && (
+                <span className="text-xs font-medium text-red-600">Failed</span>
+              )}
             </div>
             <p className="text-xs text-neutral-500">
               Shared links include your entered round stats in encoded (reversible)
               form.
             </p>
+
+            {/* Tier 2: Receipt discovery */}
+            {shareHeadline && (
+              <div
+                data-testid="receipt-discovery"
+                className="animate-fade-up rounded-xl border border-cream-200 bg-cream-50 p-5"
+                style={{ animationDelay: "500ms" }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="hidden shrink-0 sm:block">
+                    <div className="h-20 w-14 rounded border border-cream-200 bg-white p-1.5 shadow-sm">
+                      <div className="space-y-1">
+                        <div className="h-1 w-full rounded-full bg-neutral-200" />
+                        <div className="h-1 w-3/4 rounded-full bg-neutral-200" />
+                        <div className="h-1 w-full rounded-full bg-neutral-200" />
+                        <div className="h-1 w-1/2 rounded-full bg-neutral-200" />
+                        <div className="mx-auto mt-2 h-4 w-4 rounded-sm bg-neutral-100" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-neutral-900">
+                      Want the retro receipt?
+                    </p>
+                    <p className="mt-0.5 text-xs text-neutral-500">
+                      Monospace scorecard with QR code.
+                    </p>
+                    <button
+                      type="button"
+                      data-testid="download-receipt"
+                      onClick={handleShareReceipt}
+                      disabled={downloadingReceipt}
+                      className="mt-3 rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {downloadingReceipt ? "Preparing..." : "Get the Receipt"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Post-results save CTA */}
             {!saveSuccess && saveEnabled && (
@@ -1234,22 +1235,13 @@ export default function StrokesGainedClient({
               roundInput={lastInput}
             />
             {shareHeadline && (
-              <>
-                <ReceiptCard
-                  ref={receiptCardRef}
-                  result={result}
-                  roundInput={lastInput}
-                  qrUrl={buildShareUrl({ encodedPayload: encodeRound(lastInput), medium: "receipt_qr" })}
-                  headline={shareHeadline}
-                />
-                <StoryCard
-                  ref={storyCardRef}
-                  result={result}
-                  chartData={chartData}
-                  roundInput={lastInput}
-                  headline={shareHeadline}
-                />
-              </>
+              <ReceiptCard
+                ref={receiptCardRef}
+                result={result}
+                roundInput={lastInput}
+                qrUrl={buildShareUrl({ encodedPayload: encodeRound(lastInput), medium: "receipt_qr" })}
+                headline={shareHeadline}
+              />
             )}
           </div>
         </div>
