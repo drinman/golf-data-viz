@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 /** Validate redirect target is a safe relative path (no open redirect). */
 function getSafeRedirect(next: string | null): string {
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       console.error("[auth/callback] Failed to exchange code for session:", error.message);
@@ -25,6 +26,19 @@ export async function GET(request: NextRequest) {
       const errorUrl = new URL(next, request.url);
       errorUrl.searchParams.set("auth_error", "callback_failed");
       return NextResponse.redirect(errorUrl);
+    }
+
+    // Identify user in PostHog using their Supabase user ID
+    if (data.user) {
+      const posthog = getPostHogClient();
+      posthog.identify({
+        distinctId: data.user.id,
+        properties: {
+          email: data.user.email,
+          provider: data.user.app_metadata?.provider,
+        },
+      });
+      await posthog.shutdown();
     }
   }
 

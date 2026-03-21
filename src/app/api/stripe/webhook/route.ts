@@ -5,6 +5,7 @@ import {
   shouldApplyStripeUpdate,
   verifyStripeWebhookSignature,
 } from "@/lib/billing/stripe";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -169,6 +170,23 @@ async function handleCheckoutSessionCompleted(event: StripeEventPayload) {
     eventCreatedAt: event.created ?? null,
     patch,
   });
+
+  // Track checkout completion in PostHog with the authoritative server-side event
+  try {
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: userId,
+      event: "checkout_completed",
+      properties: {
+        surface: "stripe_webhook",
+        stripe_customer_id: getStringValue(object.customer),
+        stripe_subscription_id: getStringValue(object.subscription),
+      },
+    });
+    await posthog.shutdown();
+  } catch (err) {
+    console.warn("[stripe-webhook] PostHog checkout_completed capture failed", err);
+  }
 }
 
 async function handleSubscriptionEvent(event: StripeEventPayload) {
@@ -193,6 +211,23 @@ async function handleSubscriptionEvent(event: StripeEventPayload) {
     eventCreatedAt: event.created ?? null,
     patch: update,
   });
+
+  // Track subscription status changes in PostHog
+  try {
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: userId,
+      event: "subscription_status_changed",
+      properties: {
+        stripe_event_type: event.type,
+        subscription_status: getStringValue(object.status),
+        stripe_subscription_id: getStringValue(object.id),
+      },
+    });
+    await posthog.shutdown();
+  } catch (err) {
+    console.warn("[stripe-webhook] PostHog subscription_status_changed capture failed", err);
+  }
 }
 
 export async function POST(request: Request) {

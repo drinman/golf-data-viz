@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { CircleCheck, Link2 } from "lucide-react";
+import posthog from "posthog-js";
 import { trackEvent } from "@/lib/analytics/client";
 import { buildRoundAnalyticsContext } from "@/lib/golf/analytics";
 import type {
@@ -475,6 +476,18 @@ export default function StrokesGainedClient({
       methodology_version: sgResult.methodologyVersion,
       ...analyticsContext,
     });
+    try {
+      // posthog-js is a singleton initialized in instrumentation-client.ts.
+      // During SSR hydration, posthog won't be initialized yet — this try/catch
+      // is load-bearing, not just defensive.
+      posthog.setPersonProperties({
+        last_calculation_at: new Date().toISOString(),
+        last_handicap_bracket: sgResult.benchmarkBracket,
+        calculation_count: ((posthog.get_property?.("calculation_count") as number) ?? 0) + 1,
+      });
+    } catch {
+      // PostHog unavailable during SSR or if blocked
+    }
     if (sgResult.estimatedCategories.length > 0) {
       trackEvent("gir_estimated");
     }

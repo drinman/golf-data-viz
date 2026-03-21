@@ -13,6 +13,8 @@ import {
 import { derivePresentationTrust } from "@/lib/golf/presentation-trust";
 import { generateShareHeadline, SENTIMENT_COLORS } from "@/lib/golf/share-headline";
 import { buildPresentationPercentileRow } from "@/lib/golf/percentile";
+import { toRadarChartData } from "@/lib/golf/strokes-gained";
+import { OgRadarChart } from "@/lib/golf/og-radar-svg";
 
 export const runtime = "edge";
 
@@ -128,6 +130,7 @@ export async function GET(request: NextRequest) {
   );
 
   const headlineColor = SENTIMENT_COLORS[headline.sentiment];
+  const radarData = toRadarChartData(result);
 
   const familiarLine = buildFamiliarStats({
     handicapIndex: input.handicapIndex,
@@ -147,109 +150,107 @@ export async function GET(request: NextRequest) {
           fontFamily: "DM Sans",
         }}
       >
-        {/* Score hero */}
+        {/* Main content: two columns */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            paddingTop: 48,
+            flexDirection: "row",
+            flex: 1,
+            padding: "48px 40px 0 40px",
           }}
         >
-          <div
-            style={{
-              fontSize: 140,
-              fontWeight: 400,
-              color: "#fefcf3",
-              fontFamily: "DM Serif Display",
-              lineHeight: 1,
-            }}
-          >
-            {String(input.score)}
-          </div>
-          <div
-            style={{
-              fontSize: 36,
-              fontWeight: 400,
-              color: "#fefcf3",
-              fontFamily: "DM Serif Display",
-              marginTop: 8,
-            }}
-          >
-            {courseName}
-          </div>
-          <div style={{ fontSize: 22, color: "#a8d5ba", marginTop: 8, fontWeight: 500 }}>
-            {familiarLine}
-          </div>
-        </div>
-
-        {/* Gold separator */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 24,
-          }}
-        >
-          <div style={{ width: 120, height: 1, backgroundColor: "#b8860b", opacity: 0.6 }} />
-        </div>
-
-        {/* One-line takeaway */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 20,
-          }}
-        >
-          <div style={{ fontSize: 24, color: headlineColor, fontWeight: 500 }}>
-            {headline.line}
-          </div>
-        </div>
-
-        {/* Compact SG row */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 16,
-          }}
-        >
+          {/* Left column: text content (65%) */}
           <div
             style={{
               display: "flex",
-              backgroundColor: "rgba(255,255,255,0.08)",
-              borderRadius: 10,
-              padding: "12px 32px",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "65%",
             }}
           >
-            <div style={{ fontSize: 20, color: "#a8d5ba", fontWeight: 600, letterSpacing: "0.05em" }}>
-              {compactSG}
+            {/* Score hero */}
+            <div
+              style={{
+                fontSize: 140,
+                fontWeight: 400,
+                color: "#fefcf3",
+                fontFamily: "DM Serif Display",
+                lineHeight: 1,
+              }}
+            >
+              {String(input.score)}
             </div>
-          </div>
-        </div>
+            <div
+              style={{
+                fontSize: 36,
+                fontWeight: 400,
+                color: "#fefcf3",
+                fontFamily: "DM Serif Display",
+                marginTop: 8,
+              }}
+            >
+              {courseName}
+            </div>
+            <div style={{ fontSize: 22, color: "#a8d5ba", marginTop: 8, fontWeight: 500 }}>
+              {familiarLine}
+            </div>
 
-        {/* Percentile row */}
-        {percentileRow && (
+            {/* Gold separator */}
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
+              <div style={{ width: 120, height: 1, backgroundColor: "#b8860b", opacity: 0.6 }} />
+            </div>
+
+            {/* One-line takeaway */}
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+              <div style={{ fontSize: 24, color: headlineColor, fontWeight: 500 }}>
+                {headline.line}
+              </div>
+            </div>
+
+            {/* Compact SG row */}
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+              <div
+                style={{
+                  display: "flex",
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  borderRadius: 10,
+                  padding: "12px 32px",
+                }}
+              >
+                <div style={{ fontSize: 20, color: "#a8d5ba", fontWeight: 600, letterSpacing: "0.05em" }}>
+                  {compactSG}
+                </div>
+              </div>
+            </div>
+
+            {/* Percentile row */}
+            {percentileRow && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
+                <div style={{ fontSize: 16, color: "#a8d5ba", opacity: 0.7, letterSpacing: "0.04em" }}>
+                  {percentileRow}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right column: radar chart (35%), vertically centered */}
           <div
             style={{
               display: "flex",
+              width: "35%",
+              alignItems: "center",
               justifyContent: "center",
-              marginTop: 8,
             }}
           >
-            <div style={{ fontSize: 16, color: "#a8d5ba", opacity: 0.7, letterSpacing: "0.04em" }}>
-              {percentileRow}
-            </div>
+            <OgRadarChart data={radarData} size={260} />
           </div>
-        )}
+        </div>
 
-        {/* Watermark */}
+        {/* Watermark: full width, pinned to bottom */}
         <div
           style={{
             display: "flex",
             justifyContent: "center",
-            marginTop: "auto",
             paddingBottom: 28,
           }}
         >

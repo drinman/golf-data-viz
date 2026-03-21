@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { createClient } from "./client";
+import posthog from "posthog-js";
 import type { User } from "@supabase/supabase-js";
 
 interface AuthContextValue {
@@ -30,6 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       const { data: { user: u } } = await supabase.auth.getUser();
+      if (u) {
+        posthog.identify(u.id, {
+          email: u.email,
+          provider: u.app_metadata?.provider,
+        });
+      }
       setUser(u);
       setLoading(false);
     });
@@ -37,7 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      if (u) {
+        posthog.identify(u.id, {
+          email: u.email,
+          provider: u.app_metadata?.provider,
+        });
+      } else {
+        posthog.reset();
+      }
+      setUser(u);
       setLoading(false);
     });
 

@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { Anthropic } from "@posthog/ai";
+import type { Message } from "@anthropic-ai/sdk/resources/messages";
 import { roundInputSchema } from "@/lib/golf/schemas";
+import { getPostHogClient } from "@/lib/posthog-server";
 import { extractClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGainedV3 } from "@/lib/golf/strokes-gained-v3";
@@ -132,7 +134,8 @@ export async function POST(request: NextRequest) {
   const userPrompt = buildNarrativeUserPrompt(input, result, troubleContext);
 
   // Call Claude API
-  const client = new Anthropic({ apiKey });
+  const phClient = getPostHogClient();
+  const client = new Anthropic({ apiKey, posthog: phClient });
 
   try {
     const message = await client.messages.create(
@@ -142,9 +145,10 @@ export async function POST(request: NextRequest) {
         temperature: 0.7,
         system: NARRATIVE_SYSTEM_PROMPT,
         messages: [{ role: "user", content: userPrompt }],
+        posthogProperties: { handicap_index: input.handicapIndex },
       },
       { timeout: NARRATIVE_TIMEOUT_MS }
-    );
+    ) as Message;
 
     const textBlock = message.content.find((block) => block.type === "text");
     if (!textBlock || textBlock.type !== "text") {
@@ -159,8 +163,10 @@ export async function POST(request: NextRequest) {
     const narrative = textBlock.text.trim();
     const wordCount = narrative.split(/\s+/).length;
 
+    await phClient.shutdown();
     return NextResponse.json({ narrative, word_count: wordCount });
   } catch (err: unknown) {
+    await phClient.shutdown();
     if (err instanceof Anthropic.APIConnectionError) {
       console.error(JSON.stringify({ event: "narrative_error", code: "UNAVAILABLE", ip }));
       return errorResponse(

@@ -1,4 +1,5 @@
 import { track } from "@vercel/analytics";
+import posthog from "posthog-js";
 import type {
   AnalyticsEventProps,
   OptionalPayloadEvent,
@@ -60,5 +61,12 @@ export function trackEvent(
     }
   } catch {
     // gtag unavailable or errored — swallow
+  }
+
+  // PostHog
+  try {
+    posthog.capture(event, props);
+  } catch {
+    // PostHog unavailable or errored — swallow
   }
 }

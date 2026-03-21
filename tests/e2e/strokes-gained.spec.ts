@@ -724,6 +724,10 @@ test.describe("Strokes Gained Benchmarker", () => {
     const dParam = new URL(page.url()).searchParams.get("d");
     expect(dParam).toBeTruthy();
 
+    // Clear localStorage to simulate a different user visiting the shared link.
+    // Without this, the authorship check matches the stored round and suppresses
+    // the shared-link-header (setIsSharedLink(false)).
+    await page.evaluate(() => localStorage.clear());
     await page.goto(`/strokes-gained?d=${dParam}`);
     await expect(
       page.getByText("Your Round Breakdown")
