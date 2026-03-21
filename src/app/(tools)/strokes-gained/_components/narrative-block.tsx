@@ -64,7 +64,6 @@ export function NarrativeBlock({
     const controller = new AbortController();
     abortRef.current = controller;
 
-    retryCountRef.current = 0;
     setState({ status: "loading" });
     trackEvent("narrative_requested");
     const startTime = Date.now();
