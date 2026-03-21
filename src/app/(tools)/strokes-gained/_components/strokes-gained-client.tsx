@@ -459,6 +459,9 @@ export default function StrokesGainedClient({
     } catch (err) {
       console.error("[handleFormSubmit] Benchmark calculation failed:", err);
       setIsCalculating(false);
+      setResult(null);
+      setChartData(null);
+      setLastInput(null);
       return;
     }
 

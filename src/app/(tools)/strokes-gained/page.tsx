@@ -12,6 +12,22 @@ import StrokesGainedClient from "./_components/strokes-gained-client";
 const PAGE_DESCRIPTION =
   "Free post-round strokes gained analysis from your scorecard stats. Compare yourself to handicap peers, not Tour pros.";
 
+const DEFAULT_METADATA: Metadata = {
+  title: "Strokes Gained Benchmarker",
+  description: PAGE_DESCRIPTION,
+  alternates: { canonical: "/strokes-gained" },
+  openGraph: {
+    title: "Strokes Gained Benchmarker",
+    description: PAGE_DESCRIPTION,
+    url: "/strokes-gained",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Strokes Gained Benchmarker",
+    description: PAGE_DESCRIPTION,
+  },
+};
+
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -24,21 +40,7 @@ export async function generateMetadata({
   const input = payload ? decodeRound(payload) : null;
 
   if (!input) {
-    return {
-      title: "Strokes Gained Benchmarker",
-      description: PAGE_DESCRIPTION,
-      alternates: { canonical: "/strokes-gained" },
-      openGraph: {
-        title: "Strokes Gained Benchmarker",
-        description: PAGE_DESCRIPTION,
-        url: "/strokes-gained",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: "Strokes Gained Benchmarker",
-        description: PAGE_DESCRIPTION,
-      },
-    };
+    return DEFAULT_METADATA;
   }
 
   // An uncaught throw in generateMetadata returns a 500 for the entire page.
@@ -48,21 +50,7 @@ export async function generateMetadata({
     benchmark = getInterpolatedBenchmark(input.handicapIndex);
     sgResult = calculateStrokesGained(input, benchmark);
   } catch {
-    return {
-      title: "Strokes Gained Benchmarker",
-      description: PAGE_DESCRIPTION,
-      alternates: { canonical: "/strokes-gained" },
-      openGraph: {
-        title: "Strokes Gained Benchmarker",
-        description: PAGE_DESCRIPTION,
-        url: "/strokes-gained",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: "Strokes Gained Benchmarker",
-        description: PAGE_DESCRIPTION,
-      },
-    };
+    return DEFAULT_METADATA;
   }
 
   const title = `Shot ${input.score} at ${input.course}`;

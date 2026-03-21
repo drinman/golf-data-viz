@@ -1,5 +1,6 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import type { RoundInput } from "@/lib/golf/types";
 import { toRoundInsert } from "@/lib/golf/round-mapper";
 import { roundInputSchema } from "@/lib/golf/schemas";
@@ -234,6 +235,11 @@ export async function saveRound(
       }
     } else if (!user && !token) {
       console.warn("[saveRound] Anonymous save without Turnstile token — adblocker likely");
+      Sentry.addBreadcrumb({
+        category: "turnstile",
+        message: "Anonymous save without Turnstile token — adblocker likely",
+        level: "warning",
+      });
     }
 
     // Recalculate SG server-side — never trust client-supplied values
