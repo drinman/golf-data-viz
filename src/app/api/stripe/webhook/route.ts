@@ -183,7 +183,7 @@ async function handleCheckoutSessionCompleted(event: StripeEventPayload) {
         stripe_subscription_id: getStringValue(object.subscription),
       },
     });
-    await posthog.shutdown();
+    await posthog.flush();
   } catch (err) {
     console.warn("[stripe-webhook] PostHog checkout_completed capture failed", err);
   }
@@ -224,7 +224,7 @@ async function handleSubscriptionEvent(event: StripeEventPayload) {
         stripe_subscription_id: getStringValue(object.id),
       },
     });
-    await posthog.shutdown();
+    await posthog.flush();
   } catch (err) {
     console.warn("[stripe-webhook] PostHog subscription_status_changed capture failed", err);
   }

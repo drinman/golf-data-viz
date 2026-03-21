@@ -7,10 +7,10 @@ let _client: PostHog | null = null;
  * In environments without a token (tests), returns a disabled client
  * that silently drops events.
  *
- * Note: posthog-node batches events internally. Callers should still call
- * shutdown() in short-lived contexts (API routes) to flush pending events
- * before the serverless function terminates. shutdown() flushes the queue
- * but does NOT destroy the singleton — subsequent calls continue to work.
+ * With flushAt: 1, each event is sent immediately — no batching.
+ * Callers should use flush() (not shutdown()) to ensure delivery
+ * in serverless contexts. shutdown() is terminal and would break
+ * the singleton for subsequent requests in the same process.
  */
 export function getPostHogClient(): PostHog {
   if (_client) return _client;

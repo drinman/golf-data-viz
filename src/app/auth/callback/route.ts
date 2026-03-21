@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           provider: data.user.app_metadata?.provider,
         },
       });
-      await posthog.shutdown();
+      await posthog.flush();
     }
   }
 

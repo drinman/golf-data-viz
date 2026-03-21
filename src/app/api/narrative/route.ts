@@ -134,7 +134,6 @@ export async function POST(request: NextRequest) {
   const userPrompt = buildNarrativeUserPrompt(input, result, troubleContext);
 
   // Call Claude API
-  const phClient = getPostHogClient();
   const client = new Anthropic({ apiKey });
 
   try {
@@ -162,18 +161,21 @@ export async function POST(request: NextRequest) {
     const narrative = textBlock.text.trim();
     const wordCount = narrative.split(/\s+/).length;
 
-    phClient.capture({
-      // Use a stable anonymous ID — not the IP (which is PII under GDPR and
-      // merges users behind NAT). Server-side events won't merge with client-side
-      // PostHog profiles, but that's acceptable for aggregate metrics.
-      distinctId: `narrative-api-${Date.now()}`,
-      event: "narrative_generated",
-      properties: { handicap_index: input.handicapIndex, word_count: wordCount },
-    });
-    await phClient.shutdown();
+    try {
+      const phClient = getPostHogClient();
+      phClient.capture({
+        // Single fixed ID for aggregate-only metrics — avoids creating
+        // unbounded phantom persons (PostHog charges by person count)
+        distinctId: "narrative-api-anon",
+        event: "narrative_generated",
+        properties: { handicap_index: input.handicapIndex, word_count: wordCount },
+      });
+      await phClient.flush();
+    } catch {
+      // PostHog capture is best-effort — don't fail the response
+    }
     return NextResponse.json({ narrative, word_count: wordCount });
   } catch (err: unknown) {
-    await phClient.shutdown();
     if (err instanceof Anthropic.APIConnectionError) {
       console.error(JSON.stringify({ event: "narrative_error", code: "UNAVAILABLE", ip }));
       return errorResponse(
