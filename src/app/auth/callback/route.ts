@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       posthog.identify({
         distinctId: data.user.id,
         properties: {
-          email: data.user.email,
+          // No PII (email) — only non-identifying metadata
           provider: data.user.app_metadata?.provider,
         },
       });

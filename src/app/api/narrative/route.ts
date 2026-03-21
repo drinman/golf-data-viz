@@ -163,7 +163,10 @@ export async function POST(request: NextRequest) {
     const wordCount = narrative.split(/\s+/).length;
 
     phClient.capture({
-      distinctId: ip,
+      // Use a stable anonymous ID — not the IP (which is PII under GDPR and
+      // merges users behind NAT). Server-side events won't merge with client-side
+      // PostHog profiles, but that's acceptable for aggregate metrics.
+      distinctId: `narrative-api-${Date.now()}`,
       event: "narrative_generated",
       properties: { handicap_index: input.handicapIndex, word_count: wordCount },
     });

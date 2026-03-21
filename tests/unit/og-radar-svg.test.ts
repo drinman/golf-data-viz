@@ -3,10 +3,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import type { RadarChartDatum } from "@/lib/golf/types";
 
-/**
- * We dynamically import OgRadarChart because the module doesn't exist yet (TDD).
- * These tests define the expected contract before implementation.
- */
 async function renderChart(data: RadarChartDatum[], size = 260) {
   const { OgRadarChart } = await import("@/lib/golf/og-radar-svg");
   const element = createElement(OgRadarChart, { data, size });

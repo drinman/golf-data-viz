@@ -480,11 +480,21 @@ export default function StrokesGainedClient({
       // posthog-js is a singleton initialized in instrumentation-client.ts.
       // During SSR hydration, posthog won't be initialized yet — this try/catch
       // is load-bearing, not just defensive.
-      posthog.setPersonProperties({
-        last_calculation_at: new Date().toISOString(),
-        last_handicap_bracket: sgResult.benchmarkBracket,
-        calculation_count: (Number(posthog.get_property?.("calculation_count")) || 0) + 1,
+      //
+      // Use capture() with $set to update person properties server-side.
+      // posthog.setPersonProperties + get_property doesn't work for counters
+      // because get_property reads local storage while set sends to the server.
+      posthog.capture("calculation_person_update", {
+        $set: {
+          last_calculation_at: new Date().toISOString(),
+          last_handicap_bracket: sgResult.benchmarkBracket,
+        },
+        $set_once: {
+          first_calculation_at: new Date().toISOString(),
+        },
       });
+      // Increment is handled by PostHog's calculation_completed event count —
+      // survey targeting uses "user has done calculation_completed >= 3 times"
     } catch {
       // PostHog unavailable during SSR or if blocked
     }

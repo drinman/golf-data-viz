@@ -44,10 +44,35 @@ async function generateIcon(size: number, filename: string) {
   console.log(`  ✓ ${filename} (${size}x${size})`);
 }
 
+/** Maskable icon: full-bleed background, text within inner 80% safe zone. */
+async function generateMaskableIcon(size: number, filename: string) {
+  const fontSize = Math.round(size * 0.22); // smaller to stay within 80% safe zone
+
+  const svg = `
+    <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${size}" height="${size}" fill="${BG_COLOR}"/>
+      <text
+        x="50%" y="54%"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-weight="700"
+        font-size="${fontSize}"
+        fill="${TEXT_COLOR}"
+        letter-spacing="2"
+      >GDV</text>
+    </svg>
+  `;
+
+  await sharp(Buffer.from(svg)).png().toFile(join(OUT_DIR, filename));
+  console.log(`  ✓ ${filename} (${size}x${size}, maskable)`);
+}
+
 async function main() {
   console.log("Generating PWA icons...");
   await generateIcon(192, "icon-192.png");
   await generateIcon(512, "icon-512.png");
+  await generateMaskableIcon(512, "icon-512-maskable.png");
   await generateIcon(180, "apple-touch-icon.png");
   console.log("Done.");
 }

@@ -32,10 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const { data: { user: u } } = await supabase.auth.getUser();
       if (u) {
-        posthog.identify(u.id, {
-          email: u.email,
-          provider: u.app_metadata?.provider,
-        });
+        // Identify with Supabase user ID only — no PII (email).
+        // Server-side identify in auth/callback/route.ts sets provider.
+        posthog.identify(u.id);
       }
       setUser(u);
       setLoading(false);
@@ -46,10 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;
       if (u) {
-        posthog.identify(u.id, {
-          email: u.email,
-          provider: u.app_metadata?.provider,
-        });
+        posthog.identify(u.id);
       } else {
         posthog.reset();
       }

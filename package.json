@@ -28,7 +28,6 @@
     "@nivo/heatmap": "0.99.0",
     "@nivo/line": "0.99.0",
     "@nivo/radar": "0.99.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.200.0",
     "@radix-ui/react-slot": "1.2.4",
     "@sentry/nextjs": "^10.42.0",
     "@supabase/ssr": "0.8.0",
