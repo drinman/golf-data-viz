@@ -206,24 +206,14 @@ export async function saveRound(
       return fail("VALIDATION", message);
     }
 
-    // Turnstile verification: skip for authenticated users (already proven
-    // identity via OAuth). Only enforce for anonymous saves to prevent bot spam.
+    // Turnstile verification: best-effort for anonymous saves.
+    // Authenticated users skip entirely. Anonymous users without a token
+    // (adblocker) are allowed through — rate limiting + trust scoring
+    // provide defense-in-depth.
     const user = await getUser();
     const token = verification.turnstileToken?.trim() ?? "";
 
-    console.log("[saveRound] Auth check", {
-      hasUser: !!user,
-      userId: user?.id?.slice(0, 8) ?? null,
-      hasToken: !!token,
-      tokenLength: token.length,
-    });
-
-    if (!user) {
-      if (!token) {
-        console.warn("[saveRound] No user and no Turnstile token — likely stale auth cookies");
-        return fail("VERIFICATION_REQUIRED", VERIFICATION_REQUIRED_MESSAGE);
-      }
-
+    if (!user && token) {
       const turnstileResult = await verifyTurnstileToken({
         token,
         remoteIp: ip,
@@ -231,12 +221,12 @@ export async function saveRound(
       });
 
       if (!turnstileResult.ok) {
-        console.warn("[saveRound] Turnstile verification failed", {
+        console.warn("[saveRound] Turnstile verification failed — proceeding anyway", {
           reason: turnstileResult.reason,
-          errorCodes: turnstileResult.result.errorCodes,
         });
-        return fail("VERIFICATION_FAILED", VERIFICATION_FAILED_MESSAGE);
       }
+    } else if (!user && !token) {
+      console.warn("[saveRound] Anonymous save without Turnstile token");
     }
 
     // Recalculate SG server-side — never trust client-supplied values

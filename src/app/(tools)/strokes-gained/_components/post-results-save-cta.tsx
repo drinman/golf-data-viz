@@ -65,32 +65,20 @@ export function PostResultsSaveCta({
 
     // Authenticated users skip Turnstile — they've already proven identity via OAuth.
     // Turnstile is only needed for anonymous saves to prevent bot spam.
+    // Turnstile is best-effort: try to get a token, but proceed without one.
+    // Rate limiting + trust scoring + dedup provide defense-in-depth.
     let token: string | null = null;
-    if (!isAuthenticated) {
-      if (!turnstileSiteKey || !turnstileRef.current) {
-        trackEvent("round_save_failed", { error_type: "config" });
-        setPhase("error");
-        setErrorMessage("Save unavailable — please try again later.");
-        return;
-      }
-
+    if (!isAuthenticated && turnstileSiteKey && turnstileRef.current) {
       try {
         token = await turnstileRef.current.execute();
       } catch (turnstileErr) {
-        trackEvent("round_save_failed", { error_type: "verification" });
-        Sentry.captureMessage("Turnstile execute() failed — likely adblocker", {
+        Sentry.captureMessage("Turnstile execute() failed — saving without token", {
           level: "warning",
           extra: {
             error: turnstileErr instanceof Error ? turnstileErr.message : String(turnstileErr),
-            hasSiteKey: !!turnstileSiteKey,
-            hasRef: !!turnstileRef.current,
           },
         });
-        setPhase("error");
-        setErrorMessage(
-          "Verification blocked — your ad blocker may be preventing the bot check. Try disabling it or saving from a different browser."
-        );
-        return;
+        // token stays null — save proceeds without Turnstile
       }
     }
 
