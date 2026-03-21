@@ -83,9 +83,11 @@ export function PostResultsSaveCta({
         turnstileOutcome = "success";
       } catch (turnstileErr) {
         turnstileOutcome = "failed";
-        Sentry.captureMessage("Turnstile execute() failed — saving without token", {
+        Sentry.addBreadcrumb({
+          category: "turnstile",
+          message: "Turnstile execute() failed — saving without token",
           level: "warning",
-          extra: {
+          data: {
             error: turnstileErr instanceof Error ? turnstileErr.message : String(turnstileErr),
             hasSiteKey: !!turnstileSiteKey,
             hasRef: !!turnstileRef.current,

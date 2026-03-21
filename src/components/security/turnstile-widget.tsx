@@ -198,10 +198,17 @@ export const TurnstileWidget = forwardRef<
     return () => {
       cancelled = true;
       mountedRef.current = false;
-      rejectPending("unmounted");
-      if (widgetIdRef.current && typeof window !== "undefined" && window.turnstile) {
-        window.turnstile.remove(widgetIdRef.current);
-        widgetIdRef.current = null;
+      const widgetId = widgetIdRef.current;
+      widgetIdRef.current = null; // null BEFORE reject so resetWidget() no-ops via its guard
+      // INTENTIONALLY skip resetWidget() here — the widget is being removed, not reused.
+      // rejectPending() would call resetWidget() → turnstile.reset() which races with
+      // turnstile.remove() below, causing "Nothing to reset found for provided container."
+      const pending = clearPendingExecution();
+      if (pending) {
+        pending.reject(createError("unmounted"));
+      }
+      if (widgetId && typeof window !== "undefined" && window.turnstile) {
+        window.turnstile.remove(widgetId);
       }
     };
   }, [clearPendingExecution, rejectPending, resetWidget, siteKey]);

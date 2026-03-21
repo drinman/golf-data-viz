@@ -153,9 +153,13 @@ export default function StrokesGainedClient({
   // Precompute initial state from shared URL (avoids useEffect + setState cascade)
   const initialComputed = initialInput
     ? (() => {
-        const benchmark = getInterpolatedBenchmark(initialInput.handicapIndex);
-        const sgResult = calculate(initialInput, benchmark);
-        return { result: sgResult, chartData: toRadarChartData(sgResult) };
+        try {
+          const benchmark = getInterpolatedBenchmark(initialInput.handicapIndex);
+          const sgResult = calculate(initialInput, benchmark);
+          return { result: sgResult, chartData: toRadarChartData(sgResult) };
+        } catch {
+          return null; // gracefully degrade — show form instead of crash
+        }
       })()
     : null;
   const initialComputedResult = initialComputed?.result ?? null;
@@ -446,10 +450,17 @@ export default function StrokesGainedClient({
 
     setIsCalculating(true);
 
-    const benchmark = getInterpolatedBenchmark(input.handicapIndex);
-    const sgResult = calculate(input, benchmark);
-    const radar = toRadarChartData(sgResult);
-    const analyticsContext = buildRoundAnalyticsContext(input, sgResult);
+    let benchmark, sgResult, radar, analyticsContext;
+    try {
+      benchmark = getInterpolatedBenchmark(input.handicapIndex);
+      sgResult = calculate(input, benchmark);
+      radar = toRadarChartData(sgResult);
+      analyticsContext = buildRoundAnalyticsContext(input, sgResult);
+    } catch (err) {
+      console.error("[handleFormSubmit] Benchmark calculation failed:", err);
+      setIsCalculating(false);
+      return;
+    }
 
     setResult(sgResult);
     setChartData(radar);
