@@ -108,10 +108,6 @@ function getUtmMedium(): string | undefined {
   return new URLSearchParams(window.location.search).get("utm_medium") ?? undefined;
 }
 
-function isRecipientFunnel(): boolean {
-  return getUtmSource() === "share" && getUtmMedium() === "cta";
-}
-
 async function waitForUiPaint(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -840,12 +836,18 @@ export default function StrokesGainedClient({
               utm_source: getAttributionUtmSource(),
             });
           }
-          if (!recipientStartedRef.current && isRecipientFunnel()) {
-            recipientStartedRef.current = true;
-            trackEvent("recipient_started_own_calc", {
-              utm_source: getUtmSource(),
-              utm_medium: getUtmMedium(),
-            });
+          if (!recipientStartedRef.current) {
+            const hasSharedArrival = (() => {
+              try { return !!sessionStorage.getItem("gdv:shared_arrival"); }
+              catch { return false; }
+            })();
+            if (hasSharedArrival) {
+              recipientStartedRef.current = true;
+              trackEvent("recipient_started_own_calc", {
+                utm_source: getUtmSource(),
+                utm_medium: getUtmMedium(),
+              });
+            }
           }
         }}
       >

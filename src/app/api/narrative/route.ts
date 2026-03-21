@@ -17,7 +17,7 @@ import {
   type TroubleHoleInput,
 } from "@/lib/golf/trouble-context";
 
-const NARRATIVE_TIMEOUT_MS = 25_000;
+const NARRATIVE_TIMEOUT_MS = 15_000;
 
 type ErrorCode =
   | "RATE_LIMITED"
