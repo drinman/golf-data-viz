@@ -28,17 +28,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(errorUrl);
     }
 
-    // Identify user in PostHog using their Supabase user ID
+    // Identify user in PostHog — best-effort, never block login redirect
     if (data.user) {
-      const posthog = getPostHogClient();
-      posthog.identify({
-        distinctId: data.user.id,
-        properties: {
-          // No PII (email) — only non-identifying metadata
-          provider: data.user.app_metadata?.provider,
-        },
-      });
-      await posthog.flush();
+      try {
+        const posthog = getPostHogClient();
+        posthog.identify({
+          distinctId: data.user.id,
+          properties: {
+            provider: data.user.app_metadata?.provider,
+          },
+        });
+        await posthog.flush();
+      } catch {
+        // PostHog is best-effort — don't break auth flow
+      }
     }
   }
 
