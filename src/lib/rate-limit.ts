@@ -222,8 +222,15 @@ export async function checkRateLimit(
     return { allowed: true };
   } catch (error) {
     console.error("[rate-limit] Check failed:", error);
-    // Fail closed to protect the write path when KV is unavailable.
-    return { allowed: false, reason: "minute" };
+    captureMonitoringException(error, {
+      source: "checkRateLimit",
+      code: "KV_UNAVAILABLE",
+    });
+    // Fail open: allow saves when KV is unreachable. With Turnstile removed,
+    // rate limiting is the primary bot defense. A KV outage leaves honeypot +
+    // trust scoring + dedup as protection — sufficient at current scale.
+    // Losing real user saves to KV blips is worse than theoretical bot risk.
+    return { allowed: true };
   }
 }
 

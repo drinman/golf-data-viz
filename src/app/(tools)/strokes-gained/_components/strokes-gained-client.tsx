@@ -92,7 +92,6 @@ function roundInputsMatch(a: RoundInput, b: RoundInput): boolean {
 interface StrokesGainedClientProps {
   initialInput?: RoundInput | null;
   saveEnabled?: boolean;
-  turnstileSiteKey?: string | null;
   samplePreview: SamplePreviewData;
   sampleInput: RoundInput;
   from?: "history";
@@ -133,7 +132,6 @@ const MIN_CAPTURE_LOADING_MS = 1200;
 export default function StrokesGainedClient({
   initialInput,
   saveEnabled = true,
-  turnstileSiteKey = null,
   samplePreview,
   sampleInput,
   from,
@@ -1179,7 +1177,6 @@ export default function StrokesGainedClient({
             {!saveSuccess && saveEnabled && (
               <PostResultsSaveCta
                 input={lastInput}
-                turnstileSiteKey={turnstileSiteKey}
                 isAuthenticated={!!user}
                 onSaveComplete={(res) => {
                   setSavedRoundId(res.roundId);

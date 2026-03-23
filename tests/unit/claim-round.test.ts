@@ -32,9 +32,6 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/monitoring/sentry", () => ({
   captureMonitoringException: vi.fn(),
 }));
-vi.mock("@/lib/security/turnstile", () => ({
-  verifyTurnstileToken: vi.fn().mockResolvedValue({ ok: true, result: { success: true, errorCodes: [] } }),
-}));
 vi.mock("next/headers", () => ({
   headers: vi.fn(async () => ({
     get: (key: string) => {

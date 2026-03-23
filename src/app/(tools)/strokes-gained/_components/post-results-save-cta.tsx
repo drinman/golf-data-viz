@@ -7,10 +7,6 @@ import { trackEvent } from "@/lib/analytics/client";
 import type { RoundInput } from "@/lib/golf/types";
 import type { SaveRoundResult } from "../actions";
 import { saveRound } from "../actions";
-import {
-  TurnstileWidget,
-  type TurnstileWidgetHandle,
-} from "@/components/security/turnstile-widget";
 
 function getUserAgentClass(): "mobile" | "desktop" {
   if (typeof navigator === "undefined") return "desktop";
@@ -19,16 +15,15 @@ function getUserAgentClass(): "mobile" | "desktop" {
 
 interface PostResultsSaveCtaProps {
   input: RoundInput;
-  turnstileSiteKey: string | null;
   isAuthenticated: boolean;
   onSaveComplete: (result: SaveRoundResult & { success: true }) => void;
 }
 
-type Phase = "idle" | "verifying" | "saving" | "success" | "error" | "already_saved";
+type Phase = "idle" | "saving" | "success" | "error" | "already_saved";
 
 function classifyError(
   code: string
-): "config" | "runtime" | "network" | "rate_limited" | "verification" | "duplicate" {
+): "config" | "runtime" | "network" | "rate_limited" | "duplicate" {
   switch (code) {
     case "DUPLICATE_ROUND":
       return "duplicate";
@@ -36,9 +31,6 @@ function classifyError(
       return "config";
     case "RATE_LIMITED":
       return "rate_limited";
-    case "VERIFICATION_REQUIRED":
-    case "VERIFICATION_FAILED":
-      return "verification";
     default:
       return "runtime";
   }
@@ -46,13 +38,12 @@ function classifyError(
 
 export function PostResultsSaveCta({
   input,
-  turnstileSiteKey,
   isAuthenticated,
   onSaveComplete,
 }: PostResultsSaveCtaProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
+  const honeypotRef = useRef<HTMLInputElement | null>(null);
   const viewedRef = useRef(false);
 
   useEffect(() => {
@@ -68,40 +59,12 @@ export function PostResultsSaveCta({
       auth_state: isAuthenticated ? "authenticated" : "anonymous",
     });
 
-    setPhase(isAuthenticated ? "saving" : "verifying");
-    setErrorMessage(null);
-
-    // Authenticated users skip Turnstile — they've already proven identity via OAuth.
-    // Turnstile is only needed for anonymous saves to prevent bot spam.
-    // Turnstile is best-effort: try to get a token, but proceed without one.
-    // Rate limiting + trust scoring + dedup provide defense-in-depth.
-    let token: string | null = null;
-    let turnstileOutcome: "skipped" | "success" | "failed" | "timeout" = "skipped";
-    if (!isAuthenticated && turnstileSiteKey && turnstileRef.current) {
-      try {
-        token = await turnstileRef.current.execute();
-        turnstileOutcome = "success";
-      } catch (turnstileErr) {
-        turnstileOutcome = "failed";
-        Sentry.addBreadcrumb({
-          category: "turnstile",
-          message: "Turnstile execute() failed — saving without token",
-          level: "warning",
-          data: {
-            error: turnstileErr instanceof Error ? turnstileErr.message : String(turnstileErr),
-            hasSiteKey: !!turnstileSiteKey,
-            hasRef: !!turnstileRef.current,
-          },
-        });
-        // token stays null — save proceeds without Turnstile
-      }
-    }
-
     setPhase("saving");
+    setErrorMessage(null);
 
     let res: SaveRoundResult;
     try {
-      const savePromise = saveRound(input, { turnstileToken: token });
+      const savePromise = saveRound(input, { honeypot: honeypotRef.current?.value });
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Save request timed out after 15s")), 15000)
       );
@@ -111,14 +74,12 @@ export function PostResultsSaveCta({
         error_type: "network",
         error_code: networkErr instanceof Error ? networkErr.message : "unknown",
         auth_state: isAuthenticated ? "authenticated" : "anonymous",
-        turnstile_outcome: turnstileOutcome,
         user_agent_class: getUserAgentClass(),
       });
       Sentry.captureException(networkErr, {
         extra: {
           source: "saveRound_client",
           isAuthenticated,
-          hasToken: !!token,
           error: networkErr instanceof Error ? networkErr.message : String(networkErr),
         },
       });
@@ -130,7 +91,6 @@ export function PostResultsSaveCta({
     if (res.success) {
       trackEvent("round_saved", {
         auth_state: isAuthenticated ? "authenticated" : "anonymous",
-        turnstile_outcome: turnstileOutcome,
         user_agent_class: getUserAgentClass(),
       });
       setPhase("success");
@@ -147,7 +107,6 @@ export function PostResultsSaveCta({
       error_type: errorType,
       error_code: res.code,
       auth_state: isAuthenticated ? "authenticated" : "anonymous",
-      turnstile_outcome: turnstileOutcome,
       user_agent_class: getUserAgentClass(),
     });
 
@@ -164,21 +123,8 @@ export function PostResultsSaveCta({
         code: res.code,
         message: res.message,
         isAuthenticated,
-        hasToken: !!token,
       },
     });
-
-    // If the client thought we were authenticated but the server disagrees
-    // (stale session cookies), show a clearer message than the generic bot-check text.
-    if (
-      isAuthenticated &&
-      (res.code === "VERIFICATION_REQUIRED" || res.code === "VERIFICATION_FAILED")
-    ) {
-      setErrorMessage(
-        "Your session has expired. Please refresh the page and try again."
-      );
-      return;
-    }
 
     setErrorMessage(res.message);
   }
@@ -218,7 +164,7 @@ export function PostResultsSaveCta({
     );
   }
 
-  const isLoading = phase === "verifying" || phase === "saving";
+  const isLoading = phase === "saving";
   const heading = isAuthenticated
     ? "Add to your history"
     : "Want to track your progress?";
@@ -226,7 +172,6 @@ export function PostResultsSaveCta({
     ? "Save this round to your history and track your SG trends."
     : "Save this round and see how your strokes gained changes over time.";
   const buttonText = isAuthenticated ? "Save to History" : "Save This Round";
-  const loadingText = phase === "verifying" ? "Verifying..." : "Saving...";
 
   return (
     <div
@@ -263,7 +208,7 @@ export function PostResultsSaveCta({
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {loadingText}
+                Saving...
               </span>
             ) : (
               buttonText
@@ -272,35 +217,16 @@ export function PostResultsSaveCta({
         )}
       </div>
 
-      {!isAuthenticated && (
-        <>
-          <p className="mt-3 text-xs text-neutral-500">
-            Cloudflare Turnstile verifies you&apos;re human.{" "}
-            <a
-              href="https://www.cloudflare.com/privacypolicy/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-neutral-700"
-            >
-              Privacy Policy
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://www.cloudflare.com/website-terms/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-neutral-700"
-            >
-              Terms
-            </a>
-            .
-          </p>
-
-          {turnstileSiteKey && (
-            <TurnstileWidget ref={turnstileRef} siteKey={turnstileSiteKey} />
-          )}
-        </>
-      )}
+      {/* Honeypot: invisible to humans, filled by bots */}
+      <input
+        ref={honeypotRef}
+        type="text"
+        name="website"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+      />
     </div>
   );
 }

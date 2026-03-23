@@ -94,7 +94,7 @@ export type AnalyticsEventProps = {
   download_png_clicked: { has_share_param: boolean; utm_source?: string; headline_pattern?: string | null; share_method?: "native" | "download" | "cancelled" };
   copy_link_clicked: { share_type: "canonical" | "encoded"; surface: "results_page"; utm_source?: string; headline_pattern?: string | null };
   shared_round_viewed: { referrer: string; utm_source: string };
-  round_saved: { auth_state: "authenticated" | "anonymous"; turnstile_outcome: "skipped" | "success" | "failed" | "timeout"; user_agent_class: "mobile" | "desktop" };
+  round_saved: { auth_state: "authenticated" | "anonymous"; user_agent_class: "mobile" | "desktop" };
   gir_estimated: EmptyPayload;
   round_save_failed: {
     error_type:
@@ -102,11 +102,9 @@ export type AnalyticsEventProps = {
       | "runtime"
       | "network"
       | "rate_limited"
-      | "verification"
       | "duplicate";
     error_code?: string;
     auth_state: "authenticated" | "anonymous";
-    turnstile_outcome: "skipped" | "success" | "failed" | "timeout";
     user_agent_class: "mobile" | "desktop";
   };
   confidence_badge_clicked: { category: string; level: string };

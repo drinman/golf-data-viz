@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -14,17 +14,6 @@ vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
 const mockTrackEvent = vi.fn();
 vi.mock("@/lib/analytics/client", () => ({
   trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
-}));
-
-// Mock TurnstileWidget
-const mockExecute = vi.fn();
-import { forwardRef, useImperativeHandle } from "react";
-vi.mock("@/components/security/turnstile-widget", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TurnstileWidget: forwardRef(function MockTurnstile(_props: any, ref: any) {
-    useImperativeHandle(ref, () => ({ execute: mockExecute, reset: vi.fn() }));
-    return <div data-testid="turnstile-widget" />;
-  }),
 }));
 
 import { PostResultsSaveCta } from "@/app/(tools)/strokes-gained/_components/post-results-save-cta";
@@ -58,7 +47,6 @@ afterEach(() => {
 describe("PostResultsSaveCta", () => {
   const defaultProps = {
     input: SAMPLE_INPUT,
-    turnstileSiteKey: "test-site-key",
     isAuthenticated: false,
     onSaveComplete: vi.fn(),
   };
@@ -103,21 +91,13 @@ describe("PostResultsSaveCta", () => {
     });
   });
 
-  describe("privacy disclosure", () => {
-    it("shows Cloudflare Turnstile disclosure with Privacy Policy and Terms links", () => {
+  describe("honeypot", () => {
+    it("renders a hidden honeypot input", () => {
       render(<PostResultsSaveCta {...defaultProps} />);
-      expect(
-        screen.getByText(/Cloudflare Turnstile verifies you're human/i)
-      ).toBeVisible();
-      expect(
-        screen.getByRole("link", { name: "Privacy Policy" })
-      ).toHaveAttribute("href", "https://www.cloudflare.com/privacypolicy/");
-      expect(
-        screen.getByRole("link", { name: "Terms" })
-      ).toHaveAttribute(
-        "href",
-        "https://www.cloudflare.com/website-terms/"
-      );
+      const honeypot = document.querySelector('input[name="website"]');
+      expect(honeypot).toBeTruthy();
+      expect(honeypot?.getAttribute("aria-hidden")).toBe("true");
+      expect(honeypot?.getAttribute("tabindex")).toBe("-1");
     });
   });
 
@@ -130,7 +110,6 @@ describe("PostResultsSaveCta", () => {
     });
 
     it("fires post_results_save_cta_clicked on button click", async () => {
-      mockExecute.mockResolvedValue("test-turnstile-token");
       mockSaveRound.mockResolvedValue({
         success: true,
         roundId: "round-123",
@@ -152,10 +131,6 @@ describe("PostResultsSaveCta", () => {
   });
 
   describe("save flow", () => {
-    beforeEach(() => {
-      mockExecute.mockResolvedValue("test-turnstile-token");
-    });
-
     it("fires round_saved and calls onSaveComplete on success", async () => {
       const onSaveComplete = vi.fn();
       mockSaveRound.mockResolvedValue({
@@ -178,7 +153,9 @@ describe("PostResultsSaveCta", () => {
       );
 
       await waitFor(() => {
-        expect(mockTrackEvent).toHaveBeenCalledWith("round_saved");
+        expect(mockTrackEvent).toHaveBeenCalledWith("round_saved", expect.objectContaining({
+          auth_state: "anonymous",
+        }));
       });
 
       // Wait for the success micro-interaction beat (300ms)
@@ -213,9 +190,9 @@ describe("PostResultsSaveCta", () => {
         expect(screen.getByText("Already saved")).toBeVisible();
       });
 
-      expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", {
+      expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", expect.objectContaining({
         error_type: "duplicate",
-      });
+      }));
     });
 
     it("shows error with retry on other failures", async () => {
@@ -243,9 +220,9 @@ describe("PostResultsSaveCta", () => {
         screen.getByRole("button", { name: /try again/i })
       ).toBeVisible();
 
-      expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", {
+      expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", expect.objectContaining({
         error_type: "runtime",
-      });
+      }));
     });
 
     it("fires round_save_failed with rate_limited type", async () => {
@@ -263,30 +240,9 @@ describe("PostResultsSaveCta", () => {
       );
 
       await waitFor(() => {
-        expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", {
+        expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", expect.objectContaining({
           error_type: "rate_limited",
-        });
-      });
-    });
-
-    it("fires round_save_failed with verification type on turnstile error", async () => {
-      mockSaveRound.mockResolvedValue({
-        success: false,
-        code: "VERIFICATION_FAILED",
-        message: "Bot check failed.",
-      });
-
-      const user = userEvent.setup();
-      render(<PostResultsSaveCta {...defaultProps} />);
-
-      await user.click(
-        screen.getByRole("button", { name: "Save This Round" })
-      );
-
-      await waitFor(() => {
-        expect(mockTrackEvent).toHaveBeenCalledWith("round_save_failed", {
-          error_type: "verification",
-        });
+        }));
       });
     });
   });

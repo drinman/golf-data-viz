@@ -66,22 +66,49 @@ describe("rate limiter", () => {
     expect(hashed).toHaveLength(64);
   });
 
-  it("fails closed in production when RATE_LIMIT_SALT is missing", async () => {
+  it("fails open in production when RATE_LIMIT_SALT is missing", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("RATE_LIMIT_SALT", "");
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const decision = await checkRateLimit("1.2.3.4", new InMemoryRateLimitStore());
-    expect(decision).toEqual({ allowed: false, reason: "minute" });
+    expect(decision).toEqual({ allowed: true });
     expect(errorSpy).toHaveBeenCalled();
   });
 
-  it("fails closed in production when RATE_LIMIT_SALT is too short", async () => {
+  it("fails open in production when RATE_LIMIT_SALT is too short", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("RATE_LIMIT_SALT", "short");
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const decision = await checkRateLimit("1.2.3.4", new InMemoryRateLimitStore());
-    expect(decision).toEqual({ allowed: false, reason: "minute" });
+    expect(decision).toEqual({ allowed: true });
     expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("fails open when KV store throws", async () => {
+    const throwingStore = {
+      async increment() {
+        throw new Error("KV connection refused");
+      },
+    };
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const decision = await checkRateLimit("1.2.3.4", throwingStore);
+    expect(decision).toEqual({ allowed: true });
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("captures monitoring exception when store throws", async () => {
+    const kvError = new Error("KV connection refused");
+    const throwingStore = {
+      async increment() {
+        throw kvError;
+      },
+    };
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await checkRateLimit("1.2.3.4", throwingStore);
+    expect(mockCaptureMonitoringException).toHaveBeenCalledWith(
+      kvError,
+      expect.objectContaining({ source: "checkRateLimit", code: "KV_UNAVAILABLE" })
+    );
   });
 
   it("uses deterministic fallback salt in non-production when missing", () => {
