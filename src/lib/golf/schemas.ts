@@ -31,6 +31,23 @@ const optionalInt = (max: number) =>
     })
     .pipe(z.number().int().min(0).max(max).optional());
 
+/**
+ * Required integer field that rejects "" (unlike z.coerce which treats "" as 0).
+ * Uses the same union+transform+pipe pattern as optionalInt above.
+ */
+const requiredInt = (min: number, max: number, label: string) =>
+  z
+    .union([z.number(), z.string()])
+    .refine((val) => val !== "", `${label} is required`)
+    .transform((val) => Number(val))
+    .pipe(
+      z
+        .number()
+        .int()
+        .min(min, `${label} must be ${min}–${max}`)
+        .max(max, `${label} must be ${min}–${max}`)
+    );
+
 export const roundInputSchema = z
   .object({
     course: z
@@ -70,10 +87,17 @@ export const roundInputSchema = z
       .max(150, "Score must be 50–150"),
     // Negative range (-9.9) is exercised by share-codec decode and direct callers.
     // The form UI stores the absolute value and negates on submit.
-    handicapIndex: z.coerce
-      .number()
-      .min(-9.9, "Plus handicap is capped at +9.9")
-      .max(54, "Handicap must be between +9.9 and 54"),
+    // Inline (not requiredNum helper) to preserve asymmetric error messages.
+    handicapIndex: z
+      .union([z.number(), z.string()])
+      .refine((val) => val !== "", "Handicap index is required")
+      .transform((val) => Number(val))
+      .pipe(
+        z
+          .number()
+          .min(-9.9, "Plus handicap is capped at +9.9")
+          .max(54, "Handicap must be between +9.9 and 54")
+      ),
     courseRating: z.coerce
       .number()
       .min(60, "Course rating must be 60–80")
@@ -86,11 +110,7 @@ export const roundInputSchema = z
     fairwaysHit: optionalInt(14),
     fairwayAttempts: z.coerce.number().int().min(0).max(14),
     greensInRegulation: optionalInt(18),
-    totalPutts: z.coerce
-      .number()
-      .int()
-      .min(0, "Putts must be 0–60")
-      .max(60, "Putts must be 0–60"),
+    totalPutts: requiredInt(1, 60, "Putts"),
     penaltyStrokes: z.coerce.number().int().min(0).max(20),
     eagles: z.coerce.number().int().min(0).max(18),
     birdies: z.coerce.number().int().min(0).max(18),
@@ -169,6 +189,29 @@ export const roundInputSchema = z
     {
       message: "One-putts and three-putts can't exceed 18 holes",
       path: ["onePutts"],
+    }
+  )
+  .refine(
+    (data) => {
+      // impliedOverPar uses par as baseline; actualOverCourseRating uses course
+      // rating. These differ by up to ~4 strokes on extreme courses, but the
+      // tolerance absorbs the gap. Don't "fix" this by using par — we don't have it.
+      const impliedOverPar =
+        -2 * data.eagles +
+        -1 * data.birdies +
+        1 * data.bogeys +
+        2 * data.doubleBogeys +
+        3 * data.triplePlus;
+      const actualOverCourseRating = data.score - data.courseRating;
+      // Scale tolerance with triplePlus count — each triple+ hole could be
+      // +5, +6, or worse over par, not just the +3 we assume
+      const tolerance = 8 + data.triplePlus * 2;
+      return Math.abs(impliedOverPar - actualOverCourseRating) <= tolerance;
+    },
+    {
+      message:
+        "Score doesn't match your scoring breakdown — double-check your entries",
+      path: ["score"],
     }
   );
 
