@@ -422,4 +422,104 @@ describe("roundInputSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  // === Bug fix: empty totalPutts rejected (was silently accepted as 0) ===
+  it("rejects empty string totalPutts", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      totalPutts: "",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects totalPutts of 0 (impossible in 18 holes)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      totalPutts: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects totalPutts of "0" (string zero from form)', () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      totalPutts: "0",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts totalPutts of 1 (edge case minimum)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      totalPutts: 1,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  // === Bug fix: empty handicapIndex rejected (was silently accepted as 0) ===
+  it("rejects empty string handicapIndex", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      handicapIndex: "",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  // === Bug fix: score/breakdown cross-validation ===
+  it("rejects score=72 with 9 doubles + 9 triples (impossible breakdown)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      score: 72,
+      courseRating: 72,
+      eagles: 0,
+      birdies: 0,
+      pars: 0,
+      bogeys: 0,
+      doubleBogeys: 9,
+      triplePlus: 9,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects score=87 with 18 pars (implies par=87)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      score: 87,
+      courseRating: 72,
+      eagles: 0,
+      birdies: 0,
+      pars: 18,
+      bogeys: 0,
+      doubleBogeys: 0,
+      triplePlus: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts valid round where score matches breakdown", () => {
+    // validInput: score=87, courseRating=72, 1 birdie + 7 pars + 7 bogeys + 2 doubles + 1 triple
+    // implied = -1 + 0 + 7 + 4 + 3 = 13, actual = 87-72 = 15, diff = 2
+    const result = roundInputSchema.safeParse(validInput());
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts round with multiple triple+ blow-up holes (high-handicap edge case)", () => {
+    // 25-handicapper with 4 blow-up holes (each could be +5 or +6 over par)
+    // implied = 0 + 0 + 4 + 8 + 12 = 24, actual = 110-72 = 38, diff = 14
+    // tolerance = 8 + 4*2 = 16, so 14 <= 16 passes
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      score: 110,
+      handicapIndex: 25,
+      courseRating: 72,
+      totalPutts: 40,
+      eagles: 0,
+      birdies: 0,
+      pars: 4,
+      bogeys: 4,
+      doubleBogeys: 6,
+      triplePlus: 4,
+    });
+    expect(result.success).toBe(true);
+  });
 });
