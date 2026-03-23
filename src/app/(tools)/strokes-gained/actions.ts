@@ -15,7 +15,7 @@ import { checkRateLimit, extractClientIp } from "@/lib/rate-limit";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
 import { assessRoundTrust } from "@/lib/golf/round-trust";
 import { getRoundSaveAvailability } from "@/lib/round-save";
-import { verifyTurnstileToken } from "@/lib/security/turnstile";
+import { randomUUID } from "crypto";
 import {
   validateTroubleContext,
   buildTroubleContextSummary,
@@ -32,8 +32,6 @@ import { getSiteUrl } from "@/lib/site-url";
 export type SaveRoundErrorCode =
   | "RATE_LIMITED"
   | "SAVE_DISABLED"
-  | "VERIFICATION_REQUIRED"
-  | "VERIFICATION_FAILED"
   | "VALIDATION"
   | "DB_ERROR"
   | "DUPLICATE_ROUND"
@@ -46,9 +44,6 @@ export type SaveRoundResult =
 const SAVE_DISABLED_MESSAGE =
   "Cloud save unavailable — your results are still shown below.";
 const RATE_LIMITED_MESSAGE = "Too many requests. Please try again shortly.";
-const VERIFICATION_REQUIRED_MESSAGE =
-  "Complete the bot check to save anonymously.";
-const VERIFICATION_FAILED_MESSAGE = "Bot check failed. Please try again.";
 const DB_ERROR_MESSAGE = "Round could not be saved.";
 const UNEXPECTED_MESSAGE = "An unexpected error occurred.";
 const RATE_LIMIT_MONITOR_SAMPLE_RATE = 0.1;
@@ -171,7 +166,7 @@ export { getSgPhase2Mode };
 
 export async function saveRound(
   input: RoundInput,
-  verification: { turnstileToken: string | null }
+  verification: { honeypot?: string }
 ): Promise<SaveRoundResult> {
   try {
     if (!getRoundSaveAvailability().enabled) {
@@ -207,40 +202,13 @@ export async function saveRound(
       return fail("VALIDATION", message);
     }
 
-    // Turnstile verification: best-effort for anonymous saves.
-    // Authenticated users skip entirely. Anonymous users without a token
-    // (adblocker) are allowed through — rate limiting + trust scoring
-    // provide defense-in-depth.
-    const user = await getUser();
-    const token = verification.turnstileToken?.trim() ?? "";
-
-    if (!user && token) {
-      const turnstileResult = await verifyTurnstileToken({
-        token,
-        remoteIp: ip,
-        expectedHostname: hostHeader,
-      });
-
-      if (!turnstileResult.ok) {
-        console.warn("[saveRound] Turnstile token provided but verification failed — proceeding anyway", {
-          reason: turnstileResult.reason,
-          errorCodes: turnstileResult.result.errorCodes,
-        });
-        captureMonitoringException(new Error("Turnstile soft-fail: token invalid"), {
-          source: "saveRound",
-          code: "TURNSTILE_SOFT_FAIL",
-          reason: turnstileResult.reason,
-          errorCodes: turnstileResult.result.errorCodes,
-        });
-      }
-    } else if (!user && !token) {
-      console.warn("[saveRound] Anonymous save without Turnstile token — adblocker likely");
-      Sentry.addBreadcrumb({
-        category: "turnstile",
-        message: "Anonymous save without Turnstile token — adblocker likely",
-        level: "warning",
-      });
+    // Honeypot: if the hidden field is filled, a bot submitted the form.
+    // Return fake success so bots don't adapt their behavior.
+    if (verification.honeypot) {
+      return { success: true, roundId: randomUUID(), claimToken: "", isOwned: false };
     }
+
+    const user = await getUser();
 
     // Recalculate SG server-side — never trust client-supplied values
     const validatedInput = parsed.data as RoundInput;

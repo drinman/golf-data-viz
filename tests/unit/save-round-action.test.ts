@@ -8,7 +8,6 @@ const {
   mockCreateAdminClient,
   mockCheckRateLimit,
   mockCaptureMonitoringException,
-  mockVerifyTurnstileToken,
   mockGenerateClaimToken,
   mockGetUser,
   mockRevalidatePath,
@@ -18,7 +17,6 @@ const {
   mockCreateAdminClient: vi.fn(),
   mockCheckRateLimit: vi.fn(),
   mockCaptureMonitoringException: vi.fn(),
-  mockVerifyTurnstileToken: vi.fn(),
   mockGenerateClaimToken: vi.fn(),
   mockGetUser: vi.fn(),
   mockRevalidatePath: vi.fn(),
@@ -35,10 +33,6 @@ vi.mock("@/lib/rate-limit", () => ({
 
 vi.mock("@/lib/monitoring/sentry", () => ({
   captureMonitoringException: mockCaptureMonitoringException,
-}));
-
-vi.mock("@/lib/security/turnstile", () => ({
-  verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
 
 vi.mock("@/lib/security/claim-token", () => ({
@@ -68,9 +62,7 @@ import { saveRound } from "@/app/(tools)/strokes-gained/actions";
 import * as strokesGainedModule from "@/lib/golf/strokes-gained";
 import * as strokesGainedV3Module from "@/lib/golf/strokes-gained-v3";
 
-const verification = {
-  turnstileToken: "turnstile-token",
-};
+const verification = {};
 
 const FAKE_CLAIM_TOKEN = "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
 const FAKE_CLAIM_HASH = "hashedvalue01234567890abcdef1234567890abcdef1234567890abcdef1234";
@@ -82,20 +74,9 @@ describe("saveRound server action", () => {
     vi.stubEnv("ENABLE_ROUND_SAVE", "true");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
-    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "turnstile-site-key");
-    vi.stubEnv("TURNSTILE_SECRET_KEY", "turnstile-secret-key");
     vi.spyOn(console, "warn").mockImplementation(() => {});
     mockGetUser.mockResolvedValue(null);
     mockCheckRateLimit.mockResolvedValue({ allowed: true });
-    mockVerifyTurnstileToken.mockResolvedValue({
-      ok: true,
-      result: {
-        success: true,
-        errorCodes: [],
-        action: "save_round",
-        hostname: "golfdataviz.com",
-      },
-    });
     mockGenerateClaimToken.mockResolvedValue({
       rawToken: FAKE_CLAIM_TOKEN,
       hash: FAKE_CLAIM_HASH,
@@ -508,48 +489,36 @@ describe("saveRound server action", () => {
     expect(insertedRow.three_putts).toBeNull();
   });
 
-  it("returns VERIFICATION_REQUIRED when the Turnstile token is missing for anonymous user", async () => {
-    mockGetUser.mockResolvedValue(null);
-    const result = await saveRound(makeRound(), { turnstileToken: null });
+  it("returns fake success with UUID roundId when honeypot field is filled", async () => {
+    const result = await saveRound(makeRound(), { honeypot: "gotcha" });
 
-    expect(result).toEqual({
-      success: false,
-      code: "VERIFICATION_REQUIRED",
-      message: "Complete the bot check to save anonymously.",
-    });
-    expect(mockVerifyTurnstileToken).not.toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.roundId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      expect(result.claimToken).toBe("");
+      expect(result.isOwned).toBe(false);
+    }
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
-  it("skips Turnstile verification for authenticated users", async () => {
-    mockGetUser.mockResolvedValue({ id: "user-123" });
-    const result = await saveRound(makeRound(), { turnstileToken: null });
+  it("proceeds normally when honeypot is empty", async () => {
+    const result = await saveRound(makeRound(), { honeypot: "" });
 
     expect(result.success).toBe(true);
-    expect(mockVerifyTurnstileToken).not.toHaveBeenCalled();
+    if (result.success) {
+      expect(result.roundId).toBe("test-round-id");
+    }
     expect(mockInsert).toHaveBeenCalled();
   });
 
-  it("returns VERIFICATION_FAILED when Turnstile verification rejects the request", async () => {
-    mockVerifyTurnstileToken.mockResolvedValueOnce({
-      ok: false,
-      reason: "verification_failed",
-      result: {
-        success: false,
-        errorCodes: ["timeout-or-duplicate"],
-        action: "save_round",
-        hostname: "golfdataviz.com",
-      },
-    });
+  it("proceeds normally when honeypot is undefined", async () => {
+    const result = await saveRound(makeRound(), {});
 
-    const result = await saveRound(makeRound(), verification);
-
-    expect(result).toEqual({
-      success: false,
-      code: "VERIFICATION_FAILED",
-      message: "Bot check failed. Please try again.",
-    });
-    expect(mockInsert).not.toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.roundId).toBe("test-round-id");
+    }
+    expect(mockInsert).toHaveBeenCalled();
   });
 
   it("still returns success if claim token generation fails (best-effort)", async () => {

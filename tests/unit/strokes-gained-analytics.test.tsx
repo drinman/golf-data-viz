@@ -255,7 +255,7 @@ function renderClient(
   props: Partial<ComponentProps<typeof StrokesGainedClient>> = {}
 ) {
   return render(
-    <StrokesGainedClient turnstileSiteKey="site-key" sampleInput={mockInput} samplePreview={{ total: -1.5, chartData: [] as never, categories: [] as never, courseName: "Test", handicap: 14.3, bracketLabel: "10–15 HCP" }} {...props} />
+    <StrokesGainedClient sampleInput={mockInput} samplePreview={{ total: -1.5, chartData: [] as never, categories: [] as never, courseName: "Test", handicap: 14.3, bracketLabel: "10–15 HCP" }} {...props} />
   );
 }
 

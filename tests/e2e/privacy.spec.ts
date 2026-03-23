@@ -33,7 +33,7 @@ test.describe("Privacy policy page", () => {
     ).toBeVisible();
     await expect(
       page.getByText(
-        /Cloudflare Turnstile may process technical browser, device, and network signals/
+        /server-side validation and rate limiting/
       )
     ).toBeVisible();
   });

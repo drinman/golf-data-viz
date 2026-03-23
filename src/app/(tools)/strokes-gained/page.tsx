@@ -99,7 +99,6 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
   const from = params.from === "history" ? ("history" as const) : undefined;
   const initialInput = payload ? decodeRound(payload) : null;
   const saveEnabled = getRoundSaveAvailability().enabled;
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null;
 
   // Parse handicap prefill from CTA links (?handicap=14.3)
   const handicapParam = typeof params.handicap === "string" ? params.handicap : undefined;
@@ -113,7 +112,6 @@ export default async function StrokesGainedPage({ searchParams }: PageProps) {
     <StrokesGainedClient
       initialInput={initialInput}
       saveEnabled={saveEnabled}
-      turnstileSiteKey={turnstileSiteKey}
       samplePreview={sample.preview}
       sampleInput={sample.input}
       from={from}
