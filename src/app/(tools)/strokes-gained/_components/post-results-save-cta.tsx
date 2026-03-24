@@ -45,6 +45,7 @@ export function PostResultsSaveCta({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const honeypotRef = useRef<HTMLInputElement | null>(null);
   const viewedRef = useRef(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     if (!viewedRef.current) {
@@ -54,6 +55,9 @@ export function PostResultsSaveCta({
   }, []);
 
   async function handleSave() {
+    if (savingRef.current) return;
+    savingRef.current = true;
+
     trackEvent("post_results_save_cta_clicked");
     trackEvent("save_attempted", {
       auth_state: isAuthenticated ? "authenticated" : "anonymous",
@@ -83,12 +87,14 @@ export function PostResultsSaveCta({
           error: networkErr instanceof Error ? networkErr.message : String(networkErr),
         },
       });
+      savingRef.current = false;
       setPhase("error");
       setErrorMessage("Round could not be saved. Check your connection and try again.");
       return;
     }
 
     if (res.success) {
+      savingRef.current = false;
       trackEvent("round_saved", {
         auth_state: isAuthenticated ? "authenticated" : "anonymous",
         user_agent_class: getUserAgentClass(),
@@ -111,10 +117,12 @@ export function PostResultsSaveCta({
     });
 
     if (res.code === "DUPLICATE_ROUND") {
+      savingRef.current = false;
       setPhase("already_saved");
       return;
     }
 
+    savingRef.current = false;
     setPhase("error");
 
     Sentry.captureMessage(`Save round failed: ${res.code}`, {
@@ -166,12 +174,12 @@ export function PostResultsSaveCta({
 
   const isLoading = phase === "saving";
   const heading = isAuthenticated
-    ? "Add to your history"
-    : "Want to track your progress?";
+    ? "Track your progress"
+    : "See where your game is headed";
   const body = isAuthenticated
-    ? "Save this round to your history and track your SG trends."
-    : "Save this round and see how your strokes gained changes over time.";
-  const buttonText = isAuthenticated ? "Save to History" : "Save This Round";
+    ? "Save this round. After 3 rounds, you\u2019ll unlock trend lines and see where your game is actually moving."
+    : "Save this round. After 3 rounds, you\u2019ll unlock trend lines and biggest-mover insights \u2014 free, no account required.";
+  const buttonText = isAuthenticated ? "Save & Track" : "Start Tracking";
 
   return (
     <div
@@ -180,12 +188,6 @@ export function PostResultsSaveCta({
     >
       <p className="text-sm font-medium text-neutral-900">{heading}</p>
       <p className="mt-1 text-sm text-neutral-600">{body}</p>
-      {!isAuthenticated && (
-        <p className="mt-1 text-xs text-brand-800 font-medium">
-          Free. No account required.
-        </p>
-      )}
-
       <div className="mt-3 flex items-center gap-3">
         {phase === "error" ? (
           <>

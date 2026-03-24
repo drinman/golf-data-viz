@@ -1093,121 +1093,50 @@ export default function StrokesGainedClient({
             style={{ animationDelay: "400ms" }}
           />
 
-          {/* ── CHAPTER 4: SHARE & SAVE ── */}
+          {/* ── CHAPTER 4: SAVE ── */}
           <div className="mt-10 space-y-5">
-            {/* Tier 1: Primary share row */}
-            <div className="animate-fade-up flex items-center gap-3" style={{ animationDelay: "450ms" }}>
-              <button
-                type="button"
-                data-testid="share-image"
-                onClick={handleShare}
-                disabled={downloading}
-                className="rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {downloading ? "Preparing..." : "Share"}
-              </button>
-              <button
-                type="button"
-                data-testid="copy-link"
-                onClick={handleCopyLink}
-                aria-label={copyFailed ? "Failed to copy" : copied ? "Copied" : "Copy link"}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-cream-200 bg-white transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
-                  copyFailed ? "text-red-600" : copied ? "text-brand-800" : "text-neutral-500"
-                }`}
-              >
-                {copied ? (
-                  <CircleCheck className="h-4 w-4" />
-                ) : (
-                  <Link2 className="h-4 w-4" />
-                )}
-              </button>
-              {copied && (
-                <span className="text-xs font-medium text-brand-800">Copied!</span>
-              )}
-              {copyFailed && (
-                <span className="text-xs font-medium text-red-600">Failed</span>
-              )}
-            </div>
-            <p className="text-xs text-neutral-500">
-              Shared links include your entered round stats in encoded (reversible)
-              form.
-            </p>
-
-            {/* Tier 2: Receipt discovery */}
-            {shareHeadline && (
-              <div
-                data-testid="receipt-discovery"
-                className="animate-fade-up rounded-xl border border-cream-200 bg-cream-50 p-5"
-                style={{ animationDelay: "500ms" }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="hidden shrink-0 sm:block">
-                    <div className="h-20 w-14 rounded border border-cream-200 bg-white p-1.5 shadow-sm">
-                      <div className="space-y-1">
-                        <div className="h-1 w-full rounded-full bg-neutral-200" />
-                        <div className="h-1 w-3/4 rounded-full bg-neutral-200" />
-                        <div className="h-1 w-full rounded-full bg-neutral-200" />
-                        <div className="h-1 w-1/2 rounded-full bg-neutral-200" />
-                        <div className="mx-auto mt-2 h-4 w-4 rounded-sm bg-neutral-100" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-neutral-900">
-                      Want the retro receipt?
-                    </p>
-                    <p className="mt-0.5 text-xs text-neutral-500">
-                      Monospace scorecard with QR code.
-                    </p>
-                    <button
-                      type="button"
-                      data-testid="download-receipt"
-                      onClick={handleShareReceipt}
-                      disabled={downloadingReceipt}
-                      className="mt-3 rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {downloadingReceipt ? "Preparing..." : "Get the Receipt"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <h3
+              className="animate-fade-up text-sm font-semibold uppercase tracking-[0.15em] text-brand-800"
+              style={{ animationDelay: "450ms" }}
+            >
+              Track Your Progress
+            </h3>
 
             {/* Post-results save CTA */}
             {!saveSuccess && saveEnabled && (
-              <PostResultsSaveCta
-                input={lastInput}
-                isAuthenticated={!!user}
-                onSaveComplete={(res) => {
-                  setSavedRoundId(res.roundId);
-                  setSavedRoundOwned(res.isOwned);
-                  setSaveSuccess(true);
-                  setShowEncodedRecipientCta(false);
-                  if (res.isOwned) {
-                    clearStoredAnonClaim();
-                    void createShareToken(res.roundId).then((tokenRes) => {
-                      if (tokenRes.success) setShareToken(tokenRes.token);
-                    });
-                  }
-                  if (res.claimToken && !res.isOwned && lastInput) {
-                    setSavedClaimToken(res.claimToken);
-                    try {
-                      // claim:{roundId} survives the OAuth redirect handoff, while
-                      // gdv:last-anon-claim restores the saved/claimable UI on reload.
-                      localStorage.setItem(
-                        `claim:${res.roundId}`,
-                        JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })
-                      );
-                    } catch { /* localStorage unavailable */ }
-                    writeStoredAnonClaim({
-                      roundId: res.roundId,
-                      claimToken: res.claimToken,
-                      input: lastInput,
-                      timestamp: new Date().toISOString(),
-                    });
-                  }
-                }}
-              />
+              <div className="animate-fade-up" style={{ animationDelay: "500ms" }}>
+                <PostResultsSaveCta
+                  input={lastInput}
+                  isAuthenticated={!!user}
+                  onSaveComplete={(res) => {
+                    setSavedRoundId(res.roundId);
+                    setSavedRoundOwned(res.isOwned);
+                    setSaveSuccess(true);
+                    setShowEncodedRecipientCta(false);
+                    if (res.isOwned) {
+                      clearStoredAnonClaim();
+                      void createShareToken(res.roundId).then((tokenRes) => {
+                        if (tokenRes.success) setShareToken(tokenRes.token);
+                      });
+                    }
+                    if (res.claimToken && !res.isOwned && lastInput) {
+                      setSavedClaimToken(res.claimToken);
+                      try {
+                        localStorage.setItem(
+                          `claim:${res.roundId}`,
+                          JSON.stringify({ roundId: res.roundId, claimToken: res.claimToken })
+                        );
+                      } catch { /* localStorage unavailable */ }
+                      writeStoredAnonClaim({
+                        roundId: res.roundId,
+                        claimToken: res.claimToken,
+                        input: lastInput,
+                        timestamp: new Date().toISOString(),
+                      });
+                    }
+                  }}
+                />
+              </div>
             )}
 
             {/* Save success — authenticated */}
@@ -1227,6 +1156,63 @@ export default function StrokesGainedClient({
                 >
                   {isFromHistory ? "See updated history" : "View your trends"} &rarr;
                 </Link>
+              </div>
+            )}
+
+            {/* History preview teaser — shown after save for early-stage users only.
+                Gate on !isFromHistory: if the user navigated from /history, they already
+                know the dashboard and this teaser is patronizing. */}
+            {saveSuccess && savedRoundOwned && !isFromHistory && (
+              <div
+                className="animate-fade-up overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+                style={{ animationDelay: "550ms" }}
+              >
+                <div className="border-b border-cream-200 bg-[linear-gradient(135deg,rgba(15,61,34,0.08),rgba(184,134,11,0.06))] px-5 py-4">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-brand-800/80">
+                    What unlocks next
+                  </p>
+                  <p className="mt-1 text-sm text-neutral-600">
+                    3 rounds to unlock your full dashboard.
+                  </p>
+                </div>
+                <div className="px-5 py-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { label: "Save baseline", stage: 1 },
+                      { label: "Start comparison", stage: 2 },
+                      { label: "Unlock patterns", stage: 3 },
+                    ].map((step) => {
+                      const isDone = step.stage === 1;
+                      const isCurrent = step.stage === 2;
+                      return (
+                        <div
+                          key={step.label}
+                          className={`rounded-xl border px-4 py-3 ${
+                            isDone
+                              ? "border-brand-100 bg-brand-50"
+                              : isCurrent
+                                ? "border-accent-500/30 bg-cream-50"
+                                : "border-neutral-200 bg-neutral-50"
+                          }`}
+                        >
+                          <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                            Stage {step.stage}
+                          </p>
+                          <p className="mt-1 font-medium text-neutral-950">
+                            {step.label}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <Link
+                    href="/strokes-gained/history"
+                    onClick={() => trackEvent("history_link_clicked", { surface: "save_preview_teaser" })}
+                    className="mt-4 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+                  >
+                    View your dashboard &rarr;
+                  </Link>
+                </div>
               </div>
             )}
 
@@ -1322,6 +1308,93 @@ export default function StrokesGainedClient({
             />
           </div>
 
+          {/* Gold section separator */}
+          <div
+            className="mx-auto mt-10 h-px w-16 animate-fade-up bg-accent-500/40"
+            style={{ animationDelay: "600ms" }}
+          />
+
+          {/* ── CHAPTER 5: SHARE ── */}
+          <div className="mt-10 space-y-5">
+            {/* Primary share row */}
+            <div className="animate-fade-up flex items-center gap-3" style={{ animationDelay: "650ms" }}>
+              <button
+                type="button"
+                data-testid="share-image"
+                onClick={handleShare}
+                disabled={downloading}
+                className="rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {downloading ? "Preparing..." : "Share"}
+              </button>
+              <button
+                type="button"
+                data-testid="copy-link"
+                onClick={handleCopyLink}
+                aria-label={copyFailed ? "Failed to copy" : copied ? "Copied" : "Copy link"}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-cream-200 bg-white transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
+                  copyFailed ? "text-red-600" : copied ? "text-brand-800" : "text-neutral-500"
+                }`}
+              >
+                {copied ? (
+                  <CircleCheck className="h-4 w-4" />
+                ) : (
+                  <Link2 className="h-4 w-4" />
+                )}
+              </button>
+              {copied && (
+                <span className="text-xs font-medium text-brand-800">Copied!</span>
+              )}
+              {copyFailed && (
+                <span className="text-xs font-medium text-red-600">Failed</span>
+              )}
+            </div>
+            <p className="text-xs text-neutral-500">
+              Shared links include your entered round stats in encoded (reversible)
+              form.
+            </p>
+
+            {/* Receipt discovery */}
+            {shareHeadline && (
+              <div
+                data-testid="receipt-discovery"
+                className="animate-fade-up rounded-xl border border-cream-200 bg-cream-50 p-5"
+                style={{ animationDelay: "700ms" }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="hidden shrink-0 sm:block">
+                    <div className="h-20 w-14 rounded border border-cream-200 bg-white p-1.5 shadow-sm">
+                      <div className="space-y-1">
+                        <div className="h-1 w-full rounded-full bg-neutral-200" />
+                        <div className="h-1 w-3/4 rounded-full bg-neutral-200" />
+                        <div className="h-1 w-full rounded-full bg-neutral-200" />
+                        <div className="h-1 w-1/2 rounded-full bg-neutral-200" />
+                        <div className="mx-auto mt-2 h-4 w-4 rounded-sm bg-neutral-100" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-neutral-900">
+                      Want the retro receipt?
+                    </p>
+                    <p className="mt-0.5 text-xs text-neutral-500">
+                      Monospace scorecard with QR code.
+                    </p>
+                    <button
+                      type="button"
+                      data-testid="download-receipt"
+                      onClick={handleShareReceipt}
+                      disabled={downloadingReceipt}
+                      className="mt-3 rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {downloadingReceipt ? "Preparing..." : "Get the Receipt"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Recipient CTA — shown for shared link recipients, never for round authors */}
           {showEncodedRecipientCta && !saveSuccess && (
             <RecipientCta
@@ -1334,7 +1407,7 @@ export default function StrokesGainedClient({
           {/* Methodology footer */}
           <div
             className="mt-10 animate-fade-up border-t border-neutral-100 pt-6 text-center text-xs text-neutral-400"
-            style={{ animationDelay: "500ms" }}
+            style={{ animationDelay: "750ms" }}
           >
             <p>SG &middot; Benchmarks v{benchmarkMeta.version}</p>
           </div>

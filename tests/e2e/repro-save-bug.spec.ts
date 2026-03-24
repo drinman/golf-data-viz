@@ -99,6 +99,6 @@ test.describe("Save flow", () => {
 
     // Verify anonymous mode copy
     const btnText = await saveCta.locator("button").first().textContent();
-    expect(btnText?.includes("Save This Round")).toBe(true);
+    expect(btnText?.includes("Start Tracking")).toBe(true);
   });
 });
