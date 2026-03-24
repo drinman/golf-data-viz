@@ -205,10 +205,10 @@ function CoefficientTable() {
   const calibration = loadCalibrationConfig();
   const profileNames = Object.keys(calibration.profiles);
   return (
-    <div className="mt-4 overflow-x-auto rounded-md border border-neutral-200">
+    <div className="mt-4 overflow-x-auto rounded-md border border-cream-200">
       <table className="w-full text-xs">
         <thead>
-          <tr className="border-b border-neutral-200 bg-neutral-50 text-left">
+          <tr className="border-b border-cream-200 bg-neutral-50 text-left">
             <th className="px-3 py-2 font-medium text-neutral-600">Profile</th>
             <th className="px-3 py-2 font-medium text-neutral-600">OTT FIR</th>
             <th className="px-3 py-2 font-medium text-neutral-600">OTT Pen</th>
@@ -217,7 +217,7 @@ function CoefficientTable() {
             <th className="px-3 py-2 font-medium text-neutral-600">Putting</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-100 font-mono">
+        <tbody className="divide-y divide-cream-200 font-mono">
           {profileNames.map((name) => {
             const p = calibration.profiles[name as keyof typeof calibration.profiles];
             return (
@@ -573,7 +573,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* ── Group divider ── */}
-        <hr className="my-16 border-neutral-100" />
+        <hr className="my-16 border-cream-200" />
 
         {/* ═══════════════════════════════════════════
             Data & Quality
@@ -604,7 +604,7 @@ export default function MethodologyPage() {
                   <th className="px-4 py-2.5 font-medium text-neutral-600">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-cream-200">
                 {CITATION_METRIC_KEYS.map((key) => {
                   const entries = meta.citations[key as CitationMetricKey];
                   const status = getCitationStatus(entries);
@@ -688,7 +688,7 @@ export default function MethodologyPage() {
                   <th className="px-4 py-2.5 font-medium text-neutral-600">Category Examples</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-cream-200">
                 <tr>
                   <td className="px-4 py-2.5">
                     <span className="rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-medium uppercase text-data-positive">High</span>
@@ -743,7 +743,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* ── Group divider ── */}
-        <hr className="my-16 border-neutral-100" />
+        <hr className="my-16 border-cream-200" />
 
         {/* ═══════════════════════════════════════════
             Context & Limitations
@@ -829,7 +829,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* ── Group divider ── */}
-        <hr className="my-16 border-neutral-100" />
+        <hr className="my-16 border-cream-200" />
 
         {/* ═══════════════════════════════════════════
             Validation
@@ -856,7 +856,7 @@ export default function MethodologyPage() {
                   <th className="px-4 py-2.5 font-medium text-neutral-600">Actual SG Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-cream-200">
                 {calibrationRows.map((row) => (
                   <tr key={row.label}>
                     <td className="px-4 py-2.5 text-neutral-800">{row.label}</td>
@@ -894,7 +894,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* ── Footer ── */}
-        <footer className="mt-16 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-16 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic leading-relaxed text-neutral-400">
             Benchmarks v{meta.version} (updated {meta.updatedAt}) use a
             version-locked canonical benchmark source for all production values.

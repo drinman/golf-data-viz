@@ -44,7 +44,7 @@ export function SummaryStats({ rounds }: { rounds: RoundSgSnapshot[] }) {
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-lg border border-card-border bg-card px-4 py-3"
+          className="rounded-lg border border-cream-200 bg-card px-4 py-3"
         >
           <p className="text-xs font-medium uppercase tracking-[0.15em] text-neutral-400">
             {item.label}

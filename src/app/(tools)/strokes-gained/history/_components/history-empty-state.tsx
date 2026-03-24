@@ -5,7 +5,7 @@ export function HistoryEmptyState() {
   return (
     <div
       data-testid="history-empty-state"
-      className="rounded-xl border border-card-border bg-card p-8 text-center shadow-sm"
+      className="rounded-xl border border-cream-200 bg-card p-8 text-center shadow-sm"
     >
       <h2 className="font-display text-2xl tracking-tight text-neutral-950">
         No rounds yet

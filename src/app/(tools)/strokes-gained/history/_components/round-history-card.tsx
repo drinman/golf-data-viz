@@ -70,7 +70,7 @@ export function RoundHistoryCard({
     <Link
       href={`/strokes-gained/rounds/${round.roundId}`}
       data-testid="round-history-card"
-      className={cn("group block cursor-pointer rounded-xl border border-card-border bg-card shadow-sm transition-shadow hover:shadow-md", className)}
+      className={cn("group block cursor-pointer rounded-xl border border-cream-200 bg-card shadow-sm transition-shadow hover:shadow-md", className)}
       style={style}
       onClick={() => trackEvent("history_card_clicked", { round_id: round.roundId })}
     >

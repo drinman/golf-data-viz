@@ -94,7 +94,7 @@ export default function AverageStrokesGainedByHandicapPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100">
+                <tbody className="divide-y divide-cream-200">
                   {brackets.map((b) => (
                     <tr key={b.bracket}>
                       <td className="px-3 py-2.5">
@@ -224,7 +224,7 @@ export default function AverageStrokesGainedByHandicapPage() {
           <CalculatorCta surface="learn_avg_sg_by_handicap" />
         </div>
 
-        <footer className="mt-12 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-12 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic text-neutral-400">
             Data from Shot Scope, Arccos, and USGA statistics.{" "}
             <Link

@@ -26,7 +26,7 @@ function StarterReadinessCard({ roundCount }: { roundCount: number }) {
   return (
     <section
       data-testid="starter-readiness-card"
-      className="animate-fade-up overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+      className="animate-fade-up overflow-hidden rounded-2xl border border-cream-200 bg-card shadow-sm"
     >
       <div className="border-b border-cream-200 bg-[linear-gradient(135deg,rgba(15,61,34,0.08),rgba(184,134,11,0.06))] px-5 py-5">
         <div className="flex items-start justify-between gap-4">
@@ -89,7 +89,7 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
   return (
     <section
       data-testid="starter-trend-card"
-      className="animate-fade-up delay-1 overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+      className="animate-fade-up delay-1 overflow-hidden rounded-2xl border border-cream-200 bg-card shadow-sm"
     >
       <div className="grid gap-0 md:grid-cols-[0.95fr,1.05fr]">
         <div className="bg-brand-900 px-5 py-6 text-white">
@@ -159,7 +159,7 @@ function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
   return (
     <section
       data-testid="starter-lesson-prep-card"
-      className="animate-fade-up overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+      className="animate-fade-up overflow-hidden rounded-2xl border border-cream-200 bg-card shadow-sm"
     >
       <div className="border-b border-cream-200 px-5 py-5">
         <div className="flex items-start justify-between gap-4">

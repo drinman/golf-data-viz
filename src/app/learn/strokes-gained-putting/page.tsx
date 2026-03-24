@@ -159,7 +159,7 @@ export default function StrokesGainedPuttingPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100">
+                <tbody className="divide-y divide-cream-200">
                   {brackets.map((b) => (
                     <tr key={b.bracket}>
                       <td className="px-4 py-2.5">
@@ -259,7 +259,7 @@ export default function StrokesGainedPuttingPage() {
           <CalculatorCta surface="learn_sg_putting" />
         </div>
 
-        <footer className="mt-12 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-12 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic text-neutral-400">
             Based on strokes gained methodology by Mark Broadie. Peer data from
             Shot Scope and published amateur sources.{" "}

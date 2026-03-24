@@ -188,7 +188,7 @@ export default async function BenchmarkBracketPage({ params }: Props) {
         </div>
 
         {/* Footer */}
-        <footer className="mt-12 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-12 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic text-neutral-400">
             Benchmarks v{meta.version} (updated {meta.updatedAt}). Data from
             Shot Scope, Arccos, and USGA statistics.{" "}

@@ -56,7 +56,7 @@ function LessonPrepCta({
   const isPremium = entitlements.canGenerateLessonReports;
 
   return (
-    <div className="animate-fade-up overflow-hidden rounded-xl border border-card-border bg-card shadow-sm">
+    <div className="animate-fade-up overflow-hidden rounded-xl border border-cream-200 bg-card shadow-sm">
       <div className="grid gap-0 md:grid-cols-[1.1fr,0.9fr]">
         <div className="bg-brand-900 px-5 py-5 text-white">
           <p className="text-xs uppercase tracking-[0.22em] text-brand-100/75">
@@ -138,7 +138,7 @@ export function HistoryDashboard({ rounds, entitlements }: HistoryDashboardProps
       </div>
 
       <div
-        className="animate-fade-up delay-2 rounded-xl border border-card-border bg-card p-5 shadow-sm"
+        className="animate-fade-up delay-2 rounded-xl border border-cream-200 bg-card p-5 shadow-sm"
       >
         <h2 className="mb-3 font-display text-xl tracking-tight text-neutral-950">
           SG Trends

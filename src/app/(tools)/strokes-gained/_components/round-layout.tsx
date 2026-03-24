@@ -166,7 +166,7 @@ export function RoundLayout({
 
       {/* Radar chart */}
       <div
-        className="mt-8 animate-fade-up rounded-xl border border-card-border bg-white p-4 shadow-sm sm:p-6"
+        className="mt-8 animate-fade-up rounded-xl border border-cream-200 bg-white p-4 shadow-sm sm:p-6"
         style={d(2)}
       >
         <div style={{ height: 400, maxHeight: "50vh", minHeight: 280 }}>
@@ -220,7 +220,7 @@ export function RoundLayout({
 
       {/* Methodology note */}
       <div
-        className="mt-10 animate-fade-up border-t border-neutral-100 pt-6 text-center text-xs text-neutral-400"
+        className="mt-10 animate-fade-up border-t border-cream-200 pt-6 text-center text-xs text-neutral-400"
         style={d(7)}
       >
         <p>

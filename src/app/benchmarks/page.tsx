@@ -74,7 +74,7 @@ export default function BenchmarksIndexPage() {
           <CalculatorCta surface="benchmarks_index" />
         </div>
 
-        <footer className="mt-12 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-12 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic text-neutral-400">
             Benchmark data from Shot Scope, Arccos aggregate reports, and USGA
             handicap statistics. Benchmarks v{meta.version} (updated{" "}
