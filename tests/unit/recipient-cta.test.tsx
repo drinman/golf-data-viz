@@ -61,7 +61,7 @@ describe("RecipientCta", () => {
 
       // Inline CTA should show the challenge headline with the category name
       expect(
-        screen.getByText(/Their putting cost them .+ strokes\. Think you can do better\?/)
+        screen.getByText(/Your friend is losing .+ strokes on putting\. Where are YOU losing strokes\?/)
       ).toBeVisible();
     });
 
@@ -80,7 +80,7 @@ describe("RecipientCta", () => {
       );
 
       expect(
-        screen.getByText("Your friend is beating their peers. Can you?")
+        screen.getByText("Your friend is outplaying their peers. Are you?")
       ).toBeVisible();
     });
 
@@ -100,7 +100,7 @@ describe("RecipientCta", () => {
 
       // Total is negative but no single category breaches -0.5
       expect(
-        screen.getByText("Think you can do better? Find out.")
+        screen.getByText("Where are YOU losing strokes?")
       ).toBeVisible();
     });
 
@@ -119,7 +119,7 @@ describe("RecipientCta", () => {
       );
 
       expect(
-        screen.getByText("How do your stats compare?")
+        screen.getByText("Same handicap. Different game. See yours.")
       ).toBeVisible();
     });
 
@@ -142,7 +142,7 @@ describe("RecipientCta", () => {
 
       // Should pick around-the-green (worst), not putting
       expect(
-        screen.getByText(/Their around the green cost them/)
+        screen.getByText(/Your friend is losing .+ strokes on around the green/)
       ).toBeVisible();
     });
   });
@@ -167,7 +167,7 @@ describe("RecipientCta", () => {
       const inlineCta = screen.getByTestId("recipient-cta");
       expect(
         inlineCta.querySelector("p")?.textContent
-      ).toMatch(/Their putting cost them .+ strokes/);
+      ).toMatch(/Your friend is losing .+ strokes on putting/);
     });
   });
 
@@ -209,7 +209,7 @@ describe("RecipientCta", () => {
         />
       );
 
-      await user.click(screen.getByRole("link", { name: "Try It Free" }));
+      await user.click(screen.getByRole("link", { name: "Compare Your Game" }));
 
       expect(mockTrackEvent).toHaveBeenCalledWith("shared_round_cta_clicked", {
         surface: "token_share",

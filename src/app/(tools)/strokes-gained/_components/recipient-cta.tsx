@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CATEGORY_ORDER, CATEGORY_LABELS } from "@/lib/golf/constants";
-import { presentSG, formatHandicap } from "@/lib/golf/format";
+import { CATEGORY_LABELS } from "@/lib/golf/constants";
+import { presentSG } from "@/lib/golf/format";
 import { trackEvent } from "@/lib/analytics/client";
 import type { StrokesGainedResult } from "@/lib/golf/types";
 import type { HeadlineSentiment } from "@/lib/golf/share-headline";
+import { deriveSentiment, findWorstCategory, buildComparisonTeaser } from "./cta-utils";
 
 interface RecipientCtaProps {
   senderHandicap: number;
@@ -13,33 +14,15 @@ interface RecipientCtaProps {
   surface: "encoded_share" | "token_share";
 }
 
-function deriveSentiment(total: number): HeadlineSentiment {
-  if (total > 0.5) return "positive";
-  if (total < -0.5) return "negative";
-  return "neutral";
-}
-
 function getSentimentCopy(sentiment: HeadlineSentiment): string {
   switch (sentiment) {
     case "positive":
-      return "Your friend is beating their peers. Can you?";
+      return "Your friend is outplaying their peers. Are you?";
     case "negative":
-      return "Think you can do better? Find out.";
+      return "Where are YOU losing strokes?";
     default:
-      return "How do your stats compare?";
+      return "Same handicap. Different game. See yours.";
   }
-}
-
-function findWorstCategory(result: StrokesGainedResult) {
-  const skippedSet = new Set(result.skippedCategories);
-  const active = CATEGORY_ORDER.filter((k) => !skippedSet.has(k));
-  if (active.length === 0) return null;
-
-  let worst = { key: active[0], value: result.categories[active[0]] };
-  for (const key of active) {
-    if (result.categories[key] < worst.value) worst = { key, value: result.categories[key] };
-  }
-  return worst.value < -0.5 ? worst : null;
 }
 
 /** Full challenge headline for the inline CTA */
@@ -48,7 +31,7 @@ function getChallengeHeadline(result: StrokesGainedResult): string {
   if (worst) {
     const worstLabel = CATEGORY_LABELS[worst.key].toLowerCase();
     const worstSg = presentSG(worst.value, 1);
-    return `Their ${worstLabel} cost them ${worstSg.formatted.replace('-', '')} strokes. Think you can do better?`;
+    return `Your friend is losing ${worstSg.formatted.replace('-', '')} strokes on ${worstLabel}. Where are YOU losing strokes?`;
   }
   return getSentimentCopy(deriveSentiment(result.total));
 }
@@ -59,29 +42,13 @@ function getShortChallenge(result: StrokesGainedResult): string {
   if (worst) {
     return `Beat their ${CATEGORY_LABELS[worst.key].toLowerCase()}?`;
   }
-  return getSentimentCopy(deriveSentiment(result.total));
-}
-
-function buildComparisonTeaser(
-  handicap: number,
-  result: StrokesGainedResult,
-): string | null {
-  const skippedSet = new Set(result.skippedCategories);
-  const active = CATEGORY_ORDER.filter((k) => !skippedSet.has(k));
-  if (active.length < 2) return null;
-
-  let best = { key: active[0], value: result.categories[active[0]] };
-  let worst = { key: active[0], value: result.categories[active[0]] };
-  for (const key of active) {
-    const val = result.categories[key];
-    if (val > best.value) best = { key, value: val };
-    if (val < worst.value) worst = { key, value: val };
+  const sentiment = deriveSentiment(result.total);
+  switch (sentiment) {
+    case "positive":
+      return "Outplay your friend?";
+    default:
+      return "Your turn";
   }
-
-  const bestSg = presentSG(best.value, 1);
-  const worstSg = presentSG(worst.value, 1);
-
-  return `${formatHandicap(handicap)} HCP — Best: ${CATEGORY_LABELS[best.key]} (${bestSg.formatted}) · Worst: ${CATEGORY_LABELS[worst.key]} (${worstSg.formatted})`;
 }
 
 export function RecipientCta({ senderHandicap, senderResult, surface }: RecipientCtaProps) {
@@ -137,8 +104,11 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
           onClick={handleClick}
           className="mt-4 inline-block rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
         >
-          Try It Free
+          Compare Your Game
         </a>
+        <p className="mt-2 text-xs text-neutral-400">
+          Takes 60 seconds · Free
+        </p>
       </div>
 
       {/* Sticky mobile CTA */}
@@ -159,7 +129,7 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
               onClick={handleClick}
               className="shrink-0 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
             >
-              Try It
+              Your Turn
             </a>
           </div>
         </div>

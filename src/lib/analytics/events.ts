@@ -75,7 +75,11 @@ export type AnalyticsEvent =
   | "form_field_completed"
   | "form_abandoned"
   | "save_attempted"
-  | "viral_loop_completed";
+  | "viral_loop_completed"
+  | "interstitial_cta_viewed"
+  | "interstitial_cta_clicked"
+  | "interstitial_skipped"
+  | "bottom_cta_clicked";
 
 type EmptyPayload = Record<never, never>;
 
@@ -231,6 +235,10 @@ export type AnalyticsEventProps = {
   form_abandoned: { last_field_completed: string; fields_completed_count: number; field_group_reached: string; time_on_form_ms: number };
   save_attempted: { auth_state: "authenticated" | "anonymous" };
   viral_loop_completed: { funnel_time_ms: number };
+  interstitial_cta_viewed: { surface: "encoded_share" | "token_share" };
+  interstitial_cta_clicked: { surface: "encoded_share" | "token_share"; sentiment: "positive" | "negative" | "neutral" };
+  interstitial_skipped: { surface: "encoded_share" | "token_share" };
+  bottom_cta_clicked: { surface: "token_share" };
 };
 
 type RequiredKeys<T extends object> = {
