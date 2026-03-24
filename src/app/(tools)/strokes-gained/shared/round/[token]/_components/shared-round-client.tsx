@@ -10,6 +10,7 @@ import {
 import { captureElementAsPng, downloadBlob } from "@/lib/capture";
 import { trackEvent } from "@/lib/analytics/client";
 import { RecipientCta } from "@/app/(tools)/strokes-gained/_components/recipient-cta";
+import { InterstitialCta } from "@/app/(tools)/strokes-gained/_components/interstitial-cta";
 
 interface SharedRoundClientProps {
   snapshot: RoundDetailSnapshot;
@@ -36,27 +37,52 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
     });
   }
 
+  const ctaUrl = `/strokes-gained?handicap=${snapshot.handicapIndex}&utm_source=share&utm_medium=cta&utm_campaign=round_share`;
+
   return (
     <RoundLayout
       snapshot={snapshot}
       derived={derived}
       shareCardRef={shareCardRef}
+      interstitial={
+        <InterstitialCta
+          senderHandicap={snapshot.handicapIndex}
+          senderResult={derived.sgResult}
+          senderChartData={derived.chartData}
+          bracketLabel={derived.bracketLabel}
+          surface="token_share"
+        />
+      }
       actions={
         <div className="text-center">
-          <button
-            type="button"
-            onClick={handleDownloadPng}
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50"
-          >
-            <Download className="h-4 w-4" />
-            Download PNG
-          </button>
-
           <RecipientCta
             senderHandicap={snapshot.handicapIndex}
             senderResult={derived.sgResult}
             surface="token_share"
           />
+
+          <button
+            type="button"
+            onClick={handleDownloadPng}
+            className="mt-6 inline-flex items-center gap-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Save image
+          </button>
+        </div>
+      }
+      bottomCta={
+        <div data-testid="bottom-cta" className="text-center">
+          <p className="text-sm text-neutral-600">
+            Ready to see your numbers?
+          </p>
+          <a
+            href={ctaUrl}
+            onClick={() => trackEvent("bottom_cta_clicked", { surface: "token_share" })}
+            className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+          >
+            Compare Your Game — Free
+          </a>
         </div>
       }
     />

@@ -762,7 +762,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(cta).toBeVisible();
     // Should show challenge or sentiment-based copy
     await expect(
-      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare|Their .+ cost them .+ strokes)/)
+      cta.getByText(/(Your friend is outplaying|Where are YOU losing strokes|Same handicap\. Different game|Your friend is losing .+ strokes on)/)
     ).toBeVisible();
   });
 
@@ -784,7 +784,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     const cta = page.getByTestId("recipient-cta");
     await expect(cta).toBeVisible();
     await expect(
-      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare|Their .+ cost them .+ strokes)/)
+      cta.getByText(/(Your friend is outplaying|Where are YOU losing strokes|Same handicap\. Different game|Your friend is losing .+ strokes on)/)
     ).toBeVisible();
   });
 
@@ -896,7 +896,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByTestId("recipient-cta")).toBeVisible({ timeout: 5000 });
 
     // Click the CTA link
-    const ctaLink = page.getByTestId("recipient-cta").getByRole("link", { name: "Try It Free" });
+    const ctaLink = page.getByTestId("recipient-cta").getByRole("link", { name: "Compare Your Game" });
     await expect(ctaLink).toBeVisible();
     const href = await ctaLink.getAttribute("href");
     expect(href).toContain("handicap=");

@@ -44,8 +44,12 @@ interface RoundLayoutProps {
   shareCardRef: RefObject<HTMLDivElement | null>;
   /** Slot rendered before the header band (e.g. back link). */
   beforeHeader?: ReactNode;
+  /** Slot rendered between radar chart and first gold separator. */
+  interstitial?: ReactNode;
   /** Slot rendered after the second gold separator (share/download actions). */
   actions: ReactNode;
+  /** Slot rendered after the actions slot, before methodology footer. */
+  bottomCta?: ReactNode;
   /** Whether to show the methodology page link in the footer. */
   methodologyLink?: boolean;
   /** Base animation delay offset in ms (default 0). */
@@ -57,7 +61,9 @@ export function RoundLayout({
   derived,
   shareCardRef,
   beforeHeader,
+  interstitial,
   actions,
+  bottomCta,
   methodologyLink = false,
   baseDelay = 0,
 }: RoundLayoutProps) {
@@ -172,14 +178,21 @@ export function RoundLayout({
         </p>
       </div>
 
+      {/* Interstitial slot (e.g. conversion CTA on shared round pages) */}
+      {interstitial && (
+        <div className="mt-8 animate-fade-up" style={d(2)}>
+          {interstitial}
+        </div>
+      )}
+
       {/* Gold section separator */}
       <div
         className="mx-auto mt-10 h-px w-16 animate-fade-up bg-accent-500/40"
         style={d(3)}
       />
 
-      {/* Results summary */}
-      <div className="mt-10 animate-fade-up" style={d(4)}>
+      {/* Results summary — id is the scroll target for InterstitialCta "Skip to full results" link */}
+      <div id="results-summary" className="mt-10 animate-fade-up" style={d(4)}>
         <ResultsSummary
           result={sgResult}
           benchmarkMeta={benchmarkMeta}
@@ -197,6 +210,13 @@ export function RoundLayout({
       <div className="mt-10 animate-fade-up" style={d(6)}>
         {actions}
       </div>
+
+      {/* Bottom CTA slot */}
+      {bottomCta && (
+        <div className="mt-8 animate-fade-up" style={d(6)}>
+          {bottomCta}
+        </div>
+      )}
 
       {/* Methodology note */}
       <div
