@@ -1193,7 +1193,7 @@ export default function StrokesGainedClient({
                               ? "border-brand-100 bg-brand-50"
                               : isCurrent
                                 ? "border-accent-500/30 bg-cream-50"
-                                : "border-neutral-200 bg-neutral-50"
+                                : "border-cream-200 bg-neutral-50"
                           }`}
                         >
                           <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
@@ -1259,7 +1259,7 @@ export default function StrokesGainedClient({
               <div
                 data-testid="claim-pending"
                 role="status"
-                className="rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
+                className="rounded-md border border-cream-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
               >
                 Linking round to your account...
               </div>

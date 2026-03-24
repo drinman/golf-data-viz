@@ -61,7 +61,7 @@ function StarterReadinessCard({ roundCount }: { roundCount: number }) {
                     ? "border-brand-100 bg-brand-50"
                     : current
                       ? "border-accent-500/30 bg-cream-50"
-                      : "border-neutral-200 bg-neutral-50"
+                      : "border-cream-200 bg-neutral-50"
                 }`}
               >
                 <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
@@ -182,7 +182,7 @@ function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
       </div>
 
       <div className="px-5 py-5">
-        <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+        <div className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-4">
           <p className="text-sm text-neutral-700">
             When unlocked, you&apos;ll get multi-round trend signal, a primary focus area,
             and a shareable summary for your next lesson.
@@ -191,7 +191,7 @@ function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
 
         <Link
           href="/strokes-gained/lesson-prep"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
         >
           Preview lesson prep flow
           <ArrowUpRight className="h-4 w-4" />

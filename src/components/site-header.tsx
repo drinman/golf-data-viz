@@ -115,7 +115,7 @@ export function SiteHeader() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
                 >
                   {link.label}
                 </Link>
@@ -130,7 +130,7 @@ export function SiteHeader() {
                   setAuthOpen(true);
                   trackEvent("auth_modal_opened", { surface: "header_sign_in" });
                 }}
-                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
               >
                 Sign in
               </button>

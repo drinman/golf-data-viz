@@ -123,7 +123,7 @@ function AuthModalContent({
       ref={backdropRef}
       onClick={handleBackdropClick}
       data-testid="auth-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40"
     >
       <div
         role="dialog"
@@ -146,7 +146,7 @@ function AuthModalContent({
               onClick={onClose}
               data-testid="auth-modal-close"
               aria-label="Close"
-              className="rounded-md p-1 text-neutral-400 transition-colors hover:bg-cream-100 hover:text-neutral-600"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-cream-100 hover:text-neutral-600"
             >
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -164,7 +164,7 @@ function AuthModalContent({
             type="button"
             onClick={handleGoogleSignIn}
             data-testid="google-signin-btn"
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 transition-all hover:border-neutral-400 hover:bg-cream-50"
+            className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 transition-all hover:border-neutral-400 hover:bg-cream-50"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path

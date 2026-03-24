@@ -132,7 +132,7 @@ export function ResultsSummary({
       <div
         className={`animate-fade-up rounded-xl border px-6 py-6 ${
           totalPresentation.tone === "neutral"
-            ? "border-neutral-200 bg-neutral-50"
+            ? "border-cream-200 bg-neutral-50"
             : totalPresentation.tone === "positive"
               ? "border-brand-100 bg-brand-50"
               : "border-red-100 bg-red-50"
@@ -425,7 +425,7 @@ export function ResultsSummary({
       {result.reconciliationUnattributed != null && Math.abs(result.reconciliationUnattributed) > 0.05 && (
         <div
           data-testid="unattributed-row"
-          className="animate-fade-up flex items-center justify-between rounded-lg border border-dotted border-neutral-200 bg-neutral-50 px-4 py-2.5"
+          className="animate-fade-up flex items-center justify-between rounded-lg border border-dotted border-cream-200 bg-neutral-50 px-4 py-2.5"
           style={{ animationDelay: `${(entries.length + 2) * 100}ms` }}
         >
           <span className="flex items-baseline gap-1.5">

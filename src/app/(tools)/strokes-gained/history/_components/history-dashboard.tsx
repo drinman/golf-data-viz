@@ -85,7 +85,7 @@ function LessonPrepCta({
                 round_count: roundCount,
               })
             }
-            className="mt-4 inline-flex w-fit items-center rounded-lg bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+            className="mt-4 inline-flex min-h-11 w-fit items-center rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
           >
             {isPremium ? "Build Lesson Prep Report" : "See What Premium Unlocks"}
           </Link>

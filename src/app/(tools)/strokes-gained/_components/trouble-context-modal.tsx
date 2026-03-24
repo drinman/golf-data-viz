@@ -80,7 +80,7 @@ export function TroubleContextModal({
     <div
       ref={backdropRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40"
     >
       <div
         role="dialog"
@@ -114,7 +114,7 @@ export function TroubleContextModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-4 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+                className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
               >
                 Cancel
               </button>
@@ -197,7 +197,7 @@ export function TroubleContextModal({
                   type="button"
                   data-testid="trouble-apply"
                   onClick={handleApply}
-                  className="rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+                  className="min-h-11 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
                 >
                   Apply context
                 </button>
@@ -211,7 +211,7 @@ export function TroubleContextModal({
                       ]);
                       setHoleCount((c) => c + 1);
                     }}
-                    className="text-sm font-medium text-brand-800 transition-colors hover:text-brand-600"
+                    className="inline-flex min-h-11 items-center text-sm font-medium text-brand-800 transition-colors hover:text-brand-600"
                   >
                     + Add hole
                   </button>
@@ -219,7 +219,7 @@ export function TroubleContextModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
                 >
                   Cancel
                 </button>

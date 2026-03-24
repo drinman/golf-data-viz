@@ -218,7 +218,7 @@ export function LessonReportView({
           {report.caveats.map((caveat) => (
             <div
               key={caveat}
-              className="rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600 shadow-sm"
+              className="rounded-lg border border-cream-200 bg-white px-4 py-3 text-sm text-neutral-600 shadow-sm"
             >
               {caveat}
             </div>
@@ -366,7 +366,7 @@ export function LessonReportView({
           {Object.entries(report.confidenceSummary.byCategory).map(([category, level]) => (
             <div
               key={category}
-              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5"
+              className="inline-flex items-center gap-2 rounded-full border border-cream-200 bg-neutral-50 px-3 py-1.5"
             >
               <span className="text-sm text-neutral-700">
                 {CATEGORY_LABELS[category as keyof typeof report.confidenceSummary.byCategory]}
@@ -401,7 +401,7 @@ export function LessonReportView({
           {report.selectedRounds.map((round) => (
             <div
               key={round.roundId}
-              className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4"
+              className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -439,7 +439,7 @@ export function LessonReportView({
           <button
             type="button"
             onClick={handleDownloadPng}
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
           >
             <Download className="h-4 w-4" />
             Download PNG
@@ -450,7 +450,7 @@ export function LessonReportView({
               type="button"
               onClick={handleCopyShareLink}
               disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-800 shadow-sm transition-colors hover:bg-brand-100 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-800 shadow-sm transition-colors hover:bg-brand-100 disabled:opacity-50"
             >
               {linkCopied ? (
                 <>
@@ -471,7 +471,7 @@ export function LessonReportView({
               type="button"
               onClick={handleRegenerate}
               disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:opacity-50"
             >
               <RefreshCcw className="h-4 w-4" />
               {isPending ? "Refreshing…" : "Regenerate"}

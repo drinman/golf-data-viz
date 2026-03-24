@@ -135,7 +135,7 @@ export function MethodologyTooltip({
         aria-expanded={open}
         aria-controls={popoverId}
         onClick={handleClick}
-        className="text-neutral-400 transition-colors hover:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-1 rounded-sm"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-neutral-400 transition-colors hover:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-1"
       >
         <Info className="h-3.5 w-3.5" />
       </button>
