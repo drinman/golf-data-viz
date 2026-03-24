@@ -1407,7 +1407,7 @@ export default function StrokesGainedClient({
 
           {/* Methodology footer */}
           <div
-            className="mt-10 animate-fade-up border-t border-neutral-100 pt-6 text-center text-xs text-neutral-400"
+            className="mt-10 animate-fade-up border-t border-cream-200 pt-6 text-center text-xs text-neutral-400"
             style={{ animationDelay: "750ms" }}
           >
             <p>SG &middot; Benchmarks v{benchmarkMeta.version}</p>

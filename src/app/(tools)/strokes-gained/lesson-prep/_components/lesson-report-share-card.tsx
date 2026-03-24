@@ -99,7 +99,7 @@ export const LessonReportShareCard = forwardRef<
         </div>
       </div>
 
-      <div className="mt-6 border-t border-neutral-200 pt-4 text-center text-xs text-neutral-500">
+      <div className="mt-6 border-t border-cream-200 pt-4 text-center text-xs text-neutral-500">
         Golf Data Viz · SG Analysis · Report v{snapshot.reportVersion} · golfdataviz.com/strokes-gained
       </div>
     </div>
