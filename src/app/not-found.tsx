@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
-      <section className="rounded-xl border border-card-border bg-card p-8 text-center shadow-sm">
+      <section className="rounded-xl border border-cream-200 bg-white p-8 text-center shadow-sm">
         <h1 className="font-display text-2xl tracking-tight text-neutral-950">Page not found</h1>
         <p className="mt-3 text-neutral-600">
           This page doesn&apos;t exist. Maybe the URL was mistyped, or the link

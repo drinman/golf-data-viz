@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function BenchmarkNotFound() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
-      <section className="rounded-xl border border-card-border bg-card p-8 text-center shadow-sm">
+      <section className="rounded-xl border border-cream-200 bg-white p-8 text-center shadow-sm">
         <h1 className="font-display text-2xl tracking-tight text-neutral-950">
           Bracket not found
         </h1>
