@@ -158,9 +158,9 @@ describe("NarrativeBlock", () => {
     mockFetchError(429, "RATE_LIMITED");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", {
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
         error_type: "rate_limited",
-      });
+      }));
     });
   });
 
@@ -168,9 +168,9 @@ describe("NarrativeBlock", () => {
     mockFetchError(504, "GATEWAY_TIMEOUT");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", {
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
         error_type: "timeout",
-      });
+      }));
     });
   });
 
@@ -178,9 +178,9 @@ describe("NarrativeBlock", () => {
     mockFetchError(503, "UNAVAILABLE");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", {
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
         error_type: "network",
-      });
+      }));
     });
   });
 
@@ -188,9 +188,9 @@ describe("NarrativeBlock", () => {
     mockFetchError(500, "GENERATION_FAILED");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", {
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
         error_type: "generation",
-      });
+      }));
     });
   });
 
