@@ -145,7 +145,10 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
       {showSticky && (
         <div
           data-testid="sticky-recipient-cta"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-cream-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm sm:hidden"
+          className="fixed inset-x-0 z-40 border-t border-cream-200 bg-white/95 px-4 py-3 shadow-lg sm:hidden"
+          style={{
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+          }}
         >
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
             <p className="text-sm font-medium text-neutral-800">
