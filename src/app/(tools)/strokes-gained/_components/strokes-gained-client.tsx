@@ -1182,6 +1182,7 @@ export default function StrokesGainedClient({
                       { label: "Start comparison", stage: 2 },
                       { label: "Unlock patterns", stage: 3 },
                     ].map((step) => {
+                      // TODO: derive from actual round count instead of hardcoding stage 1 as done
                       const isDone = step.stage === 1;
                       const isCurrent = step.stage === 2;
                       return (

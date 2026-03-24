@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Mock saveRound server action
@@ -149,12 +149,14 @@ describe("PostResultsSaveCta", () => {
       // Only one call should have gone through
       expect(mockSaveRound).toHaveBeenCalledTimes(1);
 
-      // Resolve the save to clean up
-      resolvePromise!({
-        success: true,
-        roundId: "round-123",
-        claimToken: "claim-abc",
-        isOwned: false,
+      // Resolve the save and flush state updates to avoid act() warnings
+      await act(async () => {
+        resolvePromise!({
+          success: true,
+          roundId: "round-123",
+          claimToken: "claim-abc",
+          isOwned: false,
+        });
       });
     });
   });

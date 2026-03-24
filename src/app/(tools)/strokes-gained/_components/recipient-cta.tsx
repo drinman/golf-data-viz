@@ -30,18 +30,22 @@ function getSentimentCopy(sentiment: HeadlineSentiment): string {
   }
 }
 
-/** Full challenge headline for the inline CTA */
-function getChallengeHeadline(result: StrokesGainedResult): string {
+function findWorstCategory(result: StrokesGainedResult) {
   const skippedSet = new Set(result.skippedCategories);
   const active = CATEGORY_ORDER.filter((k) => !skippedSet.has(k));
-  if (active.length === 0) return getSentimentCopy(deriveSentiment(result.total));
+  if (active.length === 0) return null;
 
   let worst = { key: active[0], value: result.categories[active[0]] };
   for (const key of active) {
     if (result.categories[key] < worst.value) worst = { key, value: result.categories[key] };
   }
+  return worst.value < -0.5 ? worst : null;
+}
 
-  if (worst.value < -0.5) {
+/** Full challenge headline for the inline CTA */
+function getChallengeHeadline(result: StrokesGainedResult): string {
+  const worst = findWorstCategory(result);
+  if (worst) {
     const worstLabel = CATEGORY_LABELS[worst.key].toLowerCase();
     const worstSg = presentSG(worst.value, 1);
     return `Their ${worstLabel} cost them ${worstSg.formatted.replace('-', '')} strokes. Think you can do better?`;
@@ -51,16 +55,8 @@ function getChallengeHeadline(result: StrokesGainedResult): string {
 
 /** Short challenge for the sticky mobile CTA (limited horizontal space) */
 function getShortChallenge(result: StrokesGainedResult): string {
-  const skippedSet = new Set(result.skippedCategories);
-  const active = CATEGORY_ORDER.filter((k) => !skippedSet.has(k));
-  if (active.length === 0) return getSentimentCopy(deriveSentiment(result.total));
-
-  let worst = { key: active[0], value: result.categories[active[0]] };
-  for (const key of active) {
-    if (result.categories[key] < worst.value) worst = { key, value: result.categories[key] };
-  }
-
-  if (worst.value < -0.5) {
+  const worst = findWorstCategory(result);
+  if (worst) {
     return `Beat their ${CATEGORY_LABELS[worst.key].toLowerCase()}?`;
   }
   return getSentimentCopy(deriveSentiment(result.total));
