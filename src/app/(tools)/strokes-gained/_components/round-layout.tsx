@@ -191,7 +191,7 @@ export function RoundLayout({
         style={d(3)}
       />
 
-      {/* Results summary */}
+      {/* Results summary — id is the scroll target for InterstitialCta "Skip to full results" link */}
       <div id="results-summary" className="mt-10 animate-fade-up" style={d(4)}>
         <ResultsSummary
           result={sgResult}
