@@ -245,7 +245,7 @@ export function LessonPrepBuilder({
             <p className="mt-2 text-sm text-neutral-600">{selectionDateRange}</p>
 
             <div className="mt-5 space-y-3 text-sm text-neutral-600">
-              <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+              <div className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-3">
                 <p className="font-medium text-neutral-950">What the report includes</p>
                 <ul className="mt-2 space-y-1">
                   <li>Average SG and category shape</li>
@@ -255,7 +255,7 @@ export function LessonPrepBuilder({
                 </ul>
               </div>
 
-              <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+              <div className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-3">
                 <p className="font-medium text-neutral-950">Regeneration behavior</p>
                 <p className="mt-2">
                   Reusing the same selected rounds refreshes the existing report in place.
@@ -285,7 +285,7 @@ export function LessonPrepBuilder({
                   type="button"
                   onClick={handleUpgrade}
                   disabled={isPending}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:opacity-50"
                 >
                   <Sparkles className="h-4 w-4" />
                   {isPending ? "Redirecting…" : "Upgrade to Premium"}
@@ -298,7 +298,7 @@ export function LessonPrepBuilder({
                 type="button"
                 onClick={handleGenerate}
                 disabled={!canGenerate || isPending}
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Sparkles className="h-4 w-4" />
                 {isPending ? "Building…" : "Generate Report"}
@@ -310,7 +310,7 @@ export function LessonPrepBuilder({
                 type="button"
                 onClick={handleBillingPortal}
                 disabled={isPending}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+                className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
               >
                 <CreditCard className="h-4 w-4" />
                 Manage Billing

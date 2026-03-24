@@ -38,7 +38,7 @@ export function TroubleContextPrompt({
         <button
           type="button"
           onClick={onAddContext}
-          className="rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+          className="min-h-11 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
         >
           Add trouble context
         </button>
@@ -48,7 +48,7 @@ export function TroubleContextPrompt({
             trackEvent("trouble_context_prompt_dismissed");
             onDismiss();
           }}
-          className="text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
         >
           Not now
         </button>

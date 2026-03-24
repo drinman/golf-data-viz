@@ -78,7 +78,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 const inputClass =
-  "block w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
+  "block min-h-11 w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
 
 const handleWheel: React.WheelEventHandler<HTMLInputElement> = (e) => {
   e.currentTarget.blur();
@@ -192,7 +192,7 @@ export function RoundInputForm({
                   data-testid="plus-handicap-toggle"
                   aria-label={isPlusHandicap ? "Switch to standard handicap" : "Switch to plus handicap"}
                   onClick={() => setIsPlusHandicap((prev) => !prev)}
-                  className={`shrink-0 rounded-l-lg border-2 border-r-0 px-3 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                  className={`shrink-0 min-h-11 rounded-l-lg border-2 border-r-0 px-3 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     isPlusHandicap
                       ? "border-brand-800 bg-brand-800 text-white"
                       : "border-cream-200 bg-cream-100 text-neutral-600 hover:border-cream-200/80"
@@ -449,7 +449,7 @@ export function RoundInputForm({
         <button
           type="button"
           onClick={() => setShowOptional(!showOptional)}
-          className="flex items-center gap-1.5 text-sm font-medium text-brand-800 transition-colors hover:text-brand-700"
+          className="flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand-800 transition-colors hover:text-brand-700"
         >
           <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showOptional ? "rotate-180" : ""}`} />
           {showOptional ? "Hide" : "Show"} More Stats

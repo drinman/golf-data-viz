@@ -142,7 +142,7 @@ export function InterstitialCta({
       <a
         href="#results-summary"
         onClick={handleSkip}
-        className="mt-3 inline-block text-sm text-neutral-400 underline transition-colors hover:text-neutral-600"
+        className="mt-3 inline-flex min-h-11 items-center text-sm text-neutral-400 underline transition-colors hover:text-neutral-600"
       >
         Skip to full results ↓
       </a>
