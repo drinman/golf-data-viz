@@ -164,7 +164,7 @@ function AuthModalContent({
             type="button"
             onClick={handleGoogleSignIn}
             data-testid="google-signin-btn"
-            className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 transition-all hover:border-neutral-400 hover:bg-cream-50"
+            className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path

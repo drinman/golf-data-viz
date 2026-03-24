@@ -127,7 +127,7 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
             <a
               href={ctaUrl}
               onClick={handleClick}
-              className="shrink-0 inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+              className="shrink-0 inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
             >
               Your Turn
             </a>
