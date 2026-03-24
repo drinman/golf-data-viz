@@ -264,7 +264,7 @@ export default function StrokesGainedExplainedPage() {
           <CalculatorCta surface="learn_sg_explained" />
         </div>
 
-        <footer className="mt-12 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-12 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic text-neutral-400">
             Based on strokes gained methodology originally developed by Mark
             Broadie. Peer benchmarks from Shot Scope and published amateur

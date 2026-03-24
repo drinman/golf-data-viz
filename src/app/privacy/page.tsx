@@ -170,7 +170,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <footer className="mt-16 border-t border-neutral-200 pt-6 pb-8">
+      <footer className="mt-16 border-t border-cream-200 pt-6 pb-8">
         <p className="text-xs italic leading-relaxed text-neutral-400">
           This policy applies to golfdataviz.com. Last updated {EFFECTIVE_DATE}.
         </p>

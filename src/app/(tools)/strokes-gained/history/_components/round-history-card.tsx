@@ -27,7 +27,7 @@ function formatDate(dateStr: string): string {
 function sgColor(value: number): string {
   if (Math.abs(value) <= SG_NEAR_ZERO_THRESHOLD) return "text-neutral-600";
   if (value > 0) return "text-data-positive";
-  return "text-red-600";
+  return "text-data-negative";
 }
 
 function sgSign(value: number): string {
@@ -70,7 +70,7 @@ export function RoundHistoryCard({
     <Link
       href={`/strokes-gained/rounds/${round.roundId}`}
       data-testid="round-history-card"
-      className={cn("group block cursor-pointer rounded-xl border border-card-border bg-card shadow-sm transition-shadow hover:shadow-md", className)}
+      className={cn("group block cursor-pointer rounded-xl border border-cream-200 bg-card shadow-sm transition-shadow hover:shadow-md", className)}
       style={style}
       onClick={() => trackEvent("history_card_clicked", { round_id: round.roundId })}
     >

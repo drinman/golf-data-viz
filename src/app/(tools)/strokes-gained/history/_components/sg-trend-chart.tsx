@@ -175,7 +175,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
             const value = point.data.y as number;
 
             return (
-              <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 shadow-md">
+              <div className="rounded-lg border border-cream-200 bg-white px-3 py-2 shadow-md">
                 {info && (
                   <p className="text-xs text-neutral-500">
                     {info.date} &middot; {info.courseName}

@@ -56,7 +56,7 @@ export const LessonReportShareCard = forwardRef<
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-card-border bg-white px-5 py-5">
+        <div className="rounded-2xl border border-cream-200 bg-white px-5 py-5">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-400">
             {isCaveatedReport ? "Round Pattern" : "Primary Focus Area"}
           </p>
@@ -71,7 +71,7 @@ export const LessonReportShareCard = forwardRef<
           </p>
         </div>
 
-        <div className="rounded-2xl border border-card-border bg-white px-5 py-5">
+        <div className="rounded-2xl border border-cream-200 bg-white px-5 py-5">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-400">
             {isCaveatedReport ? "Reliable Signal" : "Strongest Area"}
           </p>
@@ -86,7 +86,7 @@ export const LessonReportShareCard = forwardRef<
           </p>
         </div>
 
-        <div className="rounded-2xl border border-card-border bg-white px-5 py-5">
+        <div className="rounded-2xl border border-cream-200 bg-white px-5 py-5">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-400">
             Trend Signal
           </p>
@@ -99,7 +99,7 @@ export const LessonReportShareCard = forwardRef<
         </div>
       </div>
 
-      <div className="mt-6 border-t border-neutral-200 pt-4 text-center text-xs text-neutral-500">
+      <div className="mt-6 border-t border-cream-200 pt-4 text-center text-xs text-neutral-500">
         Golf Data Viz · SG Analysis · Report v{snapshot.reportVersion} · golfdataviz.com/strokes-gained
       </div>
     </div>

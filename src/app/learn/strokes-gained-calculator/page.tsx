@@ -233,7 +233,7 @@ export default function StrokesGainedCalculatorPage() {
           <CalculatorCta surface="learn_calculator_bottom" />
         </div>
 
-        <footer className="mt-12 border-t border-neutral-200 pt-6 pb-8">
+        <footer className="mt-12 border-t border-cream-200 pt-6 pb-8">
           <p className="text-xs italic text-neutral-400">
             Peer benchmarks from Shot Scope and published amateur sources.{" "}
             <Link

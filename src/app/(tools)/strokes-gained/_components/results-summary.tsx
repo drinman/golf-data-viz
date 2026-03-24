@@ -312,7 +312,7 @@ export function ResultsSummary({
           return (
           <li
             key={key}
-            className="animate-fade-up relative flex items-center justify-between rounded-lg border border-card-border"
+            className="animate-fade-up relative flex items-center justify-between rounded-lg border border-cream-200"
             style={{ animationDelay: `${(index + 2) * 100}ms` }}
           >
             {/* Colored left bar */}

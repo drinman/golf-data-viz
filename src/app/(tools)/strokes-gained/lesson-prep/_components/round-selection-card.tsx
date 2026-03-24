@@ -26,7 +26,7 @@ export function RoundSelectionCard({
         "w-full rounded-xl border px-4 py-4 text-left shadow-sm transition-all",
         selected
           ? "border-brand-300 bg-brand-50"
-          : "border-card-border bg-white hover:border-brand-200 hover:shadow-md",
+          : "border-cream-200 bg-white hover:border-brand-200 hover:shadow-md",
         disabled && "cursor-not-allowed opacity-60"
       )}
     >

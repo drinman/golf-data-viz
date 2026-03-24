@@ -24,7 +24,7 @@ export function BenchmarkDataTable({ benchmark }: BenchmarkDataTableProps) {
               <th className="px-4 py-2.5 font-medium text-neutral-600">Value</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-cream-200">
             {METRICS.map(({ label, key, format }) => (
               <tr key={key}>
                 <td className="px-4 py-2.5 text-neutral-800">{label}</td>
@@ -46,7 +46,7 @@ export function BenchmarkDataTable({ benchmark }: BenchmarkDataTableProps) {
               <th className="px-4 py-2.5 font-medium text-neutral-600">Per Round</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-cream-200">
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Eagles</td>
               <td className="px-4 py-2.5 font-mono text-neutral-600">

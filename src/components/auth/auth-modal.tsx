@@ -130,7 +130,7 @@ function AuthModalContent({
         aria-modal="true"
         aria-label={mode === "signin" ? "Sign in" : "Create account"}
         data-testid="auth-modal"
-        className="mx-4 w-full max-w-sm rounded-xl border border-card-border bg-white shadow-xl"
+        className="mx-4 w-full max-w-sm rounded-xl border border-cream-200 bg-white shadow-xl"
       >
         <div className="px-6 pb-6 pt-5">
           {/* Header */}
@@ -252,12 +252,12 @@ function AuthModalContent({
 
             {/* Error display */}
             {error && (
-              <p
+              <div
                 data-testid="auth-error"
-                className="mt-3 text-sm text-data-negative"
+                className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700"
               >
                 {error}
-              </p>
+              </div>
             )}
 
             {/* Submit */}

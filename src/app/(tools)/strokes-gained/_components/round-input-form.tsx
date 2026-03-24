@@ -63,7 +63,7 @@ function FormField({
         )}
         <div className="mt-auto">{children}</div>
       </label>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-amber-700">{error}</p>}
     </div>
   );
 }

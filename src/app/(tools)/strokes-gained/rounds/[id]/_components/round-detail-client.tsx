@@ -146,7 +146,7 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
               disabled={isPending}
               className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 ${
                 clipboardFailed || tokenError
-                  ? "border-red-200 bg-red-50 text-red-700"
+                  ? "border-amber-200 bg-amber-50 text-amber-700"
                   : "border-brand-200 bg-brand-50 text-brand-800 hover:bg-brand-100"
               }`}
             >

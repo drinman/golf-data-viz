@@ -1164,7 +1164,7 @@ export default function StrokesGainedClient({
                 know the dashboard and this teaser is patronizing. */}
             {saveSuccess && savedRoundOwned && !isFromHistory && (
               <div
-                className="animate-fade-up overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+                className="animate-fade-up overflow-hidden rounded-2xl border border-cream-200 bg-card shadow-sm"
                 style={{ animationDelay: "550ms" }}
               >
                 <div className="border-b border-cream-200 bg-[linear-gradient(135deg,rgba(15,61,34,0.08),rgba(184,134,11,0.06))] px-5 py-4">
@@ -1334,7 +1334,7 @@ export default function StrokesGainedClient({
                 onClick={handleCopyLink}
                 aria-label={copyFailed ? "Failed to copy" : copied ? "Copied" : "Copy link"}
                 className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-cream-200 bg-white transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
-                  copyFailed ? "text-red-600" : copied ? "text-brand-800" : "text-neutral-500"
+                  copyFailed ? "text-amber-700" : copied ? "text-brand-800" : "text-neutral-500"
                 }`}
               >
                 {copied ? (
@@ -1347,7 +1347,7 @@ export default function StrokesGainedClient({
                 <span className="text-xs font-medium text-brand-800">Copied!</span>
               )}
               {copyFailed && (
-                <span className="text-xs font-medium text-red-600">Failed</span>
+                <span className="text-xs font-medium text-amber-700">Failed</span>
               )}
             </div>
             <p className="text-xs text-neutral-500">
@@ -1407,7 +1407,7 @@ export default function StrokesGainedClient({
 
           {/* Methodology footer */}
           <div
-            className="mt-10 animate-fade-up border-t border-neutral-100 pt-6 text-center text-xs text-neutral-400"
+            className="mt-10 animate-fade-up border-t border-cream-200 pt-6 text-center text-xs text-neutral-400"
             style={{ animationDelay: "750ms" }}
           >
             <p>SG &middot; Benchmarks v{benchmarkMeta.version}</p>
