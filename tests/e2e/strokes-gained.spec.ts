@@ -760,9 +760,9 @@ test.describe("Strokes Gained Benchmarker", () => {
 
     const cta = page.getByTestId("recipient-cta");
     await expect(cta).toBeVisible();
-    // Should show sentiment-based copy (one of three variants)
+    // Should show challenge or sentiment-based copy
     await expect(
-      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare)/)
+      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare|Their .+ cost them .+ strokes)/)
     ).toBeVisible();
   });
 
@@ -784,7 +784,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     const cta = page.getByTestId("recipient-cta");
     await expect(cta).toBeVisible();
     await expect(
-      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare)/)
+      cta.getByText(/(Your friend is beating|Think you can do better|How do your stats compare|Their .+ cost them .+ strokes)/)
     ).toBeVisible();
   });
 

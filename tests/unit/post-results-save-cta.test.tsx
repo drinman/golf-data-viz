@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Mock saveRound server action
@@ -54,37 +54,33 @@ describe("PostResultsSaveCta", () => {
   describe("copy variants", () => {
     it("renders anonymous copy when isAuthenticated=false", () => {
       render(<PostResultsSaveCta {...defaultProps} />);
-      expect(screen.getByText("Want to track your progress?")).toBeVisible();
+      expect(screen.getByText("See where your game is headed")).toBeVisible();
       expect(
         screen.getByText(
-          "Save this round and see how your strokes gained changes over time."
+          /After 3 rounds, you.ll unlock trend lines and biggest-mover insights/
         )
       ).toBeVisible();
       expect(
-        screen.getByRole("button", { name: "Save This Round" })
+        screen.getByRole("button", { name: "Start Tracking" })
       ).toBeVisible();
     });
 
     it("renders authenticated copy when isAuthenticated=true", () => {
       render(<PostResultsSaveCta {...defaultProps} isAuthenticated />);
-      expect(screen.getByText("Add to your history")).toBeVisible();
+      expect(screen.getByText("Track your progress")).toBeVisible();
       expect(
         screen.getByText(
-          "Save this round to your history and track your SG trends."
+          /After 3 rounds, you.ll unlock trend lines and see where your game is actually moving/
         )
       ).toBeVisible();
       expect(
-        screen.getByRole("button", { name: "Save to History" })
+        screen.getByRole("button", { name: "Save & Track" })
       ).toBeVisible();
     });
 
-    it('shows "Free. No account required." subtext for anonymous users only', () => {
-      const { rerender } = render(<PostResultsSaveCta {...defaultProps} />);
-      expect(
-        screen.getByText("Free. No account required.")
-      ).toBeVisible();
-
-      rerender(<PostResultsSaveCta {...defaultProps} isAuthenticated />);
+    it("does not show standalone 'Free' subtext (integrated into body)", () => {
+      render(<PostResultsSaveCta {...defaultProps} />);
+      // "free, no account required" is in the body text, not a separate element
       expect(
         screen.queryByText("Free. No account required.")
       ).toBeNull();
@@ -121,12 +117,47 @@ describe("PostResultsSaveCta", () => {
       render(<PostResultsSaveCta {...defaultProps} />);
 
       await user.click(
-        screen.getByRole("button", { name: "Save This Round" })
+        screen.getByRole("button", { name: "Start Tracking" })
       );
 
       expect(mockTrackEvent).toHaveBeenCalledWith(
         "post_results_save_cta_clicked"
       );
+    });
+  });
+
+  describe("debounce", () => {
+    it("calls saveRound only once when button is rapidly clicked", async () => {
+      // Simulate a slow save that resolves after all clicks
+      let resolvePromise: (value: unknown) => void;
+      mockSaveRound.mockReturnValue(
+        new Promise((resolve) => {
+          resolvePromise = resolve;
+        })
+      );
+
+      const user = userEvent.setup();
+      render(<PostResultsSaveCta {...defaultProps} />);
+
+      const button = screen.getByRole("button", { name: "Start Tracking" });
+
+      // Fire 3 rapid clicks
+      await user.click(button);
+      await user.click(button);
+      await user.click(button);
+
+      // Only one call should have gone through
+      expect(mockSaveRound).toHaveBeenCalledTimes(1);
+
+      // Resolve the save and flush state updates to avoid act() warnings
+      await act(async () => {
+        resolvePromise!({
+          success: true,
+          roundId: "round-123",
+          claimToken: "claim-abc",
+          isOwned: false,
+        });
+      });
     });
   });
 
@@ -149,7 +180,7 @@ describe("PostResultsSaveCta", () => {
       );
 
       await user.click(
-        screen.getByRole("button", { name: "Save This Round" })
+        screen.getByRole("button", { name: "Start Tracking" })
       );
 
       await waitFor(() => {
@@ -183,7 +214,7 @@ describe("PostResultsSaveCta", () => {
       render(<PostResultsSaveCta {...defaultProps} />);
 
       await user.click(
-        screen.getByRole("button", { name: "Save This Round" })
+        screen.getByRole("button", { name: "Start Tracking" })
       );
 
       await waitFor(() => {
@@ -206,7 +237,7 @@ describe("PostResultsSaveCta", () => {
       render(<PostResultsSaveCta {...defaultProps} />);
 
       await user.click(
-        screen.getByRole("button", { name: "Save This Round" })
+        screen.getByRole("button", { name: "Start Tracking" })
       );
 
       await waitFor(() => {
@@ -236,7 +267,7 @@ describe("PostResultsSaveCta", () => {
       render(<PostResultsSaveCta {...defaultProps} />);
 
       await user.click(
-        screen.getByRole("button", { name: "Save This Round" })
+        screen.getByRole("button", { name: "Start Tracking" })
       );
 
       await waitFor(() => {
