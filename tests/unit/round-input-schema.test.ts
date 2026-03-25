@@ -430,6 +430,10 @@ describe("roundInputSchema", () => {
       totalPutts: "",
     });
     expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((entry) => entry.path[0] === "totalPutts");
+      expect(issue?.message).toBe("Putts is required");
+    }
   });
 
   it("rejects totalPutts of 0 (impossible in 18 holes)", () => {
@@ -438,6 +442,10 @@ describe("roundInputSchema", () => {
       totalPutts: 0,
     });
     expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((entry) => entry.path[0] === "totalPutts");
+      expect(issue?.message).toBe("Putts must be at least 1");
+    }
   });
 
   it('rejects totalPutts of "0" (string zero from form)', () => {
@@ -446,6 +454,18 @@ describe("roundInputSchema", () => {
       totalPutts: "0",
     });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects totalPutts above 60 with the max-boundary message", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      totalPutts: 61,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((entry) => entry.path[0] === "totalPutts");
+      expect(issue?.message).toBe("Putts must be at most 60");
+    }
   });
 
   it("accepts totalPutts of 1 (edge case minimum)", () => {
@@ -463,6 +483,23 @@ describe("roundInputSchema", () => {
       handicapIndex: "",
     });
     expect(result.success).toBe(false);
+  });
+
+  it.each([
+    ["courseRating", "Course rating is required"],
+    ["slopeRating", "Slope is required"],
+    ["fairwayAttempts", "Fairway attempts are required"],
+    ["penaltyStrokes", "Penalty strokes are required"],
+  ] as const)("rejects empty string %s with the required-field message", (field, message) => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      [field]: "",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((entry) => entry.path[0] === field);
+      expect(issue?.message).toBe(message);
+    }
   });
 
   // === Bug fix: score/breakdown cross-validation ===

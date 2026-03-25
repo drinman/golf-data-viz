@@ -1,9 +1,9 @@
 /**
  * Zod validation schema for round input form data.
  *
- * Uses z.coerce.number() for required numeric fields (HTML forms produce strings).
- * Optional numeric fields use a preprocessor to handle "" → undefined correctly,
- * preserving the semantic difference between "not tracked" and "zero".
+ * Required numeric fields use union+transform+pipe helpers so "" is rejected
+ * instead of being coerced to 0. Optional numeric fields use a separate helper
+ * to preserve the semantic difference between "not tracked" and "zero".
  */
 
 import { z } from "zod";
@@ -31,21 +31,49 @@ const optionalInt = (max: number) =>
     })
     .pipe(z.number().int().min(0).max(max).optional());
 
+type RequiredFieldMessages = {
+  required?: string;
+  min?: string;
+  max?: string;
+};
+
+const requiredNumber = (
+  min: number,
+  max: number,
+  label: string,
+  messages: RequiredFieldMessages = {}
+) =>
+  z
+    .union([z.number(), z.string()])
+    .refine((val) => val !== "", messages.required ?? `${label} is required`)
+    .transform((val) => Number(val))
+    .pipe(
+      z
+        .number()
+        .min(min, messages.min ?? `${label} must be at least ${min}`)
+        .max(max, messages.max ?? `${label} must be at most ${max}`)
+    );
+
 /**
  * Required integer field that rejects "" (unlike z.coerce which treats "" as 0).
  * Uses the same union+transform+pipe pattern as optionalInt above.
  */
-const requiredInt = (min: number, max: number, label: string) =>
+const requiredInt = (
+  min: number,
+  max: number,
+  label: string,
+  messages: RequiredFieldMessages = {}
+) =>
   z
     .union([z.number(), z.string()])
-    .refine((val) => val !== "", `${label} is required`)
+    .refine((val) => val !== "", messages.required ?? `${label} is required`)
     .transform((val) => Number(val))
     .pipe(
       z
         .number()
         .int()
-        .min(min, `${label} must be ${min}–${max}`)
-        .max(max, `${label} must be ${min}–${max}`)
+        .min(min, messages.min ?? `${label} must be at least ${min}`)
+        .max(max, messages.max ?? `${label} must be at most ${max}`)
     );
 
 export const roundInputSchema = z
@@ -80,11 +108,7 @@ export const roundInputSchema = z
       },
       { message: "Enter a valid date that is not in the future" }
     ),
-    score: z.coerce
-      .number()
-      .int()
-      .min(50, "Score must be 50–150")
-      .max(150, "Score must be 50–150"),
+    score: requiredInt(50, 150, "Score"),
     // Negative range (-9.9) is exercised by share-codec decode and direct callers.
     // The form UI stores the absolute value and negates on submit.
     // Inline (not requiredNum helper) to preserve asymmetric error messages.
@@ -98,26 +122,35 @@ export const roundInputSchema = z
           .min(-9.9, "Plus handicap is capped at +9.9")
           .max(54, "Handicap must be between +9.9 and 54")
       ),
-    courseRating: z.coerce
-      .number()
-      .min(60, "Course rating must be 60–80")
-      .max(80, "Course rating must be 60–80"),
-    slopeRating: z.coerce
-      .number()
-      .int()
-      .min(55, "Slope must be 55–155")
-      .max(155, "Slope must be 55–155"),
+    courseRating: requiredNumber(60, 80, "Course rating"),
+    slopeRating: requiredInt(55, 155, "Slope"),
     fairwaysHit: optionalInt(14),
-    fairwayAttempts: z.coerce.number().int().min(0).max(14),
+    fairwayAttempts: requiredInt(0, 14, "Fairway attempts", {
+      required: "Fairway attempts are required",
+    }),
     greensInRegulation: optionalInt(18),
     totalPutts: requiredInt(1, 60, "Putts"),
-    penaltyStrokes: z.coerce.number().int().min(0).max(20),
-    eagles: z.coerce.number().int().min(0).max(18),
-    birdies: z.coerce.number().int().min(0).max(18),
-    pars: z.coerce.number().int().min(0).max(18),
-    bogeys: z.coerce.number().int().min(0).max(18),
-    doubleBogeys: z.coerce.number().int().min(0).max(18),
-    triplePlus: z.coerce.number().int().min(0).max(18),
+    penaltyStrokes: requiredInt(0, 20, "Penalty strokes", {
+      required: "Penalty strokes are required",
+    }),
+    eagles: requiredInt(0, 18, "Eagles", {
+      required: "Eagles are required",
+    }),
+    birdies: requiredInt(0, 18, "Birdies", {
+      required: "Birdies are required",
+    }),
+    pars: requiredInt(0, 18, "Pars", {
+      required: "Pars are required",
+    }),
+    bogeys: requiredInt(0, 18, "Bogeys", {
+      required: "Bogeys are required",
+    }),
+    doubleBogeys: requiredInt(0, 18, "Double bogeys", {
+      required: "Double bogeys are required",
+    }),
+    triplePlus: requiredInt(0, 18, "Triple-plus holes", {
+      required: "Triple-plus holes are required",
+    }),
     // Optional fields
     upAndDownAttempts: optionalInt(18),
     upAndDownConverted: optionalInt(18),
@@ -196,6 +229,8 @@ export const roundInputSchema = z
       // impliedOverPar uses par as baseline; actualOverCourseRating uses course
       // rating. These differ by up to ~4 strokes on extreme courses, but the
       // tolerance absorbs the gap. Don't "fix" this by using par — we don't have it.
+      // TODO: Switch this comparison to actual over par if the schema ever stores
+      // course par directly.
       const impliedOverPar =
         -2 * data.eagles +
         -1 * data.birdies +
