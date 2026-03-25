@@ -271,7 +271,7 @@ export function LessonReportView({
         />
       </div>
 
-      <div className="mt-8 space-y-6">
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
             Average Category Shape
