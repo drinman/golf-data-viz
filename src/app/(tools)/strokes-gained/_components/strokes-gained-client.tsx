@@ -1209,7 +1209,7 @@ export default function StrokesGainedClient({
                   <Link
                     href="/strokes-gained/history"
                     onClick={() => trackEvent("history_link_clicked", { surface: "save_preview_teaser" })}
-                  className="mt-4 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+                    className="mt-4 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
                   >
                     View your dashboard &rarr;
                   </Link>

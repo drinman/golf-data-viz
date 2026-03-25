@@ -79,6 +79,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 const inputClass =
   "block min-h-11 w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
+const scoringInputClass = `${inputClass} tabular-nums`;
 
 const handleWheel: React.WheelEventHandler<HTMLInputElement> = (e) => {
   e.currentTarget.blur();
@@ -387,7 +388,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               placeholder="0"
               {...trackedRegister("eagles")}
             />
@@ -397,7 +398,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               {...trackedRegister("birdies")}
             />
           </FormField>
@@ -406,7 +407,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               {...trackedRegister("pars")}
             />
           </FormField>
@@ -415,7 +416,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               {...trackedRegister("bogeys")}
             />
           </FormField>
@@ -424,7 +425,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               placeholder="0"
               {...trackedRegister("doubleBogeys")}
             />
@@ -434,7 +435,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               placeholder="0"
               {...trackedRegister("triplePlus")}
             />
