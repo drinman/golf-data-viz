@@ -28,7 +28,7 @@ export function BenchmarkDataTable({ benchmark }: BenchmarkDataTableProps) {
             {METRICS.map(({ label, key, format }) => (
               <tr key={key}>
                 <td className="px-4 py-2.5 text-neutral-800">{label}</td>
-                <td className="px-4 py-2.5 font-mono text-neutral-600">
+                <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                   {format(benchmark[key] as number)}
                 </td>
               </tr>
@@ -49,37 +49,37 @@ export function BenchmarkDataTable({ benchmark }: BenchmarkDataTableProps) {
           <tbody className="divide-y divide-cream-200">
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Eagles</td>
-              <td className="px-4 py-2.5 font-mono text-neutral-600">
+              <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                 {benchmark.scoring.eaglesPerRound.toFixed(2)}
               </td>
             </tr>
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Birdies</td>
-              <td className="px-4 py-2.5 font-mono text-neutral-600">
+              <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                 {benchmark.scoring.birdiesPerRound.toFixed(2)}
               </td>
             </tr>
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Pars</td>
-              <td className="px-4 py-2.5 font-mono text-neutral-600">
+              <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                 {benchmark.scoring.parsPerRound.toFixed(2)}
               </td>
             </tr>
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Bogeys</td>
-              <td className="px-4 py-2.5 font-mono text-neutral-600">
+              <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                 {benchmark.scoring.bogeysPerRound.toFixed(2)}
               </td>
             </tr>
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Double Bogeys</td>
-              <td className="px-4 py-2.5 font-mono text-neutral-600">
+              <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                 {benchmark.scoring.doublesPerRound.toFixed(2)}
               </td>
             </tr>
             <tr>
               <td className="px-4 py-2.5 text-neutral-800">Triple+</td>
-              <td className="px-4 py-2.5 font-mono text-neutral-600">
+              <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                 {benchmark.scoring.triplePlusPerRound.toFixed(2)}
               </td>
             </tr>

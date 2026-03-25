@@ -209,7 +209,7 @@ export function ResultsSummary({
           </span>
         )}
         {" "}&middot;{" "}
-        <Link href={result.benchmarkBracket === "plus" ? "/methodology" : "/benchmarks/" + bracketToSlug(result.benchmarkBracket)} className="underline hover:text-neutral-600">
+        <Link href={result.benchmarkBracket === "plus" ? "/methodology" : "/benchmarks/" + bracketToSlug(result.benchmarkBracket)} className="text-brand-800 underline transition-colors hover:text-brand-700">
           Benchmarks
         </Link>{" "}
         v{benchmarkMeta.version}
@@ -234,7 +234,7 @@ export function ResultsSummary({
           </p>
           <Link
             href="/methodology"
-            className="mt-2 inline-block text-xs font-medium text-neutral-600 underline hover:text-neutral-800"
+            className="mt-2 inline-block text-xs font-medium text-brand-800 underline transition-colors hover:text-brand-700"
           >
             See methodology
           </Link>
@@ -440,7 +440,7 @@ export function ResultsSummary({
       <p className="text-xs text-neutral-400">
         Confidence levels reflect input completeness. High = direct data. Med = derived estimate. Low = limited data.
         Percentile rankings are approximate estimates based on aggregate amateur data. See{" "}
-        <Link href="/methodology" className="underline hover:text-neutral-600">
+        <Link href="/methodology" className="text-brand-800 underline transition-colors hover:text-brand-700">
           methodology
         </Link>{" "}
         for details.

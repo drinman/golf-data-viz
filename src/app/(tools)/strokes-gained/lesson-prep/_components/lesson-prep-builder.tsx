@@ -199,7 +199,7 @@ export function LessonPrepBuilder({
       </section>
 
       {message && (
-        <div className="mt-6 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <div className="mt-6 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-neutral-600 shadow-sm">
           {message}
         </div>
       )}
@@ -217,7 +217,7 @@ export function LessonPrepBuilder({
                   {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} to 8 rounds.
                 </p>
               </div>
-              <div className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-neutral-700">
+              <div className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-neutral-600">
                 {selectedRoundIds.length} selected
               </div>
             </div>
@@ -310,7 +310,7 @@ export function LessonPrepBuilder({
                 type="button"
                 onClick={handleBillingPortal}
                 disabled={isPending}
-                className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
+                className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
               >
                 <CreditCard className="h-4 w-4" />
                 Manage Billing

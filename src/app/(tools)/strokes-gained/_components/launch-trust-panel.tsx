@@ -32,11 +32,11 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
         <li>
           <strong className="text-neutral-950">Open</strong>
           {" "}
-          <Link href="/methodology" className="underline hover:text-neutral-900">
+          <Link href="/methodology" className="text-brand-800 underline transition-colors hover:text-brand-700">
             Methodology
           </Link>
           {", "}
-          <Link href="/privacy" className="underline hover:text-neutral-900">
+          <Link href="/privacy" className="text-brand-800 underline transition-colors hover:text-brand-700">
             Privacy
           </Link>
           {", and "}
@@ -44,7 +44,7 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
             href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-neutral-900"
+            className="text-brand-800 underline transition-colors hover:text-brand-700"
           >
             GitHub
           </a>
@@ -53,12 +53,12 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
       </ul>
 
       <details className="mt-4 rounded-lg border border-cream-200 bg-white px-3 py-2">
-        <summary className="cursor-pointer font-medium text-neutral-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/30">
+        <summary className="cursor-pointer rounded font-medium text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/30">
           Common questions
         </summary>
         <dl className="mt-3 space-y-3 text-sm text-neutral-600">
           <div>
-            <dt className="font-medium text-neutral-900">
+            <dt className="font-medium text-neutral-950">
               Why use this instead of 18Birdies, TheGrint, or GHIN?
             </dt>
             <dd className="mt-1">
@@ -67,7 +67,7 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-neutral-900">
+            <dt className="font-medium text-neutral-950">
               Why use this if I have Arccos?
             </dt>
             <dd className="mt-1">
@@ -76,7 +76,7 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-neutral-900">
+            <dt className="font-medium text-neutral-950">
               Is this true strokes gained?
             </dt>
             <dd className="mt-1">
@@ -85,7 +85,7 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-neutral-900">
+            <dt className="font-medium text-neutral-950">
               Are you storing my data?
             </dt>
             <dd className="mt-1">
@@ -95,7 +95,7 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-neutral-900">
+            <dt className="font-medium text-neutral-950">
               What do the confidence badges mean?
             </dt>
             <dd className="mt-1">
@@ -113,9 +113,9 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
     return (
       <details
         aria-label="What this is"
-        className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 text-sm text-neutral-700"
+        className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 text-sm text-neutral-600"
       >
-        <summary className="cursor-pointer px-5 py-4 font-medium text-neutral-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/30">
+        <summary className="cursor-pointer rounded px-5 py-4 font-medium text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/30">
           About this tool
         </summary>
         <div className="px-5 pb-5">
@@ -128,7 +128,7 @@ export function LaunchTrustPanel({ defaultCollapsed = false }: LaunchTrustPanelP
   return (
     <section
       aria-label="What this is"
-      className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-5 text-sm text-neutral-700"
+      className="animate-fade-up [animation-delay:300ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-5 text-sm text-neutral-600"
     >
       {content}
     </section>

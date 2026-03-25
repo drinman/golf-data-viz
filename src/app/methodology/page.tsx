@@ -217,7 +217,7 @@ function CoefficientTable() {
             <th className="px-3 py-2 font-medium text-neutral-600">Putting</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-cream-200 font-mono">
+        <tbody className="divide-y divide-cream-200 font-mono tabular-nums">
           {profileNames.map((name) => {
             const p = calibration.profiles[name as keyof typeof calibration.profiles];
             return (
@@ -265,7 +265,7 @@ export default function MethodologyPage() {
             Start with our{" "}
             <a
               href="/learn/strokes-gained-explained"
-              className="text-brand-800 underline hover:text-brand-900"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               beginner&apos;s guide
             </a>
@@ -341,11 +341,11 @@ export default function MethodologyPage() {
                   <h3 className="font-display text-base text-neutral-950">
                     {card.category}
                   </h3>
-                  <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 font-mono text-xs font-medium text-brand-800">
+                  <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 font-mono tabular-nums text-xs font-medium text-brand-800">
                     w: {card.weights}
                   </span>
                 </div>
-                <p className="mt-2 rounded-md bg-neutral-50 px-3 py-2 font-mono text-xs leading-relaxed text-neutral-600">
+                <p className="mt-2 rounded-md bg-neutral-50 px-3 py-2 font-mono tabular-nums text-xs leading-relaxed text-neutral-600">
                   {card.formula}
                 </p>
                 {"note" in card && card.note && (
@@ -377,10 +377,10 @@ export default function MethodologyPage() {
                 anchored to a course-adjusted peer expectation:
               </p>
               <div className="mt-3 space-y-1 rounded-md bg-white/60 px-3 py-2">
-                <p className="font-mono text-xs text-neutral-700">
+                <p className="font-mono tabular-nums text-xs text-neutral-600">
                   peerExpectation = courseRating + (handicapIndex {'\u00D7'} slopeRating / 113)
                 </p>
-                <p className="font-mono text-xs text-neutral-700">
+                <p className="font-mono tabular-nums text-xs text-neutral-600">
                   totalSG = peerExpectation {'\u2212'} actualScore
                 </p>
               </div>
@@ -398,7 +398,7 @@ export default function MethodologyPage() {
                 to a course-neutral estimate and labels it accordingly:
               </p>
               <div className="mt-3 rounded-md bg-white/60 px-3 py-2">
-                <p className="font-mono text-xs text-neutral-700">
+                <p className="font-mono tabular-nums text-xs text-neutral-600">
                   totalSG = benchmark.averageScore {'\u2212'} actualScore
                 </p>
               </div>
@@ -530,13 +530,13 @@ export default function MethodologyPage() {
                 shifts strokes between OTT and Approach.
               </p>
               <div className="mt-3 space-y-1 rounded-md bg-neutral-50 px-4 py-3">
-                <p className="font-mono text-xs text-neutral-700">
+                <p className="font-mono tabular-nums text-xs text-neutral-600">
                   divergence = (playerGIR% {'\u2212'} peerGIR%) {'\u2212'} (playerFIR% {'\u2212'} peerFIR%)
                 </p>
-                <p className="font-mono text-xs text-neutral-700">
+                <p className="font-mono tabular-nums text-xs text-neutral-600">
                   correction = clamp(divergence {'\u00D7'} 0.6 {'\u00D7'} pathMultiplier {'\u00D7'} confidenceGate {'\u00D7'} shrinkage, {'\u2212'}0.5, +0.5)
                 </p>
-                <p className="font-mono text-xs text-neutral-700">
+                <p className="font-mono tabular-nums text-xs text-neutral-600">
                   OTT += correction, Approach {'\u2212'}= correction
                 </p>
               </div>
@@ -624,7 +624,7 @@ export default function MethodologyPage() {
                               {c.url ? (
                                 <a
                                   href={c.url}
-                                  className="text-brand-800 underline"
+                                  className="text-brand-800 underline transition-colors hover:text-brand-700"
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >

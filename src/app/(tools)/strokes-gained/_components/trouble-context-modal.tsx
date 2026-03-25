@@ -114,7 +114,7 @@ export function TroubleContextModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+                className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-600"
               >
                 Cancel
               </button>
@@ -219,7 +219,7 @@ export function TroubleContextModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-600"
                 >
                   Cancel
                 </button>

@@ -79,6 +79,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 const inputClass =
   "block min-h-11 w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20 hover:border-cream-200/80";
+const scoringInputClass = `${inputClass} tabular-nums`;
 
 const handleWheel: React.WheelEventHandler<HTMLInputElement> = (e) => {
   e.currentTarget.blur();
@@ -214,7 +215,7 @@ export function RoundInputForm({
           </div>
           {bracketLabel && (
             <div className="pb-2">
-              <span className="inline-block rounded-md bg-brand-900 px-3 py-1 font-mono text-xs font-medium tracking-wide text-cream-50">
+              <span className="inline-block rounded-md bg-brand-900 px-3 py-1 font-mono tabular-nums text-xs font-medium tracking-wide text-cream-50">
                 {bracketLabel}
               </span>
             </div>
@@ -370,9 +371,9 @@ export function RoundInputForm({
           <div className="flex items-center justify-between">
             <SectionHeading>Scoring Breakdown</SectionHeading>
             <span
-              className={`text-sm font-medium ${
+              className={`font-mono tabular-nums text-sm font-medium ${
                 scoringSum === 18 ? "text-green-600" : "text-amber-700"
-              } font-mono`}
+              }`}
             >
               {scoringSum}/18 holes
             </span>
@@ -387,7 +388,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               placeholder="0"
               {...trackedRegister("eagles")}
             />
@@ -397,7 +398,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               {...trackedRegister("birdies")}
             />
           </FormField>
@@ -406,7 +407,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               {...trackedRegister("pars")}
             />
           </FormField>
@@ -415,7 +416,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               {...trackedRegister("bogeys")}
             />
           </FormField>
@@ -424,7 +425,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               placeholder="0"
               {...trackedRegister("doubleBogeys")}
             />
@@ -434,7 +435,7 @@ export function RoundInputForm({
               type="number"
               inputMode="numeric"
               onWheel={handleWheel}
-              className={inputClass}
+              className={scoringInputClass}
               placeholder="0"
               {...trackedRegister("triplePlus")}
             />
@@ -465,8 +466,8 @@ export function RoundInputForm({
                 in 2 shots from off the green. It does not have to be a par save.
               </p>
               <p className="mt-1.5 text-sm text-neutral-500">
-                <strong className="font-medium text-neutral-700">Attempts</strong> = missed-green chances you&apos;re counting.{" "}
-                <strong className="font-medium text-neutral-700">Made</strong> = the ones finished in 2 shots from off the green.
+                <strong className="font-medium text-neutral-950">Attempts</strong> = missed-green chances you&apos;re counting.{" "}
+                <strong className="font-medium text-neutral-950">Made</strong> = the ones finished in 2 shots from off the green.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">

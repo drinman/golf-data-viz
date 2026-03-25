@@ -99,7 +99,7 @@ export default function StrokesGainedExplainedPage() {
               published amateur sources. See our{" "}
               <Link
                 href="/benchmarks"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 benchmark data by handicap
               </Link>{" "}
@@ -177,7 +177,7 @@ export default function StrokesGainedExplainedPage() {
               Read more about the nuances of putting SG in our{" "}
               <Link
                 href="/learn/strokes-gained-putting"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 putting deep dive
               </Link>
@@ -227,7 +227,7 @@ export default function StrokesGainedExplainedPage() {
               than shot-level analysis. Read the full comparison in our{" "}
               <Link
                 href="/methodology"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 methodology
               </Link>
@@ -271,7 +271,7 @@ export default function StrokesGainedExplainedPage() {
             sources.{" "}
             <Link
               href="/methodology"
-              className="underline hover:text-neutral-600"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Full methodology
             </Link>

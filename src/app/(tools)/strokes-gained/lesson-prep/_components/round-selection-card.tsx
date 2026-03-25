@@ -53,7 +53,7 @@ export function RoundSelectionCard({
         <div className="shrink-0 text-right">
           <p
             className={cn(
-              "font-mono text-lg font-semibold",
+              "font-mono tabular-nums text-lg font-semibold",
               round.sgTotal >= 0 ? "text-data-positive" : "text-data-negative"
             )}
           >

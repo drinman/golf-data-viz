@@ -120,7 +120,7 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
             </div>
           </div>
 
-          <p className="mt-4 text-base text-neutral-700">
+          <p className="mt-4 text-base text-neutral-600">
             {roundsNeeded} more round{roundsNeeded === 1 ? "" : "s"}{" "}
             {roundsNeeded === 1 ? "unlocks" : "unlock"} trends.
           </p>
@@ -143,7 +143,7 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
           <Link
             href="/strokes-gained?from=history"
             onClick={() => trackEvent("history_link_clicked", { surface: "starter_trend_card" })}
-            className="mt-4 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+            className="mt-4 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
           >
             Log a Round
           </Link>
@@ -183,7 +183,7 @@ function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
 
       <div className="px-5 py-5">
         <div className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-4">
-          <p className="text-sm text-neutral-700">
+          <p className="text-sm text-neutral-600">
             When unlocked, you&apos;ll get multi-round trend signal, a primary focus area,
             and a shareable summary for your next lesson.
           </p>

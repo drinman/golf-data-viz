@@ -112,7 +112,7 @@ export default function StrokesGainedPuttingPage() {
               on your GIR rate:
             </p>
             <div className="mt-4 rounded-lg border border-cream-200 bg-cream-50 px-5 py-4">
-              <p className="font-mono text-xs text-neutral-700">
+              <p className="font-mono tabular-nums text-xs text-neutral-600">
                 expectedPutts = (GIR &times; puttsPerGIR) + ((18 &minus; GIR)
                 &times; puttsPerNonGIR)
               </p>
@@ -165,15 +165,15 @@ export default function StrokesGainedPuttingPage() {
                       <td className="px-4 py-2.5">
                         <Link
                           href={`/benchmarks/${bracketToSlug(b.bracket)}`}
-                          className="text-brand-800 underline hover:text-brand-900"
+                          className="text-brand-800 underline transition-colors hover:text-brand-700"
                         >
                           {BRACKET_LABELS[b.bracket]}
                         </Link>
                       </td>
-                      <td className="px-4 py-2.5 font-mono text-neutral-600">
+                      <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.puttsPerRound.toFixed(1)}
                       </td>
-                      <td className="px-4 py-2.5 font-mono text-neutral-600">
+                      <td className="px-4 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.girPercentage.toFixed(0)}%
                       </td>
                     </tr>
@@ -246,7 +246,7 @@ export default function StrokesGainedPuttingPage() {
               golfers by handicap, see{" "}
               <Link
                 href="/learn/average-strokes-gained-by-handicap"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 Average Strokes Gained by Handicap
               </Link>
@@ -265,7 +265,7 @@ export default function StrokesGainedPuttingPage() {
             Shot Scope and published amateur sources.{" "}
             <Link
               href="/methodology"
-              className="underline hover:text-neutral-600"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Full methodology
             </Link>

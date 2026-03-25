@@ -78,7 +78,7 @@ export function HistoryAuthPrompt() {
             type="button"
             data-testid="auth-prompt-sign-in-link"
             onClick={() => { setAuthMode("signin"); setAuthOpen(true); }}
-            className="underline hover:text-neutral-700"
+            className="text-brand-800 underline transition-colors hover:text-brand-700"
           >
             Sign in
           </button>

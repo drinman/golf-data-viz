@@ -157,7 +157,7 @@ export function NarrativeBlock({
         <p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-brand-800">
           Round Summary
         </p>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="text-sm leading-relaxed text-neutral-600">
           Your total SG is course-adjusted. Category estimates are based on scorecard stats, so use this round as a directional summary rather than a strongest-versus-weakest verdict.
         </p>
       </div>
@@ -269,7 +269,7 @@ export function NarrativeBlock({
       <p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-brand-800">
         AI Round Analysis
       </p>
-      <p className="text-sm leading-relaxed text-neutral-700">
+      <p className="text-sm leading-relaxed text-neutral-600">
         {state.narrative}
       </p>
       <div className="mt-4 flex items-center gap-3">

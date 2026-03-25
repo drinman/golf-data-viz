@@ -97,7 +97,7 @@ export function RoundHistoryCard({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <span
-                className={`font-mono text-lg font-semibold ${sgColor(round.sgTotal)}`}
+                className={`font-mono tabular-nums text-lg font-semibold ${sgColor(round.sgTotal)}`}
               >
                 {sgSign(round.sgTotal)}
               </span>
@@ -121,7 +121,7 @@ export function RoundHistoryCard({
                       {CATEGORY_LABELS[cat]}
                     </p>
                     <span
-                      className={`shrink-0 font-mono text-[10px] ${sgColor(value)}`}
+                      className={`shrink-0 font-mono tabular-nums text-[10px] ${sgColor(value)}`}
                     >
                       {sgSign(value)}
                     </span>
