@@ -27,7 +27,9 @@
   /* Warm neutrals (stone scale) */
   --neutral-950: #1c1917;
   --neutral-800: #292524;
+  --neutral-700: #44403c;
   --neutral-600: #57534e;
+  --neutral-500: #78716c;
   --neutral-400: #a8a29e;
   --neutral-200: #e7e5e4;
   --neutral-100: #f5f5f4;
@@ -38,6 +40,8 @@
   --data-negative: #dc2626;
   --data-neutral: #94a3b8;
   --data-chart-fill: #166534;
+  --data-positive-on-dark: #4ade80;
+  --data-negative-on-dark: #fca5a5;
 
   /* Semantic */
   --background: var(--brand-cream-50);
@@ -77,7 +81,9 @@
   /* Neutrals */
   --color-neutral-950: var(--neutral-950);
   --color-neutral-800: var(--neutral-800);
+  --color-neutral-700: var(--neutral-700);
   --color-neutral-600: var(--neutral-600);
+  --color-neutral-500: var(--neutral-500);
   --color-neutral-400: var(--neutral-400);
   --color-neutral-200: var(--neutral-200);
   --color-neutral-100: var(--neutral-100);
@@ -87,6 +93,8 @@
   --color-data-positive: var(--data-positive);
   --color-data-negative: var(--data-negative);
   --color-data-neutral: var(--data-neutral);
+  --color-data-positive-on-dark: var(--data-positive-on-dark);
+  --color-data-negative-on-dark: var(--data-negative-on-dark);
 
   /* Card */
   --color-card: var(--card-bg);
@@ -139,9 +147,16 @@ body {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 @keyframes slideDown {
@@ -164,18 +179,28 @@ body {
   animation: slideDown 0.4s ease-out both;
 }
 
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
+.delay-1 {
+  animation-delay: 0.1s;
+}
+.delay-2 {
+  animation-delay: 0.2s;
+}
+.delay-3 {
+  animation-delay: 0.3s;
+}
+.delay-4 {
+  animation-delay: 0.4s;
+}
+.delay-5 {
+  animation-delay: 0.5s;
+}
 
 /* ═══════════════════════════════════════════════
    Grain texture overlay
    ═══════════════════════════════════════════════ */
 
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;

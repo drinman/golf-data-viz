@@ -26,7 +26,10 @@ function getInitialSelection(rounds: RoundSgSnapshot[]): string[] {
   return rounds.slice(0, 5).map((round) => round.roundId);
 }
 
-function orderSelection(rounds: RoundSgSnapshot[], roundIds: string[]): string[] {
+function orderSelection(
+  rounds: RoundSgSnapshot[],
+  roundIds: string[],
+): string[] {
   const selection = new Set(roundIds);
   return rounds
     .filter((round) => selection.has(round.roundId))
@@ -43,13 +46,15 @@ export function LessonPrepBuilder({
   checkoutState,
 }: LessonPrepBuilderProps) {
   const router = useRouter();
-  const [selectedRoundIds, setSelectedRoundIds] = useState(() => getInitialSelection(rounds));
+  const [selectedRoundIds, setSelectedRoundIds] = useState(() =>
+    getInitialSelection(rounds),
+  );
   const [message, setMessage] = useState<string | null>(
     checkoutState === "success"
       ? "Upgrade confirmed. You can build lesson prep reports now."
       : checkoutState === "cancelled"
         ? "Checkout was cancelled. Your rounds are still ready whenever you want to continue."
-        : null
+        : null,
   );
   const [isPending, startTransition] = useTransition();
   const trackedSelection = useRef(false);
@@ -101,7 +106,9 @@ export function LessonPrepBuilder({
         return current.filter((id) => id !== roundId);
       }
       if (current.length >= 8) {
-        setMessage("Lesson prep reports support up to 8 rounds so the report stays readable.");
+        setMessage(
+          "Lesson prep reports support up to 8 rounds so the report stays readable.",
+        );
         return current;
       }
       return orderSelection(rounds, [...current, roundId]);
@@ -135,10 +142,15 @@ export function LessonPrepBuilder({
         return;
       }
 
-      trackEvent(result.regenerated ? "lesson_report_regenerated" : "lesson_report_generated", {
-        round_count: selectedRoundIds.length,
-        ...buildLessonReportAnalyticsContext(result.trustedRoundCount),
-      });
+      trackEvent(
+        result.regenerated
+          ? "lesson_report_regenerated"
+          : "lesson_report_generated",
+        {
+          round_count: selectedRoundIds.length,
+          ...buildLessonReportAnalyticsContext(result.trustedRoundCount),
+        },
+      );
       router.push(`/strokes-gained/lesson-prep/${result.reportId}`);
     });
   }
@@ -155,7 +167,9 @@ export function LessonPrepBuilder({
     });
   }
 
-  const selectedRounds = rounds.filter((round) => selectedRoundIds.includes(round.roundId));
+  const selectedRounds = rounds.filter((round) =>
+    selectedRoundIds.includes(round.roundId),
+  );
   const selectionReady =
     selectedRoundIds.length >= MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS &&
     selectedRoundIds.length <= 8;
@@ -164,13 +178,13 @@ export function LessonPrepBuilder({
   const selectionDateRange =
     selectedRounds.length > 0
       ? `${formatDate(selectedRounds[selectedRounds.length - 1].playedAt)} to ${formatDate(
-          selectedRounds[0].playedAt
+          selectedRounds[0].playedAt,
         )}`
       : "Select rounds to begin";
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <section className="animate-fade-up overflow-hidden rounded-2xl bg-brand-900 px-6 py-7 text-white shadow-lg sm:px-8">
+    <main className="mx-auto max-w-3xl px-4 py-8">
+      <section className="animate-fade-up overflow-hidden rounded-xl bg-brand-900 px-6 py-7 text-white shadow-lg sm:px-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.3em] text-brand-100/75">
@@ -180,17 +194,20 @@ export function LessonPrepBuilder({
               Lesson Prep Report
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-100/80 sm:text-base">
-              Build a read-only, coach-shareable multi-round snapshot from your saved
-              rounds. Focus areas, trend signals, confidence, and methodology caveats
-              stay visible so the report supports a lesson without pretending to replace one.
+              Build a read-only, coach-shareable multi-round snapshot from your
+              saved rounds. Focus areas, trend signals, confidence, and
+              methodology caveats stay visible so the report supports a lesson
+              without pretending to replace one.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/15 bg-white/10 px-6 py-5 text-center">
+          <div className="rounded-xl border border-white/15 bg-white/10 px-6 py-5 text-center">
             <p className="text-xs uppercase tracking-[0.18em] text-brand-100/75">
               Saved Rounds
             </p>
-            <p className="mt-1 font-display text-5xl text-white">{rounds.length}</p>
+            <p className="mt-1 font-display text-5xl text-white">
+              {rounds.length}
+            </p>
             <p className="mt-1 text-xs text-brand-100/75">
               {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS}+ required to build
             </p>
@@ -204,7 +221,7 @@ export function LessonPrepBuilder({
         </div>
       )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <section className="space-y-4">
           <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -242,11 +259,15 @@ export function LessonPrepBuilder({
             <h2 className="mt-2 font-display text-3xl tracking-tight text-neutral-950">
               {formatRoundCountLabel(selectedRoundIds.length)}
             </h2>
-            <p className="mt-2 text-sm text-neutral-600">{selectionDateRange}</p>
+            <p className="mt-2 text-sm text-neutral-600">
+              {selectionDateRange}
+            </p>
 
             <div className="mt-5 space-y-3 text-sm text-neutral-600">
               <div className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-3">
-                <p className="font-medium text-neutral-950">What the report includes</p>
+                <p className="font-medium text-neutral-950">
+                  What the report includes
+                </p>
                 <ul className="mt-2 space-y-1">
                   <li>Average SG and category shape</li>
                   <li>Trend signal and primary focus area</li>
@@ -256,18 +277,21 @@ export function LessonPrepBuilder({
               </div>
 
               <div className="rounded-xl border border-cream-200 bg-neutral-50 px-4 py-3">
-                <p className="font-medium text-neutral-950">Regeneration behavior</p>
+                <p className="font-medium text-neutral-950">
+                  Regeneration behavior
+                </p>
                 <p className="mt-2">
-                  Reusing the same selected rounds refreshes the existing report in place.
-                  The share link stays stable.
+                  Reusing the same selected rounds refreshes the existing report
+                  in place. The share link stays stable.
                 </p>
               </div>
             </div>
 
             {!minRoundsMet && (
               <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                Save at least {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds first.
-                Single-round benchmark, saved detail, and saved-round sharing stay free.
+                Save at least {MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS} rounds
+                first. Single-round benchmark, saved detail, and saved-round
+                sharing stay free.
               </div>
             )}
 
@@ -278,8 +302,8 @@ export function LessonPrepBuilder({
                   <p className="text-sm font-medium">Premium unlock</p>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-brand-900/85">
-                  Multi-round synthesis starts here. Single-round benchmark, saved detail,
-                  and explicit saved-round sharing remain free.
+                  Multi-round synthesis starts here. Single-round benchmark,
+                  saved detail, and explicit saved-round sharing remain free.
                 </p>
                 <button
                   type="button"

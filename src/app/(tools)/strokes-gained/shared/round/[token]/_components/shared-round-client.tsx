@@ -79,7 +79,7 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
           <a
             href={ctaUrl}
             onClick={() => trackEvent("bottom_cta_clicked", { surface: "token_share" })}
-            className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+            className="mt-2 inline-flex items-center text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
           >
             Compare Your Game — Free
           </a>

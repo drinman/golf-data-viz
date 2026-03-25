@@ -35,7 +35,8 @@ export const LessonReportShareCard = forwardRef<
         <div className="mt-3 flex items-start justify-between gap-6">
           <div className="min-w-0">
             <h2 className="font-display text-4xl tracking-tight">
-              {report.summary.roundCount} rounds · {formatDate(report.summary.startDate)} to{" "}
+              {report.summary.roundCount} rounds ·{" "}
+              {formatDate(report.summary.startDate)} to{" "}
               {formatDate(report.summary.endDate)}
             </h2>
             <p className="mt-2 text-base text-brand-100/80">
@@ -44,7 +45,7 @@ export const LessonReportShareCard = forwardRef<
                 : "Snapshot-generated for coaching conversations. SG analysis, confidence, and methodology caveats included."}
             </p>
           </div>
-          <div className="rounded-3xl border border-white/20 bg-white/10 px-6 py-5 text-center">
+          <div className="rounded-xl border border-white/20 bg-white/10 px-6 py-5 text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-brand-100/70">
               Avg SG
             </p>
@@ -63,10 +64,14 @@ export const LessonReportShareCard = forwardRef<
           <p className="mt-2 font-display text-2xl tracking-tight text-neutral-950">
             {report.focusArea.label}
           </p>
-          <p className={`mt-1 font-mono tabular-nums text-lg ${presentSG(report.focusArea.averageSg).tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}>
+          <p
+            className={`mt-1 font-mono tabular-nums text-lg ${presentSG(report.focusArea.averageSg).tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}
+          >
             {formatSG(report.focusArea.averageSg)}
           </p>
-          <p className={`mt-2 text-xs font-medium uppercase tracking-[0.18em] ${confidenceTone(report.focusArea.confidence)}`}>
+          <p
+            className={`mt-2 text-xs font-medium uppercase tracking-[0.18em] ${confidenceTone(report.focusArea.confidence)}`}
+          >
             {report.focusArea.confidence} confidence
           </p>
         </div>
@@ -78,10 +83,14 @@ export const LessonReportShareCard = forwardRef<
           <p className="mt-2 font-display text-2xl tracking-tight text-neutral-950">
             {report.strongestArea.label}
           </p>
-          <p className={`mt-1 font-mono tabular-nums text-lg ${presentSG(report.strongestArea.averageSg).tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}>
+          <p
+            className={`mt-1 font-mono tabular-nums text-lg ${presentSG(report.strongestArea.averageSg).tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}
+          >
             {formatSG(report.strongestArea.averageSg)}
           </p>
-          <p className={`mt-2 text-xs font-medium uppercase tracking-[0.18em] ${confidenceTone(report.strongestArea.confidence)}`}>
+          <p
+            className={`mt-2 text-xs font-medium uppercase tracking-[0.18em] ${confidenceTone(report.strongestArea.confidence)}`}
+          >
             {report.strongestArea.confidence} confidence
           </p>
         </div>
@@ -100,7 +109,8 @@ export const LessonReportShareCard = forwardRef<
       </div>
 
       <div className="mt-6 border-t border-cream-200 pt-4 text-center text-xs text-neutral-500">
-        Golf Data Viz · SG Analysis · Report v{snapshot.reportVersion} · golfdataviz.com/strokes-gained
+        Golf Data Viz · SG Analysis · Report v{snapshot.reportVersion} ·
+        golfdataviz.com/strokes-gained
       </div>
     </div>
   );

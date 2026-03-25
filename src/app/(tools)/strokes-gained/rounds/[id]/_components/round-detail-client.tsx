@@ -114,7 +114,7 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
         <div className="animate-fade-up">
           <Link
             href="/strokes-gained/history"
-            className="group inline-flex items-center gap-1.5 text-sm font-medium text-brand-800 transition-all hover:-translate-x-0.5"
+            className="group inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand-800 transition-all hover:-translate-x-0.5 hover:text-brand-700"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             Back to History
@@ -144,7 +144,7 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
               type="button"
               onClick={handleCopyShareLink}
               disabled={isPending}
-              className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 ${
+              className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 ${
                 clipboardFailed || tokenError
                   ? "border-amber-200 bg-amber-50 text-amber-700"
                   : "border-brand-200 bg-brand-50 text-brand-800 hover:bg-brand-100"

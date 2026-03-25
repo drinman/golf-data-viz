@@ -68,7 +68,7 @@ export function HistoryAuthPrompt() {
           type="button"
           data-testid="auth-prompt-sign-in"
           onClick={() => { setAuthMode("signup"); setAuthOpen(true); }}
-          className="rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
         >
           Create free account to start tracking
         </button>

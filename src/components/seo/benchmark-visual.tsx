@@ -79,7 +79,7 @@ export function BenchmarkVisual() {
               x={x + barWidth / 2}
               y={y - 6}
               textAnchor="middle"
-              className="fill-neutral-700 text-[10px] font-medium"
+              className="fill-neutral-600 text-[10px] font-medium"
             >
               {b.averageScore.toFixed(0)}
             </text>

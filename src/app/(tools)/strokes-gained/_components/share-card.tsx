@@ -102,8 +102,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     totalSg.tone === "neutral"
                       ? "text-neutral-300"
                       : totalSg.tone === "positive"
-                        ? "text-green-400"
-                        : "text-red-300"
+                        ? "text-data-positive-on-dark"
+                        : "text-data-negative-on-dark"
                   }`}
                 >
                   {totalSg.formatted}
@@ -132,9 +132,9 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           <p
             className={`mt-2.5 text-sm font-medium ${
               headline.sentiment === "negative"
-                ? "text-red-300"
+                ? "text-data-negative-on-dark"
                 : headline.sentiment === "positive"
-                  ? "text-green-400"
+                  ? "text-data-positive-on-dark"
                   : "text-cream-50"
             }`}
           >

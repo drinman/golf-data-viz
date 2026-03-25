@@ -112,8 +112,8 @@ export function RoundLayout({
                   totalSg.tone === "neutral"
                     ? "text-neutral-300"
                     : totalSg.tone === "positive"
-                      ? "text-green-400"
-                      : "text-red-300"
+                      ? "text-data-positive-on-dark"
+                      : "text-data-negative-on-dark"
                 }`}
               >
                 {totalSg.formatted}
@@ -232,7 +232,7 @@ export function RoundLayout({
         {methodologyLink && (
           <Link
             href="/methodology"
-            className="mt-1 inline-block text-brand-800 underline transition-colors hover:text-brand-700"
+            className="mt-1 inline-flex items-center text-brand-800 underline transition-colors hover:text-brand-700"
           >
             How Strokes Gained works
           </Link>
