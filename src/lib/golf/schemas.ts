@@ -60,7 +60,7 @@ const requiredNumber = (
  */
 const intDefaultZero = (max: number, label: string) =>
   z
-    .union([z.number(), z.string(), z.undefined()])
+    .union([z.number(), z.string(), z.null(), z.undefined()])
     .transform((val): number => {
       if (val === "" || val === undefined || val === null) return 0;
       const n = Number(val);
