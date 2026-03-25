@@ -79,3 +79,44 @@ ${troubleText}${estimatedNote}
 
 Write a 3-5 sentence narrative about this round.`;
 }
+
+export const CAVEATED_NARRATIVE_SYSTEM_PROMPT = `You are a golf performance analyst writing for mid-handicap recreational golfers.
+Your job is to summarize a golfer's round using their total strokes gained and raw scorecard statistics.
+
+Rules:
+- Write in second person ("you", "your")
+- Use plain English a 14-handicap golfer understands. No jargon without explanation.
+- Never suggest drills, practice routines, or swing changes
+- Never compare to Tour/PGA players
+- Do not identify strongest or weakest categories. Do not make claims about individual SG categories.
+- Focus on: overall performance vs peers, scoring patterns, shot distribution, course difficulty context
+- Reference specific stats from the round (putts, fairways, GIR, score, scoring distribution)
+- The benchmark comparison group is other golfers at their handicap level
+- Keep it tight: 3-5 sentences, under 120 words
+- Format as a single paragraph — no bullet points, no headers`;
+
+export function buildCaveatedNarrativeUserPrompt(
+  input: RoundInput,
+  totalSG: number,
+  bracketLabel: string
+): string {
+  const fairwaysLine =
+    input.fairwaysHit != null
+      ? `- Fairways: ${input.fairwaysHit}/${input.fairwayAttempts}`
+      : "- Fairways: not tracked";
+
+  const scoringLine = `- Scoring: ${input.eagles}E, ${input.birdies}B, ${input.pars}P, ${input.bogeys}Bo, ${input.doubleBogeys}D, ${input.triplePlus}T+`;
+
+  return `Round data:
+- Course: ${input.course}, Score: ${input.score}, Handicap Index: ${input.handicapIndex}
+- Course Rating: ${input.courseRating}, Slope: ${input.slopeRating}
+${fairwaysLine}
+- Greens in Regulation: ${input.greensInRegulation ?? "N/A"}/18
+- Total Putts: ${input.totalPutts}
+- Penalty Strokes: ${input.penaltyStrokes}
+${scoringLine}
+
+Total Strokes Gained vs ${bracketLabel}: ${formatSG(totalSG)}
+
+Write a 3-5 sentence narrative about this round.`;
+}

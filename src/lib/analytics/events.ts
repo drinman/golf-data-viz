@@ -56,9 +56,10 @@ export type AnalyticsEvent =
   | "lesson_report_share_token_created"
   | "lesson_report_share_link_copied"
   | "shared_lesson_report_viewed"
-  | "narrative_requested"
-  | "narrative_generated"
-  | "narrative_failed"
+  | "narrative_fetch_started"
+  | "narrative_fetch_completed"
+  | "narrative_fetch_failed"
+  | "narrative_rendered"
   | "narrative_copied"
   | "post_results_save_cta_viewed"
   | "post_results_save_cta_clicked"
@@ -204,9 +205,10 @@ export type AnalyticsEventProps = {
     surface: "lesson_report_owner";
   };
   shared_lesson_report_viewed: { referrer: string };
-  narrative_requested: EmptyPayload;
-  narrative_generated: { latency_ms: number; word_count: number };
-  narrative_failed: {
+  narrative_fetch_started: { trust_mode: "assertive" | "caveated" };
+  narrative_fetch_completed: { trust_mode: "assertive" | "caveated"; latency_ms: number; word_count: number };
+  narrative_fetch_failed: {
+    trust_mode: "assertive" | "caveated";
     error_type:
       | "rate_limited"
       | "validation"
@@ -218,7 +220,8 @@ export type AnalyticsEventProps = {
     latency_ms?: number;
     retry_count: number;
   };
-  narrative_copied: { word_count: number; surface: "results_page" };
+  narrative_rendered: { trust_mode: "assertive" | "caveated"; source: "cache" | "fetch" };
+  narrative_copied: { word_count: number; surface: "results_page"; trust_mode: "assertive" | "caveated" };
   post_results_save_cta_viewed: EmptyPayload;
   post_results_save_cta_clicked: EmptyPayload;
   local_round_restored: EmptyPayload;

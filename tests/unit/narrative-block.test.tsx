@@ -134,19 +134,22 @@ describe("NarrativeBlock", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it("fires narrative_requested on mount", () => {
+  it("fires narrative_fetch_started with trust_mode on mount", () => {
     mockFetchSuccess();
     render(<NarrativeBlock input={VALID_INPUT} />);
-    expect(mockTrackEvent).toHaveBeenCalledWith("narrative_requested");
+    expect(mockTrackEvent).toHaveBeenCalledWith("narrative_fetch_started", {
+      trust_mode: "assertive",
+    });
   });
 
-  it("fires narrative_generated on success", async () => {
+  it("fires narrative_fetch_completed with trust_mode on success", async () => {
     mockFetchSuccess();
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
       expect(mockTrackEvent).toHaveBeenCalledWith(
-        "narrative_generated",
+        "narrative_fetch_completed",
         expect.objectContaining({
+          trust_mode: "assertive",
           word_count: expect.any(Number),
           latency_ms: expect.any(Number),
         })
@@ -154,47 +157,62 @@ describe("NarrativeBlock", () => {
     });
   });
 
-  it("fires narrative_failed with rate_limited error type", async () => {
+  it("fires narrative_rendered with source fetch on success", async () => {
+    mockFetchSuccess();
+    render(<NarrativeBlock input={VALID_INPUT} />);
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_rendered", {
+        trust_mode: "assertive",
+        source: "fetch",
+      });
+    });
+  });
+
+  it("fires narrative_fetch_failed with trust_mode for rate_limited", async () => {
     mockFetchError(429, "RATE_LIMITED");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_fetch_failed", expect.objectContaining({
+        trust_mode: "assertive",
         error_type: "rate_limited",
       }));
     });
   });
 
-  it("fires narrative_failed with timeout error type", async () => {
+  it("fires narrative_fetch_failed with trust_mode for timeout", async () => {
     mockFetchError(504, "GATEWAY_TIMEOUT");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_fetch_failed", expect.objectContaining({
+        trust_mode: "assertive",
         error_type: "timeout",
       }));
     });
   });
 
-  it("fires narrative_failed with network error type for 503", async () => {
+  it("fires narrative_fetch_failed with trust_mode for network error", async () => {
     mockFetchError(503, "UNAVAILABLE");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_fetch_failed", expect.objectContaining({
+        trust_mode: "assertive",
         error_type: "network",
       }));
     });
   });
 
-  it("fires narrative_failed with generation error type for 500", async () => {
+  it("fires narrative_fetch_failed with trust_mode for generation error", async () => {
     mockFetchError(500, "GENERATION_FAILED");
     render(<NarrativeBlock input={VALID_INPUT} />);
     await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_failed", expect.objectContaining({
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_fetch_failed", expect.objectContaining({
+        trust_mode: "assertive",
         error_type: "generation",
       }));
     });
   });
 
-  it("fires narrative_copied on copy click", async () => {
+  it("fires narrative_copied with trust_mode on copy click", async () => {
     mockFetchSuccess();
     const user = userEvent.setup();
 
@@ -206,6 +224,35 @@ describe("NarrativeBlock", () => {
     expect(mockTrackEvent).toHaveBeenCalledWith("narrative_copied", {
       word_count: expect.any(Number),
       surface: "results_page",
+      trust_mode: "assertive",
+    });
+  });
+
+  it("fetches narrative for caveated rounds (not static fallback)", async () => {
+    mockFetchSuccess("Caveated round narrative.");
+    render(
+      <NarrativeBlock
+        input={VALID_INPUT}
+        presentationTrust={{ mode: "caveated", promotableCategories: [], roundReasons: ["atg_fallback_additional_suppression"], categoryReasons: { "off-the-tee": [], approach: [], "around-the-green": [], putting: [] } }}
+      />
+    );
+    const block = await screen.findByTestId("narrative-block");
+    expect(block.textContent).toContain("Caveated round narrative.");
+    expect(global.fetch).toHaveBeenCalled();
+  });
+
+  it("fires events with caveated trust_mode for caveated rounds", async () => {
+    mockFetchSuccess();
+    render(
+      <NarrativeBlock
+        input={VALID_INPUT}
+        presentationTrust={{ mode: "caveated", promotableCategories: [], roundReasons: ["test"], categoryReasons: { "off-the-tee": [], approach: [], "around-the-green": [], putting: [] } }}
+      />
+    );
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith("narrative_fetch_started", {
+        trust_mode: "caveated",
+      });
     });
   });
 

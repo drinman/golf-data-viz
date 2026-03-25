@@ -96,33 +96,55 @@ describe("trackEvent", () => {
     expect(mockGtag).not.toHaveBeenCalled();
   });
 
-  // --- Narrative events ---
+  // --- Narrative events (renamed for clarity) ---
 
-  it("tracks narrative_requested event", () => {
-    trackEvent("narrative_requested");
-    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_requested");
+  it("tracks narrative_fetch_started with trust_mode", () => {
+    trackEvent("narrative_fetch_started", { trust_mode: "caveated" });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_fetch_started", {
+      trust_mode: "caveated",
+    });
   });
 
-  it("tracks narrative_generated event with payload", () => {
-    trackEvent("narrative_generated", { latency_ms: 2500, word_count: 85 });
-    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_generated", {
+  it("tracks narrative_fetch_completed with trust_mode and payload", () => {
+    trackEvent("narrative_fetch_completed", { trust_mode: "assertive", latency_ms: 2500, word_count: 85 });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_fetch_completed", {
+      trust_mode: "assertive",
       latency_ms: 2500,
       word_count: 85,
     });
   });
 
-  it("tracks narrative_failed event with error type", () => {
-    trackEvent("narrative_failed", { error_type: "rate_limited" });
-    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_failed", {
+  it("tracks narrative_fetch_failed with trust_mode and error type", () => {
+    trackEvent("narrative_fetch_failed", { trust_mode: "caveated", error_type: "rate_limited", retry_count: 0 });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_fetch_failed", {
+      trust_mode: "caveated",
       error_type: "rate_limited",
+      retry_count: 0,
     });
   });
 
-  it("tracks narrative_copied event", () => {
-    trackEvent("narrative_copied", { word_count: 95, surface: "results_page" });
+  it("tracks narrative_rendered with trust_mode and source", () => {
+    trackEvent("narrative_rendered", { trust_mode: "caveated", source: "fetch" });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_rendered", {
+      trust_mode: "caveated",
+      source: "fetch",
+    });
+  });
+
+  it("tracks narrative_rendered with cache source", () => {
+    trackEvent("narrative_rendered", { trust_mode: "assertive", source: "cache" });
+    expect(mockVercelTrack).toHaveBeenCalledWith("narrative_rendered", {
+      trust_mode: "assertive",
+      source: "cache",
+    });
+  });
+
+  it("tracks narrative_copied with trust_mode", () => {
+    trackEvent("narrative_copied", { word_count: 95, surface: "results_page", trust_mode: "caveated" });
     expect(mockVercelTrack).toHaveBeenCalledWith("narrative_copied", {
       word_count: 95,
       surface: "results_page",
+      trust_mode: "caveated",
     });
   });
 
