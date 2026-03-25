@@ -133,4 +133,12 @@ describe("LessonReportShareCard neutral styling", () => {
     expect(container.textContent).not.toContain("+0.00");
     expect(container.textContent).not.toContain("-0.00");
   });
+
+  it("uses the DS export shell sizing", () => {
+    const { container } = render(<LessonReportShareCard snapshot={makeSnapshot()} />);
+
+    const shareCard = container.querySelector("[data-testid='lesson-report-share-card']");
+    expect(shareCard?.className).toContain("w-[600px]");
+    expect(shareCard?.className).toContain("rounded-xl");
+  });
 });

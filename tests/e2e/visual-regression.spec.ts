@@ -40,4 +40,14 @@ test.describe("Visual regression", () => {
       maxDiffPixelRatio: 0.02,
     });
   });
+
+  test("error boundary matches snapshot", async ({ page }) => {
+    await page.goto("/test-error");
+
+    const errorSurface = page.locator("main");
+    await expect(errorSurface).toBeVisible();
+    await expect(errorSurface).toHaveScreenshot("global-error.png", {
+      maxDiffPixelRatio: 0.02,
+    });
+  });
 });

@@ -68,7 +68,7 @@ export function UserMenu({ user }: UserMenuProps) {
       {open && (
         <div
           data-testid="user-menu-dropdown"
-          className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-cream-200 bg-white py-1 shadow-lg"
+          className="animate-slide-down absolute right-0 top-full mt-1 w-48 rounded-lg border border-cream-200 bg-white py-1 shadow-lg"
         >
           <Link
             href="/strokes-gained/history"
