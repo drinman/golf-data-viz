@@ -1,10 +1,11 @@
 # Recipient-Optimized Landing Page
 
-**Status**: Spec
+**Status**: Spec — updated with research findings 2026-03-20
 **Author**: Product
-**Date**: 2026-03-17
-**Phase**: 1 (Data-First Share Quality)
+**Date**: 2026-03-17 (updated 2026-03-20)
+**Phase**: 1 (Data-First Share Quality) — but gated on Phase 0 R2 viral loop baseline
 **Priority**: 5
+**Dependency**: R2 instrumentation must ship first to measure baseline conversion rate before building the CTA. Otherwise we can't attribute improvement.
 
 ---
 
@@ -20,6 +21,15 @@ The current shared round page (`/strokes-gained/shared/round/[token]`) displays 
 - The realistic K-factor is 0.05-0.10. Every percentage point of recipient conversion directly impacts the viral coefficient.
 - The current conversion rate is unknown because there is no CTA and no tracking of recipient behavior.
 - Pre-filling the handicap bracket from the shared round reduces friction: the recipient already knows roughly what bracket they are in because they know their playing partner's level.
+
+### 2026-03-20 Research Update
+
+Analytics deep spike confirmed:
+- **22 unique users** viewed shared rounds in the first 28 days (14% of total traffic), averaging 3.55 views each (~78 total shared page loads)
+- `recipient_completed_own_calc` currently fires on ALL calculations (bug) — gating fix shipping in R2 instrumentation
+- **Viral loop conversion is literally unmeasurable right now.** R2 instrumentation (sessionStorage shared-arrival flag + `viral_loop_completed` event) must ship before this spec can be properly evaluated.
+- Kill criterion (>5% of shared_round_viewed → own calculation) cannot be assessed until R2 data collects for 2 weeks.
+- **Sequence**: Ship R2 → collect 2 weeks baseline → ship this CTA → measure delta.
 
 ### User Stories
 

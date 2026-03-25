@@ -6,6 +6,12 @@ Golf data visualization platform for mid-handicap golfers. First tool: **Strokes
 ## Target User
 14-handicap golfers (the median male golfer). The builder IS the target audience.
 
+## Operating Model
+- **The human does not write code.** All implementation is done by AI agents (Claude Code, Codex, etc.).
+- **Assume the cost of AI work is zero.** Write thorough specs, detailed plans, and comprehensive docs — the agent executing them has unlimited patience and no hourly rate. Optimize for clarity and completeness, not brevity.
+- **Your audience for all artifacts is an AI agent.** Specs, PRDs, roadmap items, Linear descriptions, and task breakdowns should be written so an AI agent can pick them up and execute autonomously — exact file paths, line numbers, patterns to follow, acceptance criteria, and verification steps. Never assume the reader has context from a prior conversation.
+- **Prefer over-specifying to under-specifying.** A human can skim past details they don't need. An AI agent will hallucinate details you don't provide.
+
 ## Stack
 - **Framework**: Next.js 16 (App Router, Server Components, Turbopack)
 - **Visualization**: Nivo (`@nivo/radar`, `@nivo/heatmap`, etc.) — SSR/HTTP rendering for shareable images
@@ -38,6 +44,12 @@ src/
 - Shareable outputs are the growth mechanism (screenshots → r/golf, group chats)
 - Nivo server-side SVG rendering for OG images and social sharing
 - No monorepo — single Next.js project until complexity demands it
+
+## Development Methodology
+- **Always branch off `main` for new work.** Create a feature branch (`feat/`, `fix/`, `chore/`) before making changes. Never commit directly to `main`.
+- **TDD where appropriate.** For logic in `src/lib/golf/` (pure functions), write unit tests first. For UI changes, write or update Playwright e2e tests alongside the code.
+- **Verify with Playwright on localhost.** After implementing UI changes, run `npx playwright test --project=functional` to confirm. For visual changes, use Playwright browser automation to visually verify on `localhost:3000` — don't trust unit tests alone for UI.
+- **Run the full check before marking done:** `npm run build && npm run lint && npx playwright test --project=functional`
 
 ## Coding Conventions
 - Use `@/*` import alias (maps to `src/*`)
@@ -114,12 +126,13 @@ Three MCP servers are connected for direct infrastructure interaction:
 - Offload research, exploration, and parallel analysis to subagents
 - For complex problems, throw more compute at it via subagents
 - One task per subagent for focused execution
+- **Always pass `model: "sonnet"` when spawning Agent tool calls.** The default (Haiku) is too weak for meaningful research and planning tasks.
 
 ### 3. Self-Improvement Loop
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
+- After ANY correction from the user: save a `feedback` memory to `memory/` with the pattern, why it matters, and how to apply it.
+- **Promotion path**: If the correction is universal to this project (affects every agent, every session), promote it to this CLAUDE.md file. Memory is "might be relevant." CLAUDE.md is "law — follow every time."
+- If the same feedback memory triggers twice across different sessions, that's a signal to promote it to CLAUDE.md.
+- If something in CLAUDE.md is stale or contradicted by newer corrections, update or remove it. CLAUDE.md should stay tight and current, not accumulate cruft.
 
 ### 4. Verification Before Done
 - Never mark a task complete without proving it works
@@ -147,6 +160,27 @@ Three MCP servers are connected for direct infrastructure interaction:
 4. **Explain Changes**: High-level summary at each step
 5. **Document Results**: Add review section to `tasks/todo.md`
 6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+
+## Writing Agent-Ready Plans & Specs
+
+Every plan, spec, and task description will be executed by an AI agent, not a human. These are the patterns that trip agents up — address them explicitly or they'll introduce bugs.
+
+### State & Lifecycle
+- **Guard one-time effects with refs.** If something should fire once (analytics event, initialization), add an explicit `firedRef` guard AND show it. Don't just say "fires once" — show the `if (ref.current) return; ref.current = true;` pattern. Agents skip implicit guards.
+- **Show cleanup/reset code explicitly.** If refs or state need resetting (e.g., between form submissions), write out the reset lines. Don't just say "reset the refs in handleSubmit" — agents treat prose suggestions as optional.
+- **Distinguish insertion order from semantic order.** `Set` and `Map` maintain insertion order, but that's rarely the order you want. If you need "highest index" or "most recent by timestamp," say so explicitly and provide the lookup code. Agents will use `.pop()` or `.values().next()` and get wrong answers.
+
+### Data Flow & Dependencies
+- **Always specify where values come from.** When a plan uses a variable (`isAuthenticated`, `user`, `result`), state whether it's a prop, hook return, context value, or ref. Agents will create new state or import wrong modules if the source isn't clear.
+- **Clarify additive vs. replacement.** When modifying existing code, explicitly say "add this alongside existing X" or "replace X with Y." Agents default to replacement and will delete existing Sentry captures, logging, etc.
+
+### Bulk Operations
+- **Use systematic replacement, not manual.** For repetitive changes (23 `register()` → `trackedRegister()` calls), tell the agent to use `replace_all` or grep-based replacement. Agents doing manual one-by-one edits will miss instances and introduce inconsistencies.
+- **Count your changes.** If the plan says "update all N call sites," list them or give a grep pattern so the agent can verify it found all N.
+
+### TypeScript Traps
+- **Flag type narrowing changes.** When an event goes from `EmptyPayload` to required properties, every call site breaks. Call out which files will get TypeScript errors and what the fix is at each site.
+- **Optional vs required props.** If an enriched event payload mixes required and optional fields (`error_code?: string` vs `auth_state: "authenticated" | "anonymous"`), be explicit — agents will make everything required or everything optional.
 
 ## Core Principles
 
