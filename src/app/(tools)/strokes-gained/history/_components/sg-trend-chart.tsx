@@ -181,13 +181,13 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
                     {info.date} &middot; {info.courseName}
                   </p>
                 )}
-                <p className="mt-0.5 text-sm font-medium text-neutral-900">
+                <p className="mt-0.5 text-sm font-medium text-neutral-950">
                   <span
                     className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: point.seriesColor }}
                   />
                   {categoryLabel}:{" "}
-                  <span className="font-mono">
+                  <span className="font-mono tabular-nums">
                     {presentSG(value, 1).formatted}
                   </span>
                 </p>

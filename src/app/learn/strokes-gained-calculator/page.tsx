@@ -155,14 +155,14 @@ export default function StrokesGainedCalculatorPage() {
               For a deeper understanding of the calculation methodology, see{" "}
               <Link
                 href="/learn/strokes-gained-explained"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 Strokes Gained Explained
               </Link>{" "}
               or our full{" "}
               <Link
                 href="/methodology"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 methodology page
               </Link>
@@ -217,7 +217,7 @@ export default function StrokesGainedCalculatorPage() {
                   full{" "}
                   <Link
                     href="/benchmarks"
-                    className="text-brand-800 underline hover:text-brand-900"
+                    className="text-brand-800 underline transition-colors hover:text-brand-700"
                   >
                     benchmark data
                   </Link>{" "}
@@ -238,7 +238,7 @@ export default function StrokesGainedCalculatorPage() {
             Peer benchmarks from Shot Scope and published amateur sources.{" "}
             <Link
               href="/methodology"
-              className="underline hover:text-neutral-600"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Full methodology
             </Link>

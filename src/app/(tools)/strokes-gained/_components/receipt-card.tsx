@@ -30,7 +30,7 @@ export const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
       <div
         ref={ref}
         data-testid="receipt-card"
-        className="w-[1080px] font-mono"
+        className="w-[1080px] font-mono tabular-nums"
         style={{
           backgroundColor: "#fefcf3",
           fontFamily: "JetBrains Mono, ui-monospace, monospace",
@@ -186,7 +186,7 @@ export const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
               <p className="text-xs tracking-wider text-neutral-400">
                 ROUND STATS
               </p>
-              <p className="mt-1.5 text-sm text-neutral-700">
+              <p className="mt-1.5 text-sm text-neutral-600">
                 {familiarStats.join("  |  ")}
               </p>
             </div>
@@ -198,7 +198,7 @@ export const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
               <p className="text-xs tracking-wider text-neutral-400">
                 SCORING
               </p>
-              <p className="mt-1.5 text-sm text-neutral-700">
+              <p className="mt-1.5 text-sm text-neutral-600">
                 {scoringBreakdown.join("  |  ")}
               </p>
             </div>

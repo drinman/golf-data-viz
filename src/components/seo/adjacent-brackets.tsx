@@ -20,7 +20,7 @@ export function AdjacentBrackets({ current }: AdjacentBracketsProps) {
       {prev ? (
         <Link
           href={`/benchmarks/${bracketToSlug(prev)}`}
-          className="text-sm text-brand-800 underline hover:text-brand-900"
+          className="text-sm text-brand-800 underline transition-colors hover:text-brand-700"
         >
           &larr; {BRACKET_LABELS[prev]}
         </Link>
@@ -30,7 +30,7 @@ export function AdjacentBrackets({ current }: AdjacentBracketsProps) {
       {next ? (
         <Link
           href={`/benchmarks/${bracketToSlug(next)}`}
-          className="text-sm text-brand-800 underline hover:text-brand-900"
+          className="text-sm text-brand-800 underline transition-colors hover:text-brand-700"
         >
           {BRACKET_LABELS[next]} &rarr;
         </Link>

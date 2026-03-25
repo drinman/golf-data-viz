@@ -89,7 +89,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100 text-sm font-semibold text-accent-500">
                 <PenLine className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-neutral-950">
+              <h3 className="mt-4 font-display text-base tracking-tight text-neutral-950">
                 Enter your stats
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
@@ -101,7 +101,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100 text-sm font-semibold text-accent-500">
                 <BarChart3 className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-neutral-950">
+              <h3 className="mt-4 font-display text-base tracking-tight text-neutral-950">
                 See your breakdown
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
@@ -113,7 +113,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100 text-sm font-semibold text-accent-500">
                 <Share2 className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-neutral-950">
+              <h3 className="mt-4 font-display text-base tracking-tight text-neutral-950">
                 Share with your group
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">

@@ -134,7 +134,7 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
             <button
               type="button"
               onClick={handleDownloadPng}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
             >
               <Download className="h-4 w-4" />
               Download PNG

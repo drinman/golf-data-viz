@@ -49,7 +49,7 @@ export function SummaryStats({ rounds }: { rounds: RoundSgSnapshot[] }) {
           <p className="text-xs font-medium uppercase tracking-[0.15em] text-neutral-400">
             {item.label}
           </p>
-          <p className="mt-0.5 font-mono text-lg font-semibold text-neutral-950">
+          <p className="mt-0.5 font-mono tabular-nums text-lg font-semibold text-neutral-950">
             {item.value}
           </p>
         </div>

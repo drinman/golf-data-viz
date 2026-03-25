@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         className="scroll-mt-8"
         data-testid="privacy-collect"
       >
-        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+        <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
           What We Collect
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
         className="mt-10 border-t border-cream-200 pt-8"
         data-testid="privacy-not-collect"
       >
-        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+        <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
           What We Don&apos;t Collect
         </h2>
         <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
         className="mt-10 border-t border-cream-200 pt-8"
         data-testid="privacy-storage"
       >
-        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+        <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
           How Data Is Stored
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
@@ -88,7 +88,7 @@ export default function PrivacyPage() {
           in a{" "}
           <a
             href="https://supabase.com"
-            className="text-brand-800 underline"
+            className="text-brand-800 underline transition-colors hover:text-brand-700"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
         className="mt-10 border-t border-cream-200 pt-8"
         data-testid="privacy-sharing"
       >
-        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+        <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
           Sharing
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
         className="mt-10 border-t border-cream-200 pt-8"
         data-testid="privacy-analytics"
       >
-        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+        <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
           Analytics &amp; Error Tracking
         </h2>
         <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-neutral-600">
@@ -144,14 +144,14 @@ export default function PrivacyPage() {
         className="mt-10 border-t border-cream-200 pt-8"
         data-testid="privacy-contact"
       >
-        <h2 className="font-display text-xl tracking-tight text-neutral-950">
+        <h2 className="font-display text-2xl tracking-tight text-neutral-950 sm:text-3xl">
           Questions?
         </h2>
         <p className="mt-3 text-sm text-neutral-600">
           If you have questions about how we handle data, open an issue on{" "}
           <a
             href="https://github.com/drinman/golf-data-viz"
-            className="text-brand-800 underline"
+            className="text-brand-800 underline transition-colors hover:text-brand-700"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -160,7 +160,7 @@ export default function PrivacyPage() {
           or reach out on{" "}
           <a
             href="https://reddit.com/r/golf"
-            className="text-brand-800 underline"
+            className="text-brand-800 underline transition-colors hover:text-brand-700"
             target="_blank"
             rel="noopener noreferrer"
           >

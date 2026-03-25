@@ -98,7 +98,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 }`}
               >
                 <span
-                  className={`font-mono text-lg font-bold ${
+                  className={`font-mono tabular-nums text-lg font-bold ${
                     totalSg.tone === "neutral"
                       ? "text-neutral-300"
                       : totalSg.tone === "positive"
@@ -203,7 +203,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                       interactive={false}
                     />
                     <span
-                      className={`font-mono text-sm font-semibold ${
+                      className={`font-mono tabular-nums text-sm font-semibold ${
                         sg.tone === "neutral"
                           ? "text-neutral-500"
                           : sg.tone === "positive"

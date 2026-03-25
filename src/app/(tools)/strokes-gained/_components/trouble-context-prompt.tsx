@@ -48,7 +48,7 @@ export function TroubleContextPrompt({
             trackEvent("trouble_context_prompt_dismissed");
             onDismiss();
           }}
-          className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-600"
         >
           Not now
         </button>

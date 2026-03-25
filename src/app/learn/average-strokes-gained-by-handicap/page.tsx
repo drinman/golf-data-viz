@@ -100,27 +100,27 @@ export default function AverageStrokesGainedByHandicapPage() {
                       <td className="px-3 py-2.5">
                         <Link
                           href={`/benchmarks/${bracketToSlug(b.bracket)}`}
-                          className="text-brand-800 underline hover:text-brand-900"
+                          className="text-brand-800 underline transition-colors hover:text-brand-700"
                         >
                           {BRACKET_LABELS[b.bracket]}
                         </Link>
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-neutral-600">
+                      <td className="px-3 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.averageScore.toFixed(1)}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-neutral-600">
+                      <td className="px-3 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.fairwayPercentage.toFixed(0)}%
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-neutral-600">
+                      <td className="px-3 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.girPercentage.toFixed(0)}%
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-neutral-600">
+                      <td className="px-3 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.puttsPerRound.toFixed(1)}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-neutral-600">
+                      <td className="px-3 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.upAndDownPercentage.toFixed(0)}%
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-neutral-600">
+                      <td className="px-3 py-2.5 font-mono tabular-nums text-neutral-600">
                         {b.penaltiesPerRound.toFixed(1)}
                       </td>
                     </tr>
@@ -210,7 +210,7 @@ export default function AverageStrokesGainedByHandicapPage() {
               For a detailed breakdown of your specific round, use the{" "}
               <Link
                 href="/strokes-gained"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 Strokes Gained Calculator
               </Link>{" "}
@@ -229,7 +229,7 @@ export default function AverageStrokesGainedByHandicapPage() {
             Data from Shot Scope, Arccos, and USGA statistics.{" "}
             <Link
               href="/methodology"
-              className="underline hover:text-neutral-600"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Full methodology
             </Link>

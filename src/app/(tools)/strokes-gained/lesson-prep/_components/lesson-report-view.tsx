@@ -227,7 +227,7 @@ export function LessonReportView({
       )}
 
       {message && (
-        <div className="mt-6 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <div className="mt-6 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-neutral-600 shadow-sm">
           {message}
         </div>
       )}
@@ -281,7 +281,7 @@ export function LessonReportView({
               const sg = presentSG(report.focusArea.averageSg);
               return (
               <>
-              <p className={`mt-2 font-mono text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}>
+              <p className={`mt-2 font-mono tabular-nums text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}>
                 {sg.formatted}
               </p>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
@@ -316,7 +316,7 @@ export function LessonReportView({
               const sg = presentSG(report.strongestArea.averageSg);
               return (
               <>
-              <p className={`mt-2 font-mono text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}>
+              <p className={`mt-2 font-mono tabular-nums text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}>
                 {sg.formatted}
               </p>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
@@ -358,7 +358,7 @@ export function LessonReportView({
               Aggregate confidence rolls up the supporting scorecard inputs across all selected rounds.
             </p>
           </div>
-          <div className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-neutral-700">
+          <div className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-neutral-600">
             Overall {report.confidenceSummary.overall}
           </div>
         </div>
@@ -368,7 +368,7 @@ export function LessonReportView({
               key={category}
               className="inline-flex items-center gap-2 rounded-full border border-cream-200 bg-neutral-50 px-3 py-1.5"
             >
-              <span className="text-sm text-neutral-700">
+              <span className="text-sm text-neutral-600">
                 {CATEGORY_LABELS[category as keyof typeof report.confidenceSummary.byCategory]}
               </span>
               <ConfidenceBadge
@@ -416,7 +416,7 @@ export function LessonReportView({
                   return (
                 <p
                   className={[
-                    "font-mono text-lg font-semibold",
+                    "font-mono tabular-nums text-lg font-semibold",
                     sg.tone === "neutral"
                       ? "text-neutral-500"
                       : sg.tone === "positive"
@@ -439,7 +439,7 @@ export function LessonReportView({
           <button
             type="button"
             onClick={handleDownloadPng}
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
           >
             <Download className="h-4 w-4" />
             Download PNG
@@ -486,7 +486,7 @@ export function LessonReportView({
             </p>
             <Link
               href="/strokes-gained"
-              className="mt-2 inline-block text-sm font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 transition-colors hover:text-brand-900"
+              className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Run the free benchmark →
             </Link>

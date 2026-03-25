@@ -923,7 +923,7 @@ export default function StrokesGainedClient({
                   return (
                 <div className="mt-3 sm:mt-0">
                   <span
-                    className={`font-mono text-base font-bold sm:hidden ${
+                    className={`font-mono tabular-nums text-base font-bold sm:hidden ${
                       totalSg.tone === "neutral"
                         ? "text-neutral-300"
                         : totalSg.tone === "positive"
@@ -943,7 +943,7 @@ export default function StrokesGainedClient({
                     }`}
                   >
                     <span
-                      className={`font-mono text-lg font-bold ${
+                      className={`font-mono tabular-nums text-lg font-bold ${
                         totalSg.tone === "neutral"
                           ? "text-neutral-300"
                           : totalSg.tone === "positive"
@@ -1152,7 +1152,7 @@ export default function StrokesGainedClient({
                 <Link
                   href="/strokes-gained/history"
                   onClick={() => trackEvent("history_link_clicked", { surface: "post_save_confirmation" })}
-                  className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+                  className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
                 >
                   {isFromHistory ? "See updated history" : "View your trends"} &rarr;
                 </Link>
@@ -1209,7 +1209,7 @@ export default function StrokesGainedClient({
                   <Link
                     href="/strokes-gained/history"
                     onClick={() => trackEvent("history_link_clicked", { surface: "save_preview_teaser" })}
-                    className="mt-4 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+                  className="mt-4 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
                   >
                     View your dashboard &rarr;
                   </Link>
@@ -1235,7 +1235,7 @@ export default function StrokesGainedClient({
                 data-testid="claim-cta"
                 className="rounded-xl border border-brand-200 bg-brand-50/50 px-5 py-4"
               >
-                <p className="text-sm font-medium text-neutral-900">
+                <p className="text-sm font-medium text-neutral-950">
                   Keep this round and track what changes
                 </p>
                 <p className="mt-1 text-xs text-neutral-600">
@@ -1275,7 +1275,7 @@ export default function StrokesGainedClient({
                 </p>
                 <Link
                   href="/strokes-gained/history"
-                  className="mt-2 inline-block text-sm font-medium text-brand-800 underline hover:text-brand-600"
+                  className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
                 >
                   View your round history &rarr;
                 </Link>
@@ -1375,7 +1375,7 @@ export default function StrokesGainedClient({
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-neutral-900">
+                    <p className="text-sm font-medium text-neutral-950">
                       Want the retro receipt?
                     </p>
                     <p className="mt-0.5 text-xs text-neutral-500">

@@ -81,7 +81,7 @@ export default function BenchmarksIndexPage() {
             {meta.updatedAt}).{" "}
             <Link
               href="/methodology"
-              className="underline hover:text-neutral-600"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Full methodology
             </Link>

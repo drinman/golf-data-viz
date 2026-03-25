@@ -186,7 +186,7 @@ export function PostResultsSaveCta({
       data-testid="post-results-save-cta"
       className={`${phase === "error" ? "animate-shake" : "animate-fade-up [animation-delay:500ms]"} rounded-xl border border-brand-200 bg-brand-50/30 px-5 py-5`}
     >
-      <p className="text-sm font-medium text-neutral-900">{heading}</p>
+      <p className="text-sm font-medium text-neutral-950">{heading}</p>
       <p className="mt-1 text-sm text-neutral-600">{body}</p>
       <div className="mt-3 flex items-center gap-3">
         {phase === "error" ? (

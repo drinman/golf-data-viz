@@ -93,19 +93,19 @@ export default async function BenchmarkBracketPage({ params }: Props) {
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="rounded-lg border border-cream-200 bg-white px-4 py-3 text-center">
-            <p className="font-mono text-2xl font-semibold text-neutral-950">
+            <p className="font-mono tabular-nums text-2xl font-semibold text-neutral-950">
               {benchmarkData.averageScore.toFixed(1)}
             </p>
             <p className="text-xs text-neutral-500">Avg Score</p>
           </div>
           <div className="rounded-lg border border-cream-200 bg-white px-4 py-3 text-center">
-            <p className="font-mono text-2xl font-semibold text-neutral-950">
+            <p className="font-mono tabular-nums text-2xl font-semibold text-neutral-950">
               {benchmarkData.girPercentage.toFixed(0)}%
             </p>
             <p className="text-xs text-neutral-500">GIR</p>
           </div>
           <div className="rounded-lg border border-cream-200 bg-white px-4 py-3 text-center">
-            <p className="font-mono text-2xl font-semibold text-neutral-950">
+            <p className="font-mono tabular-nums text-2xl font-semibold text-neutral-950">
               {benchmarkData.puttsPerRound.toFixed(1)}
             </p>
             <p className="text-xs text-neutral-500">Putts / Round</p>
@@ -149,7 +149,7 @@ export default async function BenchmarkBracketPage({ params }: Props) {
               Want to see exactly where you gain and lose strokes? Use the{" "}
               <Link
                 href="/strokes-gained"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 Strokes Gained Calculator
               </Link>{" "}
@@ -168,7 +168,7 @@ export default async function BenchmarkBracketPage({ params }: Props) {
               are version-locked and updated periodically. See the{" "}
               <Link
                 href="/methodology"
-                className="text-brand-800 underline hover:text-brand-900"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 methodology page
               </Link>{" "}
@@ -194,7 +194,7 @@ export default async function BenchmarkBracketPage({ params }: Props) {
             Shot Scope, Arccos, and USGA statistics.{" "}
             <Link
               href="/methodology"
-              className="underline hover:text-neutral-600"
+              className="text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Full methodology
             </Link>

@@ -108,7 +108,7 @@ export function RoundLayout({
               }`}
             >
               <span
-                className={`font-mono text-lg font-bold sm:text-xl ${
+                className={`font-mono tabular-nums text-lg font-bold sm:text-xl ${
                   totalSg.tone === "neutral"
                     ? "text-neutral-300"
                     : totalSg.tone === "positive"
@@ -232,7 +232,7 @@ export function RoundLayout({
         {methodologyLink && (
           <Link
             href="/methodology"
-            className="mt-1 inline-block underline transition-colors hover:text-neutral-600"
+            className="mt-1 inline-block text-brand-800 underline transition-colors hover:text-brand-700"
           >
             How Strokes Gained works
           </Link>
