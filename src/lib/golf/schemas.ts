@@ -55,6 +55,27 @@ const requiredNumber = (
     );
 
 /**
+ * Integer field where "" (empty) defaults to 0. Used for scoring breakdown
+ * and penalty strokes — fields where empty semantically means zero.
+ */
+const intDefaultZero = (max: number, label: string) =>
+  z
+    .union([z.number(), z.string(), z.undefined()])
+    .transform((val): number => {
+      if (val === "" || val === undefined || val === null) return 0;
+      const n = Number(val);
+      if (!Number.isFinite(n)) return NaN;
+      return n;
+    })
+    .pipe(
+      z
+        .number()
+        .int(`${label} must be a whole number`)
+        .min(0, `${label} must be at least 0`)
+        .max(max, `${label} must be at most ${max}`)
+    );
+
+/**
  * Required integer field that rejects "" (unlike z.coerce which treats "" as 0).
  * Uses the same union+transform+pipe pattern as optionalInt above.
  */
@@ -130,27 +151,13 @@ export const roundInputSchema = z
     }),
     greensInRegulation: optionalInt(18),
     totalPutts: requiredInt(1, 60, "Putts"),
-    penaltyStrokes: requiredInt(0, 20, "Penalty strokes", {
-      required: "Penalty strokes are required",
-    }),
-    eagles: requiredInt(0, 18, "Eagles", {
-      required: "Eagles are required",
-    }),
-    birdies: requiredInt(0, 18, "Birdies", {
-      required: "Birdies are required",
-    }),
-    pars: requiredInt(0, 18, "Pars", {
-      required: "Pars are required",
-    }),
-    bogeys: requiredInt(0, 18, "Bogeys", {
-      required: "Bogeys are required",
-    }),
-    doubleBogeys: requiredInt(0, 18, "Double bogeys", {
-      required: "Double bogeys are required",
-    }),
-    triplePlus: requiredInt(0, 18, "Triple-plus holes", {
-      required: "Triple-plus holes are required",
-    }),
+    penaltyStrokes: intDefaultZero(20, "Penalty strokes"),
+    eagles: intDefaultZero(18, "Eagles"),
+    birdies: intDefaultZero(18, "Birdies"),
+    pars: intDefaultZero(18, "Pars"),
+    bogeys: intDefaultZero(18, "Bogeys"),
+    doubleBogeys: intDefaultZero(18, "Double bogeys"),
+    triplePlus: intDefaultZero(18, "Triple-plus holes"),
     // Optional fields
     upAndDownAttempts: optionalInt(18),
     upAndDownConverted: optionalInt(18),
