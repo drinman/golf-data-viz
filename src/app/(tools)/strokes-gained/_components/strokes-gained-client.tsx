@@ -1143,9 +1143,9 @@ export default function StrokesGainedClient({
             {saveSuccess && savedRoundOwned && (
               <div
                 data-testid="save-success-authed"
-                className="rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+                className="rounded-xl border border-brand-100 bg-brand-50 px-5 py-4"
               >
-                <div className="flex items-center gap-2 text-sm font-medium text-green-800">
+                <div className="flex items-center gap-2 text-sm font-medium text-brand-800">
                   <CircleCheck className="h-5 w-5 shrink-0" />
                   Round added to your history.
                 </div>
@@ -1164,7 +1164,7 @@ export default function StrokesGainedClient({
                 know the dashboard and this teaser is patronizing. */}
             {saveSuccess && savedRoundOwned && !isFromHistory && (
               <div
-                className="animate-fade-up overflow-hidden rounded-2xl border border-cream-200 bg-card shadow-sm"
+                className="animate-fade-up overflow-hidden rounded-xl border border-cream-200 bg-card shadow-sm"
                 style={{ animationDelay: "550ms" }}
               >
                 <div className="border-b border-cream-200 bg-[linear-gradient(135deg,rgba(15,61,34,0.08),rgba(184,134,11,0.06))] px-5 py-4">
@@ -1222,7 +1222,7 @@ export default function StrokesGainedClient({
               <div
                 data-testid="save-success"
                 role="status"
-                className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+                className="flex items-center gap-2 rounded-md border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800"
               >
                 <CircleCheck className="h-5 w-5 shrink-0" />
                 Round saved.
@@ -1268,9 +1268,9 @@ export default function StrokesGainedClient({
             {claimStatus === "claimed" && (
               <div
                 data-testid="claim-success"
-                className="rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+                className="rounded-xl border border-brand-100 bg-brand-50 px-5 py-4"
               >
-                <p className="text-sm font-medium text-green-800">
+                <p className="text-sm font-medium text-brand-800">
                   Round linked to your account!
                 </p>
                 <Link

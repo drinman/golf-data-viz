@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <main>
       {/* ── Hero ── */}
       <div className="border-b border-cream-200 bg-cream-50">
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24 md:py-32">
           <h1 className="font-display text-3xl tracking-tight text-neutral-950 sm:text-4xl">
             Privacy Policy
           </h1>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:py-24">
       {/* What we collect */}
       <section
         className="scroll-mt-8"

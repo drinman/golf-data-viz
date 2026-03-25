@@ -244,7 +244,7 @@ function AuthModalContent({
             {info && (
               <p
                 data-testid="auth-info"
-                className="mt-3 text-sm text-green-700"
+                className="mt-3 text-sm text-brand-700"
               >
                 {info}
               </p>

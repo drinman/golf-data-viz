@@ -163,7 +163,7 @@ export function SgTrendChart({ series, rounds }: SgTrendChartProps) {
               translateX: 135,
               itemWidth: 130,
               itemHeight: 20,
-              itemTextColor: "#64748b",
+              itemTextColor: "#57534e",
               symbolSize: 10,
               symbolShape: "circle",
             },

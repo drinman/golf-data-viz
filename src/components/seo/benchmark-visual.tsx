@@ -46,7 +46,7 @@ export function BenchmarkVisual() {
             y1={scale(t)}
             x2={width - rightPad}
             y2={scale(t)}
-            stroke="#e5e5e5"
+            stroke="#e7e5e4"
             strokeDasharray="4 4"
           />
           <text

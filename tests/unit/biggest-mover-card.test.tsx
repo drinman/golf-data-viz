@@ -16,7 +16,7 @@ describe("BiggestMoverCard", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("renders improving mover with green styling", () => {
+  it("renders improving mover with brand styling", () => {
     const mover: BiggestMover = {
       category: "approach",
       label: "Approach",
@@ -30,14 +30,25 @@ describe("BiggestMoverCard", () => {
 
     const card = screen.getByTestId("biggest-mover-card");
     expect(card).toBeInTheDocument();
-    expect(card.className).toContain("green");
-    expect(screen.getByText("Biggest Mover: Approach")).toBeInTheDocument();
-    expect(
-      screen.getByText("Your approach game has shown recent improvement.")
-    ).toBeInTheDocument();
+    // Card border/bg
+    expect(card.className).toContain("brand");
+    // Icon container
+    const iconContainer = card.querySelector("[class*='rounded-lg']");
+    expect(iconContainer?.className).toContain("bg-brand-100");
+    // Icon SVG
+    const icon = iconContainer?.querySelector("svg");
+    expect(icon?.getAttribute("class")).toContain("text-data-positive");
+    // Heading
+    const heading = screen.getByText("Biggest Mover: Approach");
+    expect(heading.className).toContain("text-neutral-950");
+    // Body
+    const body = screen.getByText(
+      "Your approach game has shown recent improvement."
+    );
+    expect(body.className).toContain("text-neutral-600");
   });
 
-  it("renders declining mover with amber styling", () => {
+  it("renders declining mover with negative styling", () => {
     const mover: BiggestMover = {
       category: "putting",
       label: "Putting",
@@ -50,7 +61,21 @@ describe("BiggestMoverCard", () => {
     render(<BiggestMoverCard mover={mover} />);
 
     const card = screen.getByTestId("biggest-mover-card");
-    expect(card.className).toContain("amber");
-    expect(screen.getByText("Biggest Mover: Putting")).toBeInTheDocument();
+    // Card border/bg
+    expect(card.className).toContain("red");
+    // Icon container
+    const iconContainer = card.querySelector("[class*='rounded-lg']");
+    expect(iconContainer?.className).toContain("bg-red-100");
+    // Icon SVG
+    const icon = iconContainer?.querySelector("svg");
+    expect(icon?.getAttribute("class")).toContain("text-data-negative");
+    // Heading
+    const heading = screen.getByText("Biggest Mover: Putting");
+    expect(heading.className).toContain("text-neutral-950");
+    // Body
+    const body = screen.getByText(
+      "Your putting has declined over recent rounds."
+    );
+    expect(body.className).toContain("text-neutral-600");
   });
 });
