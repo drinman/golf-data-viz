@@ -45,7 +45,7 @@ import { ReceiptCard } from "./receipt-card";
 import { RecipientCta } from "./recipient-cta";
 import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
-import { NarrativeBlock } from "./narrative-block";
+import { NarrativeBlock, buildNarrativeCacheKey } from "./narrative-block";
 import { PostResultsSaveCta } from "./post-results-save-cta";
 import { LastRoundBanner } from "./last-round-banner";
 import { RadarChart } from "@/components/charts/radar-chart";
@@ -789,7 +789,7 @@ export default function StrokesGainedClient({
           {isFromHistory && (
             <Link
               href="/strokes-gained/history"
-              className="animate-fade-up mb-4 inline-block text-sm text-brand-800 hover:text-brand-600"
+              className="animate-fade-up mb-4 inline-flex min-h-11 items-center text-sm text-brand-800 transition-colors hover:text-brand-700"
             >
               <span aria-hidden="true">&larr; </span>Back to History
             </Link>
@@ -1079,6 +1079,7 @@ export default function StrokesGainedClient({
           {lastInput && !isSharedLink && (
             <div className="mt-10 animate-fade-up" style={{ animationDelay: "350ms" }}>
               <NarrativeBlock
+                key={buildNarrativeCacheKey(lastInput, presentationTrust?.mode === "caveated", troubleContext)}
                 input={lastInput}
                 troubleContext={troubleContext}
                 presentationTrust={presentationTrust}
@@ -1248,7 +1249,7 @@ export default function StrokesGainedClient({
                     trackEvent("auth_modal_opened", { surface: "post_save_claim_cta" });
                   }}
                   data-testid="claim-cta-btn"
-                  className="mt-3 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+                  className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
                 >
                   Create account
                 </button>
@@ -1324,7 +1325,7 @@ export default function StrokesGainedClient({
                 data-testid="share-image"
                 onClick={handleShare}
                 disabled={downloading}
-                className="rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {downloading ? "Preparing..." : "Share"}
               </button>
@@ -1333,7 +1334,7 @@ export default function StrokesGainedClient({
                 data-testid="copy-link"
                 onClick={handleCopyLink}
                 aria-label={copyFailed ? "Failed to copy" : copied ? "Copied" : "Copy link"}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-cream-200 bg-white transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
+                className={`flex h-11 w-11 items-center justify-center rounded-lg border-2 border-cream-200 bg-white transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 ${
                   copyFailed ? "text-amber-700" : copied ? "text-brand-800" : "text-neutral-500"
                 }`}
               >
@@ -1386,7 +1387,7 @@ export default function StrokesGainedClient({
                       data-testid="download-receipt"
                       onClick={handleShareReceipt}
                       disabled={downloadingReceipt}
-                      className="mt-3 rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {downloadingReceipt ? "Preparing..." : "Get the Receipt"}
                     </button>

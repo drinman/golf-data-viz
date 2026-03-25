@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   NARRATIVE_SYSTEM_PROMPT,
+  CAVEATED_NARRATIVE_SYSTEM_PROMPT,
   buildNarrativeUserPrompt,
+  buildCaveatedNarrativeUserPrompt,
 } from "@/lib/golf/narrative-prompt";
 import type { RoundInput, StrokesGainedResult } from "@/lib/golf/types";
 import type { RoundTroubleContext } from "@/lib/golf/trouble-context";
@@ -215,5 +217,97 @@ describe("buildNarrativeUserPrompt", () => {
     };
     const prompt = buildNarrativeUserPrompt(makeInput(), makeResult(), troubleContext);
     expect(prompt).not.toContain("Trouble context:");
+  });
+});
+
+// --- Caveated system prompt ---
+
+describe("CAVEATED_NARRATIVE_SYSTEM_PROMPT", () => {
+  it("prohibits category-level claims", () => {
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toMatch(/do not identify strongest or weakest/i);
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toMatch(/do not make claims about individual/i);
+  });
+
+  it("uses second person", () => {
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toContain("second person");
+  });
+
+  it("enforces word limit", () => {
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toContain("under 120 words");
+  });
+
+  it("requires single paragraph format", () => {
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toContain("single paragraph");
+  });
+
+  it("prohibits drill suggestions", () => {
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toMatch(/never suggest drills/i);
+  });
+
+  it("prohibits Tour comparisons", () => {
+    expect(CAVEATED_NARRATIVE_SYSTEM_PROMPT).toMatch(/never compare to tour/i);
+  });
+});
+
+// --- Caveated user prompt ---
+
+describe("buildCaveatedNarrativeUserPrompt", () => {
+  it("includes course name and score", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("Pine Valley");
+    expect(prompt).toContain("Score: 86");
+  });
+
+  it("includes total SG", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("-0.50");
+  });
+
+  it("includes bracket label", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("10\u201315 HCP peers");
+  });
+
+  it("includes raw stats", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("Fairways: 7/14");
+    expect(prompt).toContain("Greens in Regulation: 6/18");
+    expect(prompt).toContain("Total Putts: 34");
+    expect(prompt).toContain("Penalty Strokes: 2");
+  });
+
+  it("includes scoring distribution", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("0E, 1B, 6P, 7Bo, 3D, 1T+");
+  });
+
+  it("includes course rating and slope", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("Course Rating: 72.5");
+    expect(prompt).toContain("Slope: 131");
+  });
+
+  it("does NOT include any category SG values", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).not.toContain("Off the Tee:");
+    expect(prompt).not.toContain("Approach:");
+    expect(prompt).not.toContain("Around the Green:");
+    expect(prompt).not.toContain("Putting:");
+  });
+
+  it("does NOT include confidence levels", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).not.toContain("confidence:");
+  });
+
+  it("does NOT include trouble context", () => {
+    const prompt = buildCaveatedNarrativeUserPrompt(makeInput(), -0.5, "10\u201315 HCP peers");
+    expect(prompt).not.toContain("Trouble context:");
+  });
+
+  it("handles missing fairwaysHit", () => {
+    const input = makeInput({ fairwaysHit: undefined });
+    const prompt = buildCaveatedNarrativeUserPrompt(input, -0.5, "10\u201315 HCP peers");
+    expect(prompt).toContain("Fairways: not tracked");
   });
 });

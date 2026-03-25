@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trackEvent } from "@/lib/analytics/client";
 import type { PresentationTrust, RoundInput } from "@/lib/golf/types";
 import type { RoundTroubleContext } from "@/lib/golf/trouble-context";
+import { buildTroubleContextSummary } from "@/lib/golf/trouble-context";
 import { encodeRound } from "@/lib/golf/share-codec";
 
 interface NarrativeBlockProps {
@@ -18,6 +19,8 @@ type NarrativeState =
   | { status: "success"; narrative: string; wordCount: number }
   | { status: "error"; retryable: boolean };
 
+type NarrativeTrustMode = "assertive" | "caveated";
+
 function mapErrorCode(
   httpStatus: number,
   code?: string
@@ -29,16 +32,41 @@ function mapErrorCode(
   return "generation";
 }
 
+/**
+ * Build a composite cache key for the narrative. Used both internally for
+ * sessionStorage and externally as the React `key` prop to force remount
+ * when the round, trust mode, or trouble context changes.
+ */
+export function buildNarrativeCacheKey(
+  input: RoundInput,
+  isCaveated: boolean,
+  troubleContext?: RoundTroubleContext | null
+): string {
+  const promptVariant: NarrativeTrustMode = isCaveated ? "caveated" : "assertive";
+  let troubleSuffix = "";
+  if (!isCaveated && troubleContext && troubleContext.troubleHoles.length > 0) {
+    const summary = buildTroubleContextSummary(troubleContext.troubleHoles);
+    troubleSuffix = `:t${summary.tee}a${summary.approach}g${summary.around_green}p${summary.putting}x${summary.penalty}n${troubleContext.troubleHoles.length}`;
+  }
+  return `narrative:v1:${promptVariant}:${encodeRound(input)}${troubleSuffix}`;
+}
+
 export function NarrativeBlock({
   input,
   troubleContext,
   presentationTrust,
   isSharedLink = false,
 }: NarrativeBlockProps) {
-  const cacheKey = useMemo(() => "narrative:" + encodeRound(input), [input]);
   const trustMode = presentationTrust?.mode;
   const isCaveated = trustMode === "caveated";
   const isQuarantined = trustMode === "quarantined";
+  const narrativeTrustMode: NarrativeTrustMode = isCaveated ? "caveated" : "assertive";
+
+  const cacheKey = useMemo(
+    () => buildNarrativeCacheKey(input, isCaveated, troubleContext),
+    [input, isCaveated, troubleContext]
+  );
+
   const [state, setState] = useState<NarrativeState>(() => {
     try {
       const cached = sessionStorage.getItem(cacheKey);
@@ -50,6 +78,7 @@ export function NarrativeBlock({
     return { status: "loading" };
   });
   const hadCacheHit = useRef(state.status === "success");
+  const renderedRef = useRef(false);
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -65,7 +94,7 @@ export function NarrativeBlock({
     abortRef.current = controller;
 
     setState({ status: "loading" });
-    trackEvent("narrative_requested");
+    trackEvent("narrative_fetch_started", { trust_mode: narrativeTrustMode });
     const startTime = Date.now();
 
     try {
@@ -88,7 +117,8 @@ export function NarrativeBlock({
           code?: string;
         };
         const errorType = mapErrorCode(res.status, data.code);
-        trackEvent("narrative_failed", {
+        trackEvent("narrative_fetch_failed", {
+          trust_mode: narrativeTrustMode,
           error_type: errorType,
           http_status: res.status,
           error_code: data.code,
@@ -106,7 +136,8 @@ export function NarrativeBlock({
       };
       const latencyMs = Date.now() - startTime;
 
-      trackEvent("narrative_generated", {
+      trackEvent("narrative_fetch_completed", {
+        trust_mode: narrativeTrustMode,
         latency_ms: latencyMs,
         word_count: data.word_count,
       });
@@ -120,24 +151,36 @@ export function NarrativeBlock({
       });
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") return;
-      trackEvent("narrative_failed", {
+      trackEvent("narrative_fetch_failed", {
+        trust_mode: narrativeTrustMode,
         error_type: "network",
         latency_ms: Date.now() - startTime,
         retry_count: retryCountRef.current,
       });
       setState({ status: "error", retryable: true });
     }
-  }, [inputKey, troubleKey, cacheKey]);
+  }, [inputKey, troubleKey, cacheKey, narrativeTrustMode]);
 
   useEffect(() => {
-    if (isSharedLink || isCaveated || isQuarantined) return;
+    if (isSharedLink || isQuarantined) return;
     if (hadCacheHit.current) return;
     fetchNarrative();
 
     return () => {
       abortRef.current?.abort();
     };
-  }, [fetchNarrative, isCaveated, isQuarantined, isSharedLink]);
+  }, [fetchNarrative, isQuarantined, isSharedLink]);
+
+  // Fire narrative_rendered once per narrative lifecycle
+  useEffect(() => {
+    if (state.status === "success" && !renderedRef.current) {
+      renderedRef.current = true;
+      trackEvent("narrative_rendered", {
+        trust_mode: narrativeTrustMode,
+        source: hadCacheHit.current ? "cache" : "fetch",
+      });
+    }
+  }, [state.status, narrativeTrustMode]);
 
   // Cleanup copy timer on unmount
   useEffect(() => {
@@ -146,23 +189,8 @@ export function NarrativeBlock({
     };
   }, []);
 
-  // Don't render for shared links or non-retryable errors
+  // Don't render for shared links or quarantined rounds
   if (isSharedLink || isQuarantined) return null;
-  if (isCaveated) {
-    return (
-      <div
-        className="animate-fade-up [animation-delay:350ms] rounded-xl border border-cream-200 bg-white p-6 shadow-sm"
-        data-testid="narrative-neutral"
-      >
-        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-brand-800">
-          Round Summary
-        </p>
-        <p className="text-sm leading-relaxed text-neutral-600">
-          Your total SG is course-adjusted. Category estimates are based on scorecard stats, so use this round as a directional summary rather than a strongest-versus-weakest verdict.
-        </p>
-      </div>
-    );
-  }
   if (state.status === "error" && !state.retryable) {
     return (
       <div
@@ -190,6 +218,7 @@ export function NarrativeBlock({
       trackEvent("narrative_copied", {
         word_count: state.wordCount,
         surface: "results_page",
+        trust_mode: narrativeTrustMode,
       });
       copyTimerRef.current = setTimeout(() => setCopyState("idle"), 2000);
     } catch {
@@ -207,6 +236,7 @@ export function NarrativeBlock({
         trackEvent("narrative_copied", {
           word_count: state.wordCount,
           surface: "results_page",
+          trust_mode: narrativeTrustMode,
         });
         copyTimerRef.current = setTimeout(() => setCopyState("idle"), 2000);
       } catch {
@@ -267,7 +297,7 @@ export function NarrativeBlock({
       data-testid="narrative-block"
     >
       <p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-brand-800">
-        AI Round Analysis
+        Round Analysis
       </p>
       <p className="text-sm leading-relaxed text-neutral-600">
         {state.narrative}

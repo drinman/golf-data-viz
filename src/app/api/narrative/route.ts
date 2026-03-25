@@ -2,15 +2,18 @@ import { NextResponse, type NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Message } from "@anthropic-ai/sdk/resources/messages";
 import { roundInputSchema } from "@/lib/golf/schemas";
-import { getPostHogClient } from "@/lib/posthog-server";
+
 import { extractClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { getInterpolatedBenchmark } from "@/lib/golf/benchmarks";
 import { calculateStrokesGainedV3 } from "@/lib/golf/strokes-gained-v3";
+import { BRACKET_LABELS } from "@/lib/golf/constants";
 import { captureMonitoringException } from "@/lib/monitoring/sentry";
 import { derivePresentationTrust } from "@/lib/golf/presentation-trust";
 import {
   NARRATIVE_SYSTEM_PROMPT,
+  CAVEATED_NARRATIVE_SYSTEM_PROMPT,
   buildNarrativeUserPrompt,
+  buildCaveatedNarrativeUserPrompt,
 } from "@/lib/golf/narrative-prompt";
 import {
   validateTroubleContext,
@@ -106,10 +109,6 @@ export async function POST(request: NextRequest) {
   const input = parsed.data;
   const benchmark = getInterpolatedBenchmark(input.handicapIndex);
   const result = calculateStrokesGainedV3(input, benchmark);
-  // Safety net: NarrativeBlock bails client-side for caveated/quarantined
-  // rounds, so these branches are not reached in the current UI flow. They
-  // guard against direct API callers and future surfaces that may not have
-  // the same client-side gating.
   const presentationTrust = derivePresentationTrust({ input, result });
 
   if (presentationTrust.mode === "quarantined") {
@@ -121,17 +120,15 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  if (presentationTrust.mode === "caveated") {
-    const narrative =
-      "Your total SG is course-adjusted. Category estimates are based on scorecard stats, so use this round as a directional summary rather than a strongest-versus-weakest verdict.";
-    return NextResponse.json({
-      narrative,
-      word_count: narrative.split(/\s+/).length,
-    });
-  }
-
-  // Build prompt
-  const userPrompt = buildNarrativeUserPrompt(input, result, troubleContext);
+  // Route to correct prompt based on server-derived trust
+  const isCaveated = presentationTrust.mode === "caveated";
+  const bracketLabel = BRACKET_LABELS[result.benchmarkBracket];
+  const systemPrompt = isCaveated
+    ? CAVEATED_NARRATIVE_SYSTEM_PROMPT
+    : NARRATIVE_SYSTEM_PROMPT;
+  const userPrompt = isCaveated
+    ? buildCaveatedNarrativeUserPrompt(input, result.total, bracketLabel)
+    : buildNarrativeUserPrompt(input, result, troubleContext);
 
   // Call Claude API
   const client = new Anthropic({ apiKey });
@@ -142,7 +139,7 @@ export async function POST(request: NextRequest) {
         model: "claude-sonnet-4-6",
         max_tokens: 400,
         temperature: 0.7,
-        system: NARRATIVE_SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       },
       { timeout: NARRATIVE_TIMEOUT_MS }
@@ -161,19 +158,6 @@ export async function POST(request: NextRequest) {
     const narrative = textBlock.text.trim();
     const wordCount = narrative.split(/\s+/).length;
 
-    try {
-      const phClient = getPostHogClient();
-      phClient.capture({
-        // Single fixed ID for aggregate-only metrics — avoids creating
-        // unbounded phantom persons (PostHog charges by person count)
-        distinctId: "narrative-api-anon",
-        event: "narrative_generated",
-        properties: { handicap_index: input.handicapIndex, word_count: wordCount },
-      });
-      await phClient.flush();
-    } catch {
-      // PostHog capture is best-effort — don't fail the response
-    }
     return NextResponse.json({ narrative, word_count: wordCount });
   } catch (err: unknown) {
     if (err instanceof Anthropic.APIConnectionError) {

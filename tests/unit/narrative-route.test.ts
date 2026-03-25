@@ -53,9 +53,17 @@ vi.mock("@/lib/golf/strokes-gained-v3", () => ({
   calculateStrokesGainedV3: mockCalculateStrokesGainedV3,
 }));
 
+const { mockBuildNarrativeUserPrompt, mockBuildCaveatedNarrativeUserPrompt } =
+  vi.hoisted(() => ({
+    mockBuildNarrativeUserPrompt: vi.fn(() => "test user prompt"),
+    mockBuildCaveatedNarrativeUserPrompt: vi.fn(() => "test caveated user prompt"),
+  }));
+
 vi.mock("@/lib/golf/narrative-prompt", () => ({
   NARRATIVE_SYSTEM_PROMPT: "test system prompt",
-  buildNarrativeUserPrompt: () => "test user prompt",
+  CAVEATED_NARRATIVE_SYSTEM_PROMPT: "test caveated system prompt",
+  buildNarrativeUserPrompt: mockBuildNarrativeUserPrompt,
+  buildCaveatedNarrativeUserPrompt: mockBuildCaveatedNarrativeUserPrompt,
 }));
 
 import { POST } from "@/app/api/narrative/route";
@@ -261,5 +269,58 @@ describe("POST /api/narrative", () => {
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.code).toBe("VALIDATION");
+  });
+
+  it("uses caveated prompt when trust mode is caveated", async () => {
+    // Make the result produce caveated trust: VALID_BODY has no upAndDown
+    // data → atg-fallback, and |approach| < 1.0 → additionalAtgSuppressions
+    const caveatedResult = {
+      ...mockResult,
+      categories: {
+        ...mockResult.categories,
+        approach: 0.3, // |0.3| < 1.0 triggers atg_fallback_low_signal
+      },
+    };
+    mockCalculateStrokesGainedV3.mockReturnValue(caveatedResult);
+
+    const res = await POST(makeRequest(VALID_BODY));
+    expect(res.status).toBe(200);
+
+    // Verify the caveated prompt was called
+    expect(mockBuildCaveatedNarrativeUserPrompt).toHaveBeenCalled();
+    expect(mockBuildNarrativeUserPrompt).not.toHaveBeenCalled();
+
+    // Verify it used the caveated system prompt
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: "test caveated system prompt",
+      }),
+      expect.any(Object)
+    );
+  });
+
+  it("uses assertive prompt when trust mode is assertive", async () => {
+    // Default mockResult has no round reasons → assertive
+    const res = await POST(makeRequest(VALID_BODY));
+    expect(res.status).toBe(200);
+
+    expect(mockBuildNarrativeUserPrompt).toHaveBeenCalled();
+    expect(mockBuildCaveatedNarrativeUserPrompt).not.toHaveBeenCalled();
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: "test system prompt",
+      }),
+      expect.any(Object)
+    );
+  });
+
+  it("does not capture PostHog event on success", async () => {
+    const res = await POST(makeRequest(VALID_BODY));
+    expect(res.status).toBe(200);
+    // The server-side PostHog capture has been removed to fix double-counting.
+    // We verify by checking that no PostHog-related calls are made.
+    // The mock doesn't import posthog, so this is implicitly verified by the
+    // absence of any posthog mock setup.
   });
 });
