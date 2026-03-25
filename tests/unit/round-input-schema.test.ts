@@ -489,7 +489,6 @@ describe("roundInputSchema", () => {
     ["courseRating", "Course rating is required"],
     ["slopeRating", "Slope is required"],
     ["fairwayAttempts", "Fairway attempts are required"],
-    ["penaltyStrokes", "Penalty strokes are required"],
   ] as const)("rejects empty string %s with the required-field message", (field, message) => {
     const result = roundInputSchema.safeParse({
       ...validInput(),
@@ -499,6 +498,59 @@ describe("roundInputSchema", () => {
     if (!result.success) {
       const issue = result.error.issues.find((entry) => entry.path[0] === field);
       expect(issue?.message).toBe(message);
+    }
+  });
+
+  // === Bug fix: empty scoring/penalty fields default to 0 ===
+  it("treats empty string scoring fields as 0", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      eagles: "",
+      birdies: "",
+      bogeys: "",
+      doubleBogeys: "",
+      triplePlus: "",
+      pars: 18,
+      score: 72,
+      courseRating: 72,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.eagles).toBe(0);
+      expect(result.data.birdies).toBe(0);
+      expect(result.data.bogeys).toBe(0);
+      expect(result.data.doubleBogeys).toBe(0);
+      expect(result.data.triplePlus).toBe(0);
+    }
+  });
+
+  it("treats empty string penaltyStrokes as 0", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      penaltyStrokes: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.penaltyStrokes).toBe(0);
+    }
+  });
+
+  it("treats undefined scoring fields as 0", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      eagles: undefined,
+      birdies: undefined,
+      bogeys: undefined,
+      doubleBogeys: undefined,
+      triplePlus: undefined,
+      pars: 18,
+      score: 72,
+      courseRating: 72,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.eagles).toBe(0);
+      expect(result.data.pars).toBe(18);
     }
   });
 
