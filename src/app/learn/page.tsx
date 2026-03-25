@@ -44,7 +44,7 @@ export default function LearnIndexPage() {
   return (
     <main>
       <div className="border-b border-cream-200 bg-cream-50">
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24 md:py-32">
           <Breadcrumb
             items={[
               { label: "Home", href: "/" },
@@ -61,7 +61,7 @@ export default function LearnIndexPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:py-24">
         <div className="grid grid-cols-1 gap-6">
           {ARTICLES.map((article) => (
             <Link

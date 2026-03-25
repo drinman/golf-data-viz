@@ -33,35 +33,27 @@ export function BiggestMoverCard({ mover }: BiggestMoverCardProps) {
       data-testid="biggest-mover-card"
       className={`rounded-xl border p-5 shadow-sm ${
         isImproving
-          ? "border-green-200 bg-green-50"
-          : "border-amber-200 bg-amber-50"
+          ? "border-brand-100 bg-brand-50"
+          : "border-red-100 bg-red-50"
       }`}
     >
       <div className="flex items-start gap-3">
         <div
           className={`mt-0.5 rounded-lg p-2 ${
-            isImproving ? "bg-green-100" : "bg-amber-100"
+            isImproving ? "bg-brand-100" : "bg-red-100"
           }`}
         >
           <Icon
             className={`h-5 w-5 ${
-              isImproving ? "text-green-700" : "text-amber-700"
+              isImproving ? "text-data-positive" : "text-data-negative"
             }`}
           />
         </div>
         <div>
-          <h3
-            className={`font-display text-lg tracking-tight ${
-              isImproving ? "text-green-900" : "text-amber-900"
-            }`}
-          >
+          <h3 className="font-display text-lg tracking-tight text-neutral-950">
             Biggest Mover: {mover.label}
           </h3>
-          <p
-            className={`mt-1 text-sm ${
-              isImproving ? "text-green-800" : "text-amber-800"
-            }`}
-          >
+          <p className="mt-1 text-sm text-neutral-600">
             {mover.copyText}
           </p>
         </div>

@@ -26,7 +26,7 @@ export default function StrokesGainedExplainedPage() {
       />
 
       <div className="border-b border-cream-200 bg-cream-50">
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24 md:py-32">
           <Breadcrumb
             items={[
               { label: "Home", href: "/" },
@@ -48,7 +48,7 @@ export default function StrokesGainedExplainedPage() {
         </div>
       </div>
 
-      <article className="mx-auto max-w-3xl px-4 py-10">
+      <article className="mx-auto max-w-3xl px-4 py-20 sm:py-24">
         <div className="prose-neutral space-y-6 text-base leading-relaxed text-neutral-600">
           {/* What Is Strokes Gained? */}
           <section>

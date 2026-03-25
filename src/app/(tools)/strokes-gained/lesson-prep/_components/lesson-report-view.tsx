@@ -248,7 +248,7 @@ export function LessonReportView({
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
-        <div className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
             Average Category Shape
           </h2>
@@ -261,7 +261,7 @@ export function LessonReportView({
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.16em] text-neutral-400">
               {isCaveatedReport ? "Round Pattern" : "Primary Focus Area"}
             </p>
@@ -296,7 +296,7 @@ export function LessonReportView({
             })()}
           </div>
 
-          <div className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.16em] text-neutral-400">
               {isCaveatedReport ? "Reliable Signal" : "Strongest Area"}
             </p>
@@ -331,7 +331,7 @@ export function LessonReportView({
             })()}
           </div>
 
-          <div className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.16em] text-neutral-400">
               Trend Signal
             </p>
@@ -348,7 +348,7 @@ export function LessonReportView({
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+      <div className="mt-8 rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-2xl tracking-tight text-neutral-950">
@@ -381,7 +381,7 @@ export function LessonReportView({
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+      <div className="mt-8 rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
         <h2 className="font-display text-2xl tracking-tight text-neutral-950">
           SG Trend Chart
         </h2>
@@ -393,7 +393,7 @@ export function LessonReportView({
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+      <div className="mt-8 rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
         <h2 className="font-display text-2xl tracking-tight text-neutral-950">
           Selected Rounds
         </h2>
@@ -434,7 +434,7 @@ export function LessonReportView({
         </div>
       </div>
 
-      <div className="mt-10 rounded-2xl border border-cream-200 bg-white px-5 py-6 shadow-sm">
+      <div className="mt-10 rounded-xl border border-cream-200 bg-white px-5 py-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"

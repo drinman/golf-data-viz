@@ -147,9 +147,9 @@ export function PostResultsSaveCta({
     return (
       <div
         data-testid="post-results-save-cta"
-        className="animate-fade-up [animation-delay:500ms] rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+        className="animate-fade-up [animation-delay:500ms] rounded-xl border border-brand-100 bg-brand-50 px-5 py-4"
       >
-        <div className="flex items-center gap-2 text-sm font-medium text-green-800">
+        <div className="flex items-center gap-2 text-sm font-medium text-brand-800">
           <CircleCheck className="h-5 w-5 shrink-0" />
           Already saved
         </div>
@@ -162,9 +162,9 @@ export function PostResultsSaveCta({
     return (
       <div
         data-testid="post-results-save-cta"
-        className="animate-fade-up [animation-delay:500ms] rounded-xl border border-green-200 bg-green-50 px-5 py-4"
+        className="animate-fade-up [animation-delay:500ms] rounded-xl border border-brand-100 bg-brand-50 px-5 py-4"
       >
-        <div className="flex items-center gap-2 text-sm font-medium text-green-800">
+        <div className="flex items-center gap-2 text-sm font-medium text-brand-800">
           <CircleCheck className="h-5 w-5 shrink-0 animate-pulse" />
           Saved!
         </div>

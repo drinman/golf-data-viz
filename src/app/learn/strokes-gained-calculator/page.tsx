@@ -26,7 +26,7 @@ export default function StrokesGainedCalculatorPage() {
       />
 
       <div className="border-b border-cream-200 bg-cream-50">
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24 md:py-32">
           <Breadcrumb
             items={[
               { label: "Home", href: "/" },
@@ -47,7 +47,7 @@ export default function StrokesGainedCalculatorPage() {
         </div>
       </div>
 
-      <article className="mx-auto max-w-3xl px-4 py-10">
+      <article className="mx-auto max-w-3xl px-4 py-20 sm:py-24">
         {/* Prominent CTA at top */}
         <div className="mb-10">
           <CalculatorCta surface="learn_calculator_top" />
