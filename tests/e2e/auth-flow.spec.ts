@@ -17,9 +17,18 @@ test.describe("Auth Flow", () => {
     page,
   }) => {
     await page.getByTestId("auth-prompt-sign-in").click();
-    await expect(page.getByTestId("auth-modal")).toBeVisible();
-    await expect(page.getByTestId("auth-email-input")).toBeVisible();
-    await expect(page.getByTestId("auth-password-input")).toBeVisible();
+    const modal = page.getByTestId("auth-modal");
+    const emailInput = page.getByTestId("auth-email-input");
+    const passwordInput = page.getByTestId("auth-password-input");
+
+    await expect(modal).toBeVisible();
+    await expect(modal).toHaveClass(/animate-slide-down/);
+    await expect(emailInput).toBeVisible();
+    await expect(emailInput).toHaveClass(/border-2/);
+    await expect(emailInput).toHaveClass(/bg-cream-100/);
+    await expect(passwordInput).toBeVisible();
+    await expect(passwordInput).toHaveClass(/border-2/);
+    await expect(passwordInput).toHaveClass(/bg-cream-100/);
     await expect(page.getByTestId("auth-submit-btn")).toBeVisible();
   });
 

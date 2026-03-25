@@ -26,7 +26,7 @@ export const LessonReportShareCard = forwardRef<
     <div
       ref={ref}
       data-testid="lesson-report-share-card"
-      className="w-[960px] overflow-hidden rounded-[28px] border border-brand-950/10 bg-cream-50 p-10 text-neutral-950 shadow-2xl"
+      className="w-[600px] overflow-hidden rounded-xl border border-brand-950/10 bg-cream-50 p-10 text-neutral-950 shadow-2xl"
     >
       <div className="rounded-[24px] bg-brand-900 px-8 py-7 text-white">
         <p className="text-xs uppercase tracking-[0.3em] text-brand-100/80">

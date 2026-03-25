@@ -54,7 +54,7 @@ function createPeerRingLayer(label: string, hideLabel = false) {
             textAnchor="middle"
             fill="#94a3b8"
             fontSize={10}
-            fontFamily="system-ui, sans-serif"
+            fontFamily="DM Sans, system-ui, sans-serif"
           >
             {label} Avg
           </text>

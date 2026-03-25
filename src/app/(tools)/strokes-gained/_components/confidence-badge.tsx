@@ -106,7 +106,7 @@ export function ConfidenceBadge({
   if (!interactive) {
     return (
       <span
-        className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${style.bg} ${style.text}`}
+        className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${style.bg} ${style.text}`}
       >
         {label}
       </span>
@@ -121,7 +121,7 @@ export function ConfidenceBadge({
         aria-expanded={open}
         aria-controls={`confidence-help-${category}`}
         onClick={handleClick}
-        className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-brand-800/30 ${style.bg} ${style.text}`}
+        className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-brand-800/30 ${style.bg} ${style.text}`}
       >
         {label}
       </button>

@@ -130,7 +130,7 @@ function AuthModalContent({
         aria-modal="true"
         aria-label={mode === "signin" ? "Sign in" : "Create account"}
         data-testid="auth-modal"
-        className="mx-4 w-full max-w-sm rounded-xl border border-cream-200 bg-white shadow-xl"
+        className="animate-slide-down mx-4 w-full max-w-sm rounded-xl border border-cream-200 bg-white shadow-xl"
       >
         <div className="px-6 pb-6 pt-5">
           {/* Header */}
@@ -216,7 +216,7 @@ function AuthModalContent({
                   onChange={(e) => setEmail(e.target.value)}
                   data-testid="auth-email-input"
                   placeholder="you@example.com"
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm text-neutral-950 placeholder:text-neutral-400 focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
+                  className="mt-1 block w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm text-neutral-950 transition-all duration-200 placeholder:text-neutral-400 hover:border-cream-200/80 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20"
                 />
               </div>
               <div>
@@ -235,7 +235,7 @@ function AuthModalContent({
                   onChange={(e) => setPassword(e.target.value)}
                   data-testid="auth-password-input"
                   placeholder="At least 6 characters"
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm text-neutral-950 placeholder:text-neutral-400 focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
+                  className="mt-1 block w-full rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm text-neutral-950 transition-all duration-200 placeholder:text-neutral-400 hover:border-cream-200/80 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20"
                 />
               </div>
             </div>

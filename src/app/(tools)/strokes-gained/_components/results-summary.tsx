@@ -138,7 +138,7 @@ export function ResultsSummary({
               : "border-red-100 bg-red-50"
         }`}
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-800">
           Total SG
         </p>
         <p
@@ -345,29 +345,23 @@ export function ResultsSummary({
               {!skipped && percentiles[key] && (() => {
                 const pct = percentiles[key]!;
                 const isLow = result.confidence[key] === "low";
+                const pillClass = isLow
+                  ? "bg-neutral-100 text-neutral-400"
+                  : pct.tier === "top"
+                    ? "bg-brand-50 text-data-positive"
+                    : pct.tier === "bottom"
+                      ? "bg-red-50 text-data-negative"
+                      : "bg-neutral-100 text-neutral-500";
+
                 return (
-                  <span className={`mt-1 flex items-center gap-1.5 text-[11px] ${
-                    isLow ? "text-neutral-400" :
-                    pct.tier === "top" ? "text-data-positive" :
-                    pct.tier === "bottom" ? "text-data-negative" :
-                    "text-neutral-500"
-                  }`}>
-                    <span className={`inline-block h-3 w-px rounded-full ${
-                      isLow ? "bg-neutral-300" :
-                      pct.tier === "top" ? "bg-data-positive/50" :
-                      pct.tier === "bottom" ? "bg-data-negative/50" :
-                      "bg-neutral-300"
-                    }`} aria-hidden="true" />
-                    <span>
-                      <span className={`font-mono text-xs tabular-nums ${
-                        isLow ? "" :
-                        pct.tier === "top" || pct.tier === "bottom" ? "font-semibold" : "font-medium"
-                      }`}>
-                        {pct.percentile}%
-                      </span>
-                      <span className="ml-0.5 font-normal">
-                        of {bracketLabel} golfers
-                      </span>
+                  <span className="mt-1 inline-flex items-center gap-2 text-[11px]">
+                    <span
+                      className={`rounded-full px-1.5 py-px text-[9px] font-medium tabular-nums ${pillClass}`}
+                    >
+                      {pct.shortLabel}
+                    </span>
+                    <span className={isLow ? "text-neutral-400" : "text-neutral-500"}>
+                      of {bracketLabel} golfers
                     </span>
                   </span>
                 );

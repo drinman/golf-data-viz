@@ -260,6 +260,27 @@ describe("Results trust cues", () => {
   });
 });
 
+describe("Percentile pills", () => {
+  it("renders percentile short labels inside rounded DS pills", () => {
+    const result = makeSGResult({
+      categories: {
+        "off-the-tee": 0.2,
+        approach: 0.6,
+        "around-the-green": -0.4,
+        putting: 0.3,
+      },
+    });
+
+    render(<ResultsSummary result={result} benchmarkMeta={meta} />);
+
+    const percentilePills = screen.getAllByText(/%ile$/);
+    expect(percentilePills.length).toBeGreaterThan(0);
+    expect(percentilePills[0].className).toContain("rounded-full");
+    expect(percentilePills[0].className).toContain("text-[9px]");
+    expect(screen.getAllByText(/of 10–15 HCP golfers/).length).toBeGreaterThan(0);
+  });
+});
+
 describe("Presentation trust gating", () => {
   const emptyCategoryReasons = {
     "off-the-tee": [],

@@ -86,7 +86,7 @@ export function TroubleContextModal({
         role="dialog"
         aria-modal="true"
         aria-label="Add trouble context"
-        className="mx-4 w-full max-w-md rounded-xl bg-white shadow-xl"
+        className="animate-slide-down mx-4 w-full max-w-md rounded-xl bg-white shadow-xl"
       >
         <div className="px-6 pb-6 pt-5">
           {step === "count" && (
@@ -151,7 +151,7 @@ export function TroubleContextModal({
                             val === "" ? null : Number(val)
                           );
                         }}
-                        className="rounded-md border border-cream-200 px-2 py-1 text-sm text-neutral-800"
+                        className="rounded-lg border-2 border-cream-200 bg-cream-100 px-3 py-2.5 text-sm text-neutral-800 transition-all duration-200 hover:border-cream-200/80 focus:border-brand-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-800/20"
                       >
                         <option value="">Don&apos;t remember</option>
                         {Array.from({ length: 18 }, (_, n) => (

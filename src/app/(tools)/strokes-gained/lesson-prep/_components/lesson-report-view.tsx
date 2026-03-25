@@ -63,7 +63,7 @@ function StatCard({
       <p className="text-xs uppercase tracking-[0.15em] text-neutral-400">{label}</p>
       <p
         className={[
-          "mt-1 font-display text-3xl tracking-tight",
+          "mt-1 font-mono tabular-nums text-3xl tracking-tight",
           tone === "positive"
             ? "text-data-positive"
             : tone === "negative"
