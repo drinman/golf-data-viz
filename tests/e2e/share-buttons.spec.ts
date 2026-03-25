@@ -166,6 +166,9 @@ test.describe("Share buttons layout", () => {
     // Receipt discovery should be below the primary share row
     const discoveryBox = await discovery.boundingBox();
     expect(discoveryBox).toBeTruthy();
-    expect(discoveryBox!.y).toBeGreaterThan(shareBox!.y + shareBox!.height);
+    // Allow 1px of rounding variance between local and CI layout measurements.
+    expect(discoveryBox!.y).toBeGreaterThanOrEqual(
+      shareBox!.y + shareBox!.height - 1
+    );
   });
 });
