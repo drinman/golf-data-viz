@@ -74,7 +74,7 @@ export function UserMenu({ user }: UserMenuProps) {
             href="/strokes-gained/history"
             onClick={() => setOpen(false)}
             data-testid="user-menu-history"
-            className="flex min-h-11 items-center gap-2 px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-cream-50 hover:text-neutral-950"
+            className="flex min-h-11 items-center gap-2 px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-cream-50 hover:text-neutral-950"
           >
             <History className="h-4 w-4" />
             History
@@ -83,7 +83,7 @@ export function UserMenu({ user }: UserMenuProps) {
             href="/strokes-gained/lesson-prep"
             onClick={() => setOpen(false)}
             data-testid="user-menu-lesson-prep"
-            className="flex min-h-11 items-center gap-2 px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-cream-50 hover:text-neutral-950"
+            className="flex min-h-11 items-center gap-2 px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-cream-50 hover:text-neutral-950"
           >
             <Presentation className="h-4 w-4" />
             Lesson Prep
@@ -93,7 +93,7 @@ export function UserMenu({ user }: UserMenuProps) {
             type="button"
             onClick={handleSignOut}
             data-testid="user-menu-signout"
-            className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-cream-50 hover:text-neutral-950"
+            className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-cream-50 hover:text-neutral-950"
           >
             <LogOut className="h-4 w-4" />
             Sign out

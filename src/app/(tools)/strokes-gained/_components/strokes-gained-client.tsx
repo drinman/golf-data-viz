@@ -927,8 +927,8 @@ export default function StrokesGainedClient({
                       totalSg.tone === "neutral"
                         ? "text-neutral-300"
                         : totalSg.tone === "positive"
-                          ? "text-green-400"
-                          : "text-red-300"
+                          ? "text-data-positive-on-dark"
+                          : "text-data-negative-on-dark"
                     }`}
                   >
                     {totalSg.formatted} SG
@@ -947,8 +947,8 @@ export default function StrokesGainedClient({
                         totalSg.tone === "neutral"
                           ? "text-neutral-300"
                           : totalSg.tone === "positive"
-                            ? "text-green-400"
-                            : "text-red-300"
+                            ? "text-data-positive-on-dark"
+                            : "text-data-negative-on-dark"
                       }`}
                     >
                       {totalSg.formatted}

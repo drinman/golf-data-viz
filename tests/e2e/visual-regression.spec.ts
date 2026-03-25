@@ -41,6 +41,26 @@ test.describe("Visual regression", () => {
     });
   });
 
+  test("lesson-prep builder matches snapshot", async ({ page }) => {
+    await page.goto("/test-lesson-prep-builder");
+
+    const builder = page.locator("main");
+    await expect(builder).toBeVisible();
+    await expect(builder).toHaveScreenshot("lesson-prep-builder.png", {
+      maxDiffPixelRatio: 0.02,
+    });
+  });
+
+  test("lesson-report view matches snapshot", async ({ page }) => {
+    await page.goto("/test-lesson-report");
+
+    const report = page.locator("main");
+    await expect(report).toBeVisible();
+    await expect(report).toHaveScreenshot("lesson-report-view.png", {
+      maxDiffPixelRatio: 0.02,
+    });
+  });
+
   test("error boundary matches snapshot", async ({ page }) => {
     await page.goto("/test-error");
 

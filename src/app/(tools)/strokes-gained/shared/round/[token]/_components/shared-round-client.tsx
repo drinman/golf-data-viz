@@ -64,7 +64,7 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
           <button
             type="button"
             onClick={handleDownloadPng}
-            className="mt-6 inline-flex items-center gap-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600"
+            className="mt-6 inline-flex min-h-11 items-center gap-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600"
           >
             <Download className="h-3.5 w-3.5" />
             Save image
@@ -79,7 +79,7 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
           <a
             href={ctaUrl}
             onClick={() => trackEvent("bottom_cta_clicked", { surface: "token_share" })}
-            className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+            className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
           >
             Compare Your Game — Free
           </a>

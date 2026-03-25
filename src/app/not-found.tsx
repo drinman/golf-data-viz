@@ -12,13 +12,13 @@ export default function NotFound() {
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href="/"
-            className="inline-flex rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+            className="inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
           >
             Go Home
           </Link>
           <Link
             href="/strokes-gained"
-            className="inline-flex rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50"
+            className="inline-flex min-h-11 items-center rounded-lg border-2 border-cream-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50"
           >
             Benchmark a Round
           </Link>

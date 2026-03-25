@@ -38,7 +38,7 @@ function StarterReadinessCard({ roundCount }: { roundCount: number }) {
               {title}
             </h2>
           </div>
-          <div className="rounded-2xl bg-brand-900 p-3 text-white shadow-sm">
+          <div className="rounded-xl bg-brand-900 p-3 text-white shadow-sm">
             <Flag className="h-5 w-5" />
           </div>
         </div>
@@ -107,7 +107,7 @@ function StarterTrendCard({ roundCount }: { roundCount: number }) {
 
         <div className="px-5 py-6">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-cream-100 p-3 text-brand-800">
+            <div className="rounded-xl bg-cream-100 p-3 text-brand-800">
               <LineChart className="h-5 w-5" />
             </div>
             <div>
@@ -171,7 +171,7 @@ function StarterLessonPrepCard({ roundCount }: { roundCount: number }) {
               Lesson Prep Report
             </h2>
           </div>
-          <div className="rounded-2xl bg-cream-100 p-3 text-accent-600 shadow-sm">
+          <div className="rounded-xl bg-cream-100 p-3 text-accent-600 shadow-sm">
             <NotebookPen className="h-5 w-5" />
           </div>
         </div>
@@ -209,7 +209,7 @@ export function StarterHistoryDashboard({
       <Link
         href="/strokes-gained?from=history"
         onClick={() => trackEvent("history_link_clicked", { surface: "history_log_round_cta" })}
-        className="inline-block rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+        className="inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
       >
         Log a Round
       </Link>

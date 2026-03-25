@@ -14,12 +14,15 @@ import { buildLessonReportAnalyticsContext } from "@/lib/golf/analytics";
 import { CATEGORY_LABELS } from "@/lib/golf/constants";
 import type { RoundSgSnapshot } from "@/lib/golf/trends";
 import type { LessonReportSnapshot } from "@/lib/golf/round-queries";
-import { formatCompactDate, formatDate, formatHandicap, formatSG, presentSG } from "@/lib/golf/format";
-import { SG_NEAR_ZERO_THRESHOLD } from "@/lib/golf/constants";
 import {
-  createLessonReportShareToken,
-  generateLessonReport,
-} from "../actions";
+  formatCompactDate,
+  formatDate,
+  formatHandicap,
+  formatSG,
+  presentSG,
+} from "@/lib/golf/format";
+import { SG_NEAR_ZERO_THRESHOLD } from "@/lib/golf/constants";
+import { createLessonReportShareToken, generateLessonReport } from "../actions";
 import { LessonReportShareCard } from "./lesson-report-share-card";
 
 interface LessonReportViewProps {
@@ -60,7 +63,9 @@ function StatCard({
 }) {
   return (
     <div className="rounded-xl border border-cream-200 bg-white px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.15em] text-neutral-400">{label}</p>
+      <p className="text-xs uppercase tracking-[0.15em] text-neutral-400">
+        {label}
+      </p>
       <p
         className={[
           "mt-1 font-mono tabular-nums text-3xl tracking-tight",
@@ -155,15 +160,16 @@ export function LessonReportView({
 
   const rounds = toTrendRounds(snapshot);
   const activeTimestamp = snapshot.regeneratedAt ?? snapshot.generatedAt;
-  const canRegenerate = surface === "owner" && !!entitlements?.canGenerateLessonReports;
+  const canRegenerate =
+    surface === "owner" && !!entitlements?.canGenerateLessonReports;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <main className="mx-auto max-w-3xl px-4 py-8">
       {surface === "owner" && (
         <div className="animate-fade-up">
           <Link
             href="/strokes-gained/lesson-prep"
-            className="group inline-flex items-center gap-1.5 text-sm font-medium text-brand-800 transition-all hover:-translate-x-0.5"
+            className="group inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand-800 transition-all hover:-translate-x-0.5 hover:text-brand-700"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             Back to Lesson Prep
@@ -171,7 +177,7 @@ export function LessonReportView({
         </div>
       )}
 
-      <section className="mt-6 animate-fade-up overflow-hidden rounded-2xl bg-brand-900 px-6 py-7 text-white shadow-lg sm:px-8">
+      <section className="mt-6 animate-fade-up overflow-hidden rounded-xl bg-brand-900 px-6 py-7 text-white shadow-lg sm:px-8">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.3em] text-brand-100/75">
@@ -181,9 +187,11 @@ export function LessonReportView({
               {report.summary.roundCount} selected rounds
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-brand-100/80 sm:text-base">
-              {formatDate(report.summary.startDate)} to {formatDate(report.summary.endDate)}
+              {formatDate(report.summary.startDate)} to{" "}
+              {formatDate(report.summary.endDate)}
               {" · "}
-              Generated {new Date(activeTimestamp).toLocaleDateString("en-US", {
+              Generated{" "}
+              {new Date(activeTimestamp).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
@@ -192,7 +200,7 @@ export function LessonReportView({
               Avg handicap {formatHandicap(report.summary.averageHandicapIndex)}
             </p>
           </div>
-          <div className="rounded-3xl border border-white/15 bg-white/10 px-6 py-5 text-center">
+          <div className="rounded-xl border border-white/15 bg-white/10 px-6 py-5 text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-brand-100/75">
               Avg SG
             </p>
@@ -208,8 +216,9 @@ export function LessonReportView({
         entitlements.canViewExistingLessonReports &&
         !entitlements.canGenerateLessonReports && (
           <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-            You can review existing lesson prep reports during your grace period,
-            but regenerating this report requires an active premium plan.
+            You can review existing lesson prep reports during your grace
+            period, but regenerating this report requires an active premium
+            plan.
           </div>
         )}
 
@@ -232,31 +241,50 @@ export function LessonReportView({
         </div>
       )}
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <StatCard label="Rounds" value={String(report.summary.roundCount)} />
-        <StatCard label="Avg Score" value={report.summary.averageScore.toFixed(1)} />
+        <StatCard
+          label="Avg Score"
+          value={report.summary.averageScore.toFixed(1)}
+        />
         <StatCard
           label={isCaveatedReport ? "Round Pattern" : "Primary Focus Area"}
           value={report.focusArea.label}
-          tone={Math.abs(report.focusArea.averageSg) <= SG_NEAR_ZERO_THRESHOLD ? "neutral" : report.focusArea.averageSg < 0 ? "negative" : "neutral"}
+          tone={
+            Math.abs(report.focusArea.averageSg) <= SG_NEAR_ZERO_THRESHOLD
+              ? "neutral"
+              : report.focusArea.averageSg < 0
+                ? "negative"
+                : "neutral"
+          }
         />
         <StatCard
           label={isCaveatedReport ? "Reliable Signal" : "Strongest Area"}
           value={report.strongestArea.label}
-          tone={Math.abs(report.strongestArea.averageSg) <= SG_NEAR_ZERO_THRESHOLD ? "neutral" : report.strongestArea.averageSg >= 0 ? "positive" : "neutral"}
+          tone={
+            Math.abs(report.strongestArea.averageSg) <= SG_NEAR_ZERO_THRESHOLD
+              ? "neutral"
+              : report.strongestArea.averageSg >= 0
+                ? "positive"
+                : "neutral"
+          }
         />
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
+      <div className="mt-8 space-y-6">
         <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
           <h2 className="font-display text-2xl tracking-tight text-neutral-950">
             Average Category Shape
           </h2>
           <p className="mt-1 text-sm text-neutral-500">
-            Average SG across the selected rounds. Dashed ring marks peer average.
+            Average SG across the selected rounds. Dashed ring marks peer
+            average.
           </p>
           <div className="mt-4" style={{ height: 380 }}>
-            <RadarChart data={report.summary.averageRadar} bracketLabel="Peer" />
+            <RadarChart
+              data={report.summary.averageRadar}
+              bracketLabel="Peer"
+            />
           </div>
         </div>
 
@@ -280,18 +308,20 @@ export function LessonReportView({
             {(() => {
               const sg = presentSG(report.focusArea.averageSg);
               return (
-              <>
-              <p className={`mt-2 font-mono tabular-nums text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}>
-                {sg.formatted}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                {isCaveatedReport
-                  ? "There are not enough reliable rounds yet to name a primary focus area."
-                  : sg.isPeerAverage
-                  ? "This category is at peer average across the selected rounds."
-                  : "The most negative average category with usable confidence across these rounds."}
-              </p>
-              </>
+                <>
+                  <p
+                    className={`mt-2 font-mono tabular-nums text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-negative"}`}
+                  >
+                    {sg.formatted}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                    {isCaveatedReport
+                      ? "There are not enough reliable rounds yet to name a primary focus area."
+                      : sg.isPeerAverage
+                        ? "This category is at peer average across the selected rounds."
+                        : "The most negative average category with usable confidence across these rounds."}
+                  </p>
+                </>
               );
             })()}
           </div>
@@ -315,18 +345,20 @@ export function LessonReportView({
             {(() => {
               const sg = presentSG(report.strongestArea.averageSg);
               return (
-              <>
-              <p className={`mt-2 font-mono tabular-nums text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}>
-                {sg.formatted}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                {isCaveatedReport
-                  ? "There are not enough reliable rounds yet to name a strongest area."
-                  : sg.isPeerAverage
-                  ? "This category is at peer average across the selected rounds."
-                  : "Your most positive average category across the selected rounds."}
-              </p>
-              </>
+                <>
+                  <p
+                    className={`mt-2 font-mono tabular-nums text-lg ${sg.tone === "neutral" ? "text-neutral-500" : "text-data-positive"}`}
+                  >
+                    {sg.formatted}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                    {isCaveatedReport
+                      ? "There are not enough reliable rounds yet to name a strongest area."
+                      : sg.isPeerAverage
+                        ? "This category is at peer average across the selected rounds."
+                        : "Your most positive average category across the selected rounds."}
+                  </p>
+                </>
               );
             })()}
           </div>
@@ -355,7 +387,8 @@ export function LessonReportView({
               Confidence Summary
             </h2>
             <p className="mt-1 text-sm text-neutral-500">
-              Aggregate confidence rolls up the supporting scorecard inputs across all selected rounds.
+              Aggregate confidence rolls up the supporting scorecard inputs
+              across all selected rounds.
             </p>
           </div>
           <div className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-neutral-600">
@@ -363,21 +396,29 @@ export function LessonReportView({
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
-          {Object.entries(report.confidenceSummary.byCategory).map(([category, level]) => (
-            <div
-              key={category}
-              className="inline-flex items-center gap-2 rounded-full border border-cream-200 bg-neutral-50 px-3 py-1.5"
-            >
-              <span className="text-sm text-neutral-600">
-                {CATEGORY_LABELS[category as keyof typeof report.confidenceSummary.byCategory]}
-              </span>
-              <ConfidenceBadge
-                level={level}
-                category={category as keyof typeof report.confidenceSummary.byCategory}
-                interactive={false}
-              />
-            </div>
-          ))}
+          {Object.entries(report.confidenceSummary.byCategory).map(
+            ([category, level]) => (
+              <div
+                key={category}
+                className="inline-flex items-center gap-2 rounded-full border border-cream-200 bg-neutral-50 px-3 py-1.5"
+              >
+                <span className="text-sm text-neutral-600">
+                  {
+                    CATEGORY_LABELS[
+                      category as keyof typeof report.confidenceSummary.byCategory
+                    ]
+                  }
+                </span>
+                <ConfidenceBadge
+                  level={level}
+                  category={
+                    category as keyof typeof report.confidenceSummary.byCategory
+                  }
+                  interactive={false}
+                />
+              </div>
+            ),
+          )}
         </div>
       </div>
 
@@ -405,7 +446,9 @@ export function LessonReportView({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium text-neutral-950">{round.courseName}</p>
+                  <p className="font-medium text-neutral-950">
+                    {round.courseName}
+                  </p>
                   <p className="mt-1 text-sm text-neutral-500">
                     {formatCompactDate(round.playedAt)} · Score {round.score} ·{" "}
                     {formatHandicap(round.handicapIndex)} HCP
@@ -414,18 +457,18 @@ export function LessonReportView({
                 {(() => {
                   const sg = presentSG(round.sgTotal);
                   return (
-                <p
-                  className={[
-                    "font-mono tabular-nums text-lg font-semibold",
-                    sg.tone === "neutral"
-                      ? "text-neutral-500"
-                      : sg.tone === "positive"
-                        ? "text-data-positive"
-                        : "text-data-negative",
-                  ].join(" ")}
-                >
-                  {sg.formatted}
-                </p>
+                    <p
+                      className={[
+                        "font-mono tabular-nums text-lg font-semibold",
+                        sg.tone === "neutral"
+                          ? "text-neutral-500"
+                          : sg.tone === "positive"
+                            ? "text-data-positive"
+                            : "text-data-negative",
+                      ].join(" ")}
+                    >
+                      {sg.formatted}
+                    </p>
                   );
                 })()}
               </div>
@@ -486,7 +529,7 @@ export function LessonReportView({
             </p>
             <Link
               href="/strokes-gained"
-              className="mt-2 inline-block text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+              className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Run the free benchmark →
             </Link>
@@ -501,7 +544,10 @@ export function LessonReportView({
         )}
       </div>
 
-      <div className="pointer-events-none fixed left-[-9999px] top-0" aria-hidden="true">
+      <div
+        className="pointer-events-none fixed left-[-9999px] top-0"
+        aria-hidden="true"
+      >
         <LessonReportShareCard ref={shareCardRef} snapshot={snapshot} />
       </div>
     </main>

@@ -17,7 +17,7 @@ export function HistoryEmptyState() {
         href="/strokes-gained?from=history"
         data-testid="empty-state-cta"
         onClick={() => trackEvent("history_link_clicked", { surface: "history_empty_state_cta" })}
-        className="mt-6 inline-block rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
+        className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
       >
         Log a Round
       </Link>

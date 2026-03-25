@@ -234,7 +234,7 @@ export function ResultsSummary({
           </p>
           <Link
             href="/methodology"
-            className="mt-2 inline-block text-xs font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+            className="mt-2 inline-flex min-h-11 items-center text-xs font-medium text-brand-800 underline transition-colors hover:text-brand-700"
           >
             See methodology
           </Link>
