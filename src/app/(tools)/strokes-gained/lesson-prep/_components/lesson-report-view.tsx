@@ -529,7 +529,7 @@ export function LessonReportView({
             </p>
             <Link
               href="/strokes-gained"
-              className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
+              className="mt-2 inline-flex items-center text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
             >
               Run the free benchmark →
             </Link>

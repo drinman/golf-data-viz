@@ -221,7 +221,7 @@ export function LessonPrepBuilder({
         </div>
       )}
 
-      <div className="mt-8 space-y-6">
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <section className="space-y-4">
           <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -251,7 +251,7 @@ export function LessonPrepBuilder({
           </div>
         </section>
 
-        <section className="space-y-4">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.16em] text-neutral-400">
               Current Selection
@@ -341,7 +341,7 @@ export function LessonPrepBuilder({
               </button>
             )}
           </div>
-        </section>
+        </aside>
       </div>
     </main>
   );

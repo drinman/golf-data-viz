@@ -232,7 +232,7 @@ export function RoundLayout({
         {methodologyLink && (
           <Link
             href="/methodology"
-            className="mt-1 inline-flex min-h-11 items-center text-brand-800 underline transition-colors hover:text-brand-700"
+            className="mt-1 inline-flex items-center text-brand-800 underline transition-colors hover:text-brand-700"
           >
             How Strokes Gained works
           </Link>

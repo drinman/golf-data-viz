@@ -15,25 +15,25 @@ export function SiteFooter() {
         <nav aria-label="Footer" className="flex gap-4">
           <Link
             href="/methodology"
-            className="inline-flex min-h-11 items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+            className="inline-flex items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
           >
             Methodology
           </Link>
           <Link
             href="/learn"
-            className="inline-flex min-h-11 items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+            className="inline-flex items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
           >
             Learn
           </Link>
           <Link
             href="/benchmarks"
-            className="inline-flex min-h-11 items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+            className="inline-flex items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
           >
             Benchmarks
           </Link>
           <Link
             href="/privacy"
-            className="inline-flex min-h-11 items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+            className="inline-flex items-center text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
           >
             Privacy
           </Link>
