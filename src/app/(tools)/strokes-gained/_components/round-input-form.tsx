@@ -3,7 +3,7 @@
 
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { roundInputSchema, type RoundInputFormData } from "@/lib/golf/schemas";
 import { getBracketForHandicap } from "@/lib/golf/benchmarks";
@@ -127,15 +127,20 @@ export function RoundInputForm({
     mode: "onBlur",
   });
 
+  const focusValueRef = useRef<string>("");
+
   function trackedRegister(name: keyof RoundInputFormData) {
     const registration = register(name);
     if (!onFieldCompleted) return registration;
     return {
       ...registration,
+      onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+        focusValueRef.current = e.target.value;
+      },
       onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
         registration.onBlur(e);
         const value = e.target.value;
-        if (value !== "" && value !== undefined) {
+        if (value !== "" && value !== undefined && value !== focusValueRef.current) {
           onFieldCompleted(name);
         }
       },
