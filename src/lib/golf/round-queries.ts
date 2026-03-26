@@ -39,7 +39,7 @@ export async function getUserRounds(
     .order("played_at", { ascending: false })
     .limit(200);
 
-  if (error) throw error;
+  if (error) return [];
   if (!data) return [];
 
   return data.map((row) => ({

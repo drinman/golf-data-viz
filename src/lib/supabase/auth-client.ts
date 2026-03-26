@@ -21,7 +21,7 @@ export async function signInWithGoogle() {
   // Pass current path as `next` so the auth callback redirects back here.
   // This preserves context for flows like post-save claim that depend on
   // returning to the originating page (e.g. /strokes-gained).
-  const next = encodeURIComponent(window.location.pathname);
+  const next = encodeURIComponent(window.location.pathname + window.location.search);
   return supabase.auth.signInWithOAuth({
     provider: "google",
     options: {

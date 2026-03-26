@@ -68,6 +68,7 @@ export function NarrativeBlock({
   );
 
   const [state, setState] = useState<NarrativeState>(() => {
+    if (typeof window === "undefined") return { status: "loading" };
     try {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
