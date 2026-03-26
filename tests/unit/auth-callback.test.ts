@@ -57,4 +57,15 @@ describe("OAuth callback route", () => {
     );
     expect(new URL(res.headers.get("location")!).pathname).toBe("/strokes-gained/history");
   });
+
+  it("preserves query string in next param", async () => {
+    const res = await GET(
+      makeRequest(
+        "https://golfdataviz.com/auth/callback?code=abc&next=%2Fstrokes-gained%3Fd%3Dabc123"
+      )
+    );
+    const loc = new URL(res.headers.get("location")!);
+    expect(loc.pathname).toBe("/strokes-gained");
+    expect(loc.searchParams.get("d")).toBe("abc123");
+  });
 });

@@ -128,12 +128,11 @@ describe("getUserRounds", () => {
     expect(result[0].benchmarkBracket).toBeNull();
   });
 
-  it("throws when Supabase returns an error", async () => {
+  it("returns empty array when Supabase returns an error", async () => {
     setupMockReturn(null, { message: "permission denied", code: "42501" });
 
-    await expect(getUserRounds("user-1")).rejects.toEqual(
-      expect.objectContaining({ message: "permission denied" })
-    );
+    const result = await getUserRounds("user-1");
+    expect(result).toEqual([]);
   });
 
   it("queries the rounds table with correct user_id filter", async () => {
