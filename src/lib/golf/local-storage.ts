@@ -34,7 +34,7 @@ export function readStoredRound(): StoredRound | null {
     }
     return parsed;
   } catch {
-    localStorage.removeItem(LAST_ROUND_KEY);
+    try { localStorage.removeItem(LAST_ROUND_KEY); } catch { /* storage unavailable */ }
     return null;
   }
 }
@@ -60,7 +60,7 @@ export function readStoredAnonClaim(): StoredAnonClaim | null {
     }
     return parsed;
   } catch {
-    localStorage.removeItem(LAST_ANON_CLAIM_KEY);
+    try { localStorage.removeItem(LAST_ANON_CLAIM_KEY); } catch { /* storage unavailable */ }
     return null;
   }
 }

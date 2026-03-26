@@ -185,7 +185,10 @@ describe("sign-flip prevention", () => {
     );
     expect(hasClamped).toBe(true);
     expect(result.flags).toContain("sign_flip_prevented");
-    expect(result.unattributed).not.toBe(0);
+    // When ALL categories are clamped, unattributed holds the remainder.
+    // The invariant is: sum(categories) + unattributed === anchor.
+    const sum = allCategories.reduce((s, cat) => s + result.categories[cat], 0);
+    expect(sum + result.unattributed).toBeCloseTo(-5.0, 5);
   });
 
   it("negative provisional + positive adjustment that would flip → clamped to 0", () => {
@@ -226,5 +229,19 @@ describe("sign-flip prevention", () => {
     const confidence = makeConfidence(["high", "high", "high", "high"]);
     const result = reconcileCategories(provisionals, -2.0, confidence, []);
     expect(result.flags).toContain("sign_flip_prevented");
+  });
+
+  it("categories alone sum to totalAnchor after sign-flip redistribution", () => {
+    // This is the critical invariant: the displayed category breakdown must
+    // add up to the displayed total, without needing to include unattributed.
+    const provisionals = makeProvisionals([0.3, 0.5, 0.2, -0.1]);
+    const confidence = makeConfidence(["medium", "high", "low", "medium"]);
+    const anchor = -2.0;
+    const result = reconcileCategories(provisionals, anchor, confidence, []);
+    expect(result.flags).toContain("sign_flip_prevented");
+
+    const sum = allCategories.reduce((s, cat) => s + result.categories[cat], 0);
+    expect(sum).toBeCloseTo(anchor, 5);
+    expect(result.unattributed).toBeCloseTo(0, 5);
   });
 });

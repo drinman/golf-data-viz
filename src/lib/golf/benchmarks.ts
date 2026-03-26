@@ -73,12 +73,12 @@ function handicapToBracketLabel(index: number): HandicapBracket {
     );
   }
   if (index < 0) return "plus";
-  if (index < 5) return "0-5";
-  if (index < 10) return "5-10";
-  if (index < 15) return "10-15";
-  if (index < 20) return "15-20";
-  if (index < 25) return "20-25";
-  if (index < 30) return "25-30";
+  if (index <= 5) return "0-5";
+  if (index <= 10) return "5-10";
+  if (index <= 15) return "10-15";
+  if (index <= 20) return "15-20";
+  if (index <= 25) return "20-25";
+  if (index <= 30) return "25-30";
   return "30+";
 }
 
