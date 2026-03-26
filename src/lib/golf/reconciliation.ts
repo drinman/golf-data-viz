@@ -78,8 +78,10 @@ export function reconcileCategories(
   });
 
   // Sign-flip prevention: clamp categories that would reverse sign, then
-  // redistribute the clamped overshoot to unclamped categories. Iterate
-  // because redistribution can cause secondary sign flips.
+  // redistribute the clamped overshoot to unclamped categories. Redistribution
+  // CAN cause secondary flips (e.g., negative overshoot from clamped positives
+  // pushes a surviving small-positive category negative), so we iterate until
+  // stable. Bounded by activeCats.length since each pass clamps at least one.
   let unattributed = 0;
   const flags: string[] = [];
   const clamped = new Set<StrokesGainedCategory>();

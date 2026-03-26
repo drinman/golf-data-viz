@@ -231,12 +231,14 @@ describe("sign-flip prevention", () => {
     expect(result.flags).toContain("sign_flip_prevented");
   });
 
-  it("extreme case: redistribution preserves sign invariant and sum", () => {
-    // 3 small positives + 1 negative, large negative anchor.
-    // All positives flip and get clamped; redistribution goes to the negative.
-    const provisionals = makeProvisionals([0.3, 0.3, 0.3, -0.1]);
-    const confidence = makeConfidence(["medium", "medium", "medium", "medium"]);
-    const anchor = -1.0;
+  it("secondary flip: redistribution pushes unclamped category across zero", () => {
+    // OTT barely positive, App/ATG larger positive, Put negative.
+    // Pass 1: App/ATG flip → clamped. Negative overshoot redistributed
+    // to OTT (tiny positive) pushes it negative → secondary flip.
+    // Pass 2: OTT clamped. Remainder goes to Put.
+    const provisionals = makeProvisionals([0.05, 0.5, 0.3, -0.8]);
+    const confidence = makeConfidence(["high", "low", "low", "high"]);
+    const anchor = -3.0;
     const result = reconcileCategories(provisionals, anchor, confidence, []);
 
     expect(result.flags).toContain("sign_flip_prevented");
