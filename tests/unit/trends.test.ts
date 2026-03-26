@@ -96,7 +96,7 @@ describe("calculateBiggestMover", () => {
     expect(calculateBiggestMover(rounds)).toBeNull();
   });
 
-  it("uses latest 2 vs earliest 2 for 3 rounds with confidence = recent_movement", () => {
+  it("uses non-overlapping windows for 3 rounds with confidence = recent_movement", () => {
     const rounds = [
       makeRoundSnapshot({ playedAt: "2026-03-01", sgApproach: -1.0 }),
       makeRoundSnapshot({ playedAt: "2026-03-02", sgApproach: -0.8 }),
@@ -127,7 +127,7 @@ describe("calculateBiggestMover", () => {
     expect(result!.direction).toBe("declining");
   });
 
-  it("uses latest 3 vs earliest 3 for 5 rounds with confidence = emerging_pattern", () => {
+  it("uses non-overlapping windows for 5 rounds with confidence = emerging_pattern", () => {
     const rounds = [
       makeRoundSnapshot({ playedAt: "2026-03-01", sgOffTheTee: -0.5 }),
       makeRoundSnapshot({ playedAt: "2026-03-02", sgOffTheTee: -0.6 }),
@@ -142,6 +142,33 @@ describe("calculateBiggestMover", () => {
     expect(result!.category).toBe("off-the-tee");
     expect(result!.confidence).toBe("emerging_pattern");
     expect(result!.direction).toBe("improving");
+  });
+
+  it("detects subtle 3-round trend that overlapping windows would miss", () => {
+    const rounds = [
+      makeRoundSnapshot({ playedAt: "2026-03-01", sgApproach: -0.1 }),
+      makeRoundSnapshot({ playedAt: "2026-03-02", sgApproach: 0.0 }),
+      makeRoundSnapshot({ playedAt: "2026-03-03", sgApproach: 0.1 }),
+    ];
+    const result = calculateBiggestMover(rounds);
+    expect(result).not.toBeNull();
+    expect(result!.direction).toBe("improving");
+    expect(result!.confidence).toBe("recent_movement");
+  });
+
+  it("excludes middle round from 5-round comparison windows", () => {
+    const rounds = [
+      makeRoundSnapshot({ playedAt: "2026-03-01", sgPutting: -0.5 }),
+      makeRoundSnapshot({ playedAt: "2026-03-02", sgPutting: -0.4 }),
+      makeRoundSnapshot({ playedAt: "2026-03-03", sgPutting: 99.0 }),
+      makeRoundSnapshot({ playedAt: "2026-03-04", sgPutting: 0.3 }),
+      makeRoundSnapshot({ playedAt: "2026-03-05", sgPutting: 0.4 }),
+    ];
+    const result = calculateBiggestMover(rounds);
+    expect(result).not.toBeNull();
+    expect(result!.category).toBe("putting");
+    expect(result!.direction).toBe("improving");
+    expect(result!.confidence).toBe("emerging_pattern");
   });
 
   it("returns null when all deltas are below 0.15 threshold", () => {

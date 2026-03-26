@@ -246,8 +246,9 @@ export const roundInputSchema = z
         3 * data.triplePlus;
       const actualOverCourseRating = data.score - data.courseRating;
       // Scale tolerance with triplePlus count — each triple+ hole could be
-      // +5, +6, or worse over par, not just the +3 we assume
-      const tolerance = 8 + data.triplePlus * 2;
+      // +5, +6, or worse over par, not just the +3 we assume. Base of 5
+      // absorbs the course-rating-to-par gap (~4 strokes max) plus rounding.
+      const tolerance = 5 + data.triplePlus * 3;
       return Math.abs(impliedOverPar - actualOverCourseRating) <= tolerance;
     },
     {

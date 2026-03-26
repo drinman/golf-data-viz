@@ -595,7 +595,7 @@ describe("roundInputSchema", () => {
   it("accepts round with multiple triple+ blow-up holes (high-handicap edge case)", () => {
     // 25-handicapper with 4 blow-up holes (each could be +5 or +6 over par)
     // implied = 0 + 0 + 4 + 8 + 12 = 24, actual = 110-72 = 38, diff = 14
-    // tolerance = 8 + 4*2 = 16, so 14 <= 16 passes
+    // tolerance = 5 + 4*3 = 17, so 14 <= 17 passes
     const result = roundInputSchema.safeParse({
       ...validInput(),
       score: 110,
@@ -608,6 +608,36 @@ describe("roundInputSchema", () => {
       bogeys: 4,
       doubleBogeys: 6,
       triplePlus: 4,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects score=80 with 18 pars and courseRating=72 (impossible — 8 over rating with all pars)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      score: 80,
+      courseRating: 72,
+      eagles: 0,
+      birdies: 0,
+      pars: 18,
+      bogeys: 0,
+      doubleBogeys: 0,
+      triplePlus: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts score=76 with 18 pars and courseRating=72 (within course-rating gap)", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      score: 76,
+      courseRating: 72,
+      eagles: 0,
+      birdies: 0,
+      pars: 18,
+      bogeys: 0,
+      doubleBogeys: 0,
+      triplePlus: 0,
     });
     expect(result.success).toBe(true);
   });

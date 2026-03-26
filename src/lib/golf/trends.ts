@@ -129,14 +129,16 @@ export function calculateBiggestMover(
     (a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime()
   );
 
-  const isLargeSet = sorted.length >= 5;
-  const windowSize = isLargeSet ? 3 : 2;
-  const confidence: BiggestMover["confidence"] = isLargeSet
-    ? "emerging_pattern"
-    : "recent_movement";
+  // Confidence is tied to total round count, not window size.
+  const confidence: BiggestMover["confidence"] =
+    sorted.length >= 5 ? "emerging_pattern" : "recent_movement";
+
+  // Use non-overlapping windows. For odd-count sets, exclude the middle round(s).
+  const preferredWindow = sorted.length >= 6 ? 3 : 2;
+  const windowSize = Math.min(preferredWindow, Math.floor(sorted.length / 2));
 
   const earliest = sorted.slice(0, windowSize);
-  const latest = sorted.slice(-windowSize);
+  const latest = sorted.slice(sorted.length - windowSize);
 
   // Calculate delta for each category
   let bestCategory: StrokesGainedCategory | null = null;
