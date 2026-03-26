@@ -153,6 +153,7 @@ describe("calculateBiggestMover", () => {
     const result = calculateBiggestMover(rounds);
     expect(result).not.toBeNull();
     expect(result!.direction).toBe("improving");
+    expect(result!.delta).toBeCloseTo(0.2, 5);
     expect(result!.confidence).toBe("recent_movement");
   });
 

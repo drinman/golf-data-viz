@@ -116,8 +116,11 @@ export function toTrendSeries(rounds: RoundSgSnapshot[]): TrendSeries[] {
  * Find the SG category with the biggest recent movement.
  *
  * - Fewer than MIN_ROUNDS_FOR_MULTI_ROUND_INSIGHTS rounds: returns null
- * - 3-4 rounds: compares avg of latest 2 vs avg of earliest 2 (recent_movement)
- * - 5+ rounds: compares avg of latest 3 vs avg of earliest 3 (emerging_pattern)
+ * - 3 rounds: point comparison of first vs last (recent_movement)
+ * - 4 rounds: avg of earliest 2 vs avg of latest 2 (recent_movement)
+ * - 5 rounds: avg of earliest 2 vs avg of latest 2 (emerging_pattern)
+ * - 6+ rounds: avg of earliest 3 vs avg of latest 3 (emerging_pattern)
+ * - Windows never overlap — odd counts exclude the middle round(s)
  * - Returns null if no category delta exceeds the threshold (0.15)
  */
 export function calculateBiggestMover(
