@@ -77,22 +77,51 @@ export function reconcileCategories(
     categories[cat] = provisionals[cat] + adjustments[cat];
   });
 
-  // Sign-flip prevention: clamp categories that would reverse sign
+  // Sign-flip prevention: clamp categories that would reverse sign, then
+  // redistribute the clamped overshoot to unclamped categories. Redistribution
+  // CAN cause secondary flips (e.g., negative overshoot from clamped positives
+  // pushes a surviving small-positive category negative), so we iterate until
+  // stable. Bounded by activeCats.length since each pass clamps at least one.
   let unattributed = 0;
   const flags: string[] = [];
+  const clamped = new Set<StrokesGainedCategory>();
 
-  activeCats.forEach((cat) => {
-    if (provisionals[cat] !== 0 &&
-        Math.sign(provisionals[cat]) !== Math.sign(categories[cat])) {
-      const crossoverAmount = categories[cat]; // amount beyond zero-crossing
-      unattributed += crossoverAmount;
-      adjustments[cat] = -provisionals[cat]; // bring exactly to 0
-      categories[cat] = 0;
-      if (!flags.includes("sign_flip_prevented")) {
-        flags.push("sign_flip_prevented");
+  for (let pass = 0; pass < activeCats.length; pass++) {
+    let flippedThisPass = false;
+
+    for (const cat of activeCats) {
+      if (clamped.has(cat)) continue;
+      if (provisionals[cat] !== 0 &&
+          Math.sign(provisionals[cat]) !== Math.sign(categories[cat])) {
+        unattributed += categories[cat];
+        adjustments[cat] = -provisionals[cat];
+        categories[cat] = 0;
+        clamped.add(cat);
+        flippedThisPass = true;
+        if (!flags.includes("sign_flip_prevented")) {
+          flags.push("sign_flip_prevented");
+        }
       }
     }
-  });
+
+    if (!flippedThisPass || unattributed === 0) break;
+
+    // Redistribute to remaining unclamped categories
+    const unclamped = activeCats.filter((cat) => !clamped.has(cat));
+    if (unclamped.length === 0) break;
+
+    const unclampedWeights = unclamped.map(
+      (cat) => BROADIE_SHARES[cat] * (1 / CONFIDENCE_WEIGHTS[confidence[cat]])
+    );
+    const totalWeight = unclampedWeights.reduce((s, w) => s + w, 0);
+    unclamped.forEach((cat, i) => {
+      const share = unclampedWeights[i] / totalWeight;
+      const extra = unattributed * share;
+      adjustments[cat] += extra;
+      categories[cat] += extra;
+    });
+    unattributed = 0;
+  }
 
   // Compute scale factor: max |adjustment / provisional| for non-zero provisionals
   let scaleFactor = 0;
