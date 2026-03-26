@@ -84,6 +84,10 @@ export function decodeRound(payload: string): RoundInput | null {
       }
     }
 
+    // NOTE: roundInputSchema includes a score-vs-breakdown consistency check
+    // whose tolerance has tightened over time. Shared links encoded under an
+    // older tolerance (e.g. scoring diff 6-8 with 0 triple+ holes) will fail
+    // validation here and return null, gracefully falling back to the form.
     const result = roundInputSchema.safeParse(parsed);
 
     if (!result.success) return null;

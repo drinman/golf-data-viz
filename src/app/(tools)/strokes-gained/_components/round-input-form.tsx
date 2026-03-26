@@ -102,6 +102,7 @@ export function RoundInputForm({
     register,
     handleSubmit,
     watch,
+    setError,
     formState: { errors },
   } = useForm<RoundInputFormData>({
     resolver: zodResolver(roundInputSchema) as Resolver<RoundInputFormData>,
@@ -180,6 +181,10 @@ export function RoundInputForm({
 
   function handleFormSubmit(data: RoundInputFormData) {
     const absHcp = Math.abs(data.handicapIndex);
+    if (isPlusHandicap && absHcp > 9.9) {
+      setError("handicapIndex", { message: "Plus handicap is capped at +9.9" });
+      return;
+    }
     const handicapIndex = isPlusHandicap && absHcp > 0 ? -absHcp : absHcp;
     onSubmit({ ...data, handicapIndex });
   }
@@ -220,6 +225,7 @@ export function RoundInputForm({
                   inputMode="decimal"
                   step="0.1"
                   min="0"
+                  max={isPlusHandicap ? "9.9" : "54"}
                   onWheel={handleWheel}
                   className={`${inputClass} rounded-l-none`}
                   {...trackedRegister("handicapIndex")}
