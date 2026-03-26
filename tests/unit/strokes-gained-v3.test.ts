@@ -238,6 +238,7 @@ describe("calculateStrokesGainedV3", () => {
     it("no single category reconciliation adjustment exceeds 1.5 strokes", () => {
       // Threshold raised from 1.0 to 1.5 because sign-flip redistribution
       // concentrates more adjustment into fewer unclamped categories.
+      // Observed max delta: ~1.08 for plusRound fixture.
       const benchmark = getInterpolatedBenchmark(plusRound.handicapIndex);
       const result = calculateStrokesGainedV3(plusRound, benchmark);
       const provisional = result.diagnostics.provisionalCategoryValues!;

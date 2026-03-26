@@ -79,6 +79,14 @@ describe("getBracketForHandicap", () => {
     expect(getBracketForHandicap(20.0).bracket).toBe("15-20");
   });
 
+  it("returns '5-10' for handicap 10.0 (inclusive upper bound)", () => {
+    expect(getBracketForHandicap(10.0).bracket).toBe("5-10");
+  });
+
+  it("returns '20-25' for handicap 25.0 (inclusive upper bound)", () => {
+    expect(getBracketForHandicap(25.0).bracket).toBe("20-25");
+  });
+
   it("returns '25-30' for handicap 29.9", () => {
     expect(getBracketForHandicap(29.9).bracket).toBe("25-30");
   });

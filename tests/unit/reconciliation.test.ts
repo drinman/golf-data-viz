@@ -231,6 +231,27 @@ describe("sign-flip prevention", () => {
     expect(result.flags).toContain("sign_flip_prevented");
   });
 
+  it("extreme case: redistribution preserves sign invariant and sum", () => {
+    // 3 small positives + 1 negative, large negative anchor.
+    // All positives flip and get clamped; redistribution goes to the negative.
+    const provisionals = makeProvisionals([0.3, 0.3, 0.3, -0.1]);
+    const confidence = makeConfidence(["medium", "medium", "medium", "medium"]);
+    const anchor = -1.0;
+    const result = reconcileCategories(provisionals, anchor, confidence, []);
+
+    expect(result.flags).toContain("sign_flip_prevented");
+    const sum = allCategories.reduce((s, cat) => s + result.categories[cat], 0);
+    expect(sum + result.unattributed).toBeCloseTo(anchor, 5);
+    // No category should have flipped sign from its provisional
+    for (const cat of allCategories) {
+      if (provisionals[cat] > 0) {
+        expect(result.categories[cat]).toBeGreaterThanOrEqual(0);
+      } else if (provisionals[cat] < 0) {
+        expect(result.categories[cat]).toBeLessThanOrEqual(0);
+      }
+    }
+  });
+
   it("categories alone sum to totalAnchor after sign-flip redistribution", () => {
     // This is the critical invariant: the displayed category breakdown must
     // add up to the displayed total, without needing to include unattributed.

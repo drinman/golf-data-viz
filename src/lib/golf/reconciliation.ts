@@ -105,7 +105,7 @@ export function reconcileCategories(
     if (!flippedThisPass || unattributed === 0) break;
 
     // Redistribute to remaining unclamped categories
-    const unclamped = activeCats.filter((cat) => !clamped.has(cat) && categories[cat] !== 0);
+    const unclamped = activeCats.filter((cat) => !clamped.has(cat));
     if (unclamped.length === 0) break;
 
     const unclampedWeights = unclamped.map(

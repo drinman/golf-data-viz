@@ -101,4 +101,67 @@ describe("local-storage", () => {
       expect(readStoredAnonClaim()).toBeNull();
     });
   });
+
+  describe("writeStoredAnonClaim", () => {
+    it("writes claim to localStorage", async () => {
+      const store: Record<string, string> = {};
+      vi.stubGlobal("localStorage", {
+        getItem: (key: string) => store[key] ?? null,
+        removeItem: (key: string) => { delete store[key]; },
+        setItem: (key: string, val: string) => { store[key] = val; },
+        clear: () => {},
+        key: () => null,
+        length: 0,
+      });
+      const { writeStoredAnonClaim } = await import("@/lib/golf/local-storage");
+      writeStoredAnonClaim(validClaim);
+      expect(store["gdv:last-anon-claim"]).toBeDefined();
+      expect(JSON.parse(store["gdv:last-anon-claim"]).roundId).toBe("abc-123");
+    });
+
+    it("does not throw when localStorage is unavailable", async () => {
+      vi.stubGlobal("localStorage", {
+        getItem: () => { throw new DOMException("Access denied", "SecurityError"); },
+        removeItem: () => { throw new DOMException("Access denied", "SecurityError"); },
+        setItem: () => { throw new DOMException("Access denied", "SecurityError"); },
+        clear: () => {},
+        key: () => null,
+        length: 0,
+      });
+      const { writeStoredAnonClaim } = await import("@/lib/golf/local-storage");
+      expect(() => writeStoredAnonClaim(validClaim)).not.toThrow();
+    });
+  });
+
+  describe("clearStoredAnonClaim", () => {
+    it("removes claim from localStorage", async () => {
+      const store: Record<string, string> = {
+        "gdv:last-anon-claim": JSON.stringify(validClaim),
+      };
+      vi.stubGlobal("localStorage", {
+        getItem: (key: string) => store[key] ?? null,
+        removeItem: (key: string) => { delete store[key]; },
+        setItem: (key: string, val: string) => { store[key] = val; },
+        clear: () => {},
+        key: () => null,
+        length: 0,
+      });
+      const { clearStoredAnonClaim } = await import("@/lib/golf/local-storage");
+      clearStoredAnonClaim();
+      expect(store["gdv:last-anon-claim"]).toBeUndefined();
+    });
+
+    it("does not throw when localStorage is unavailable", async () => {
+      vi.stubGlobal("localStorage", {
+        getItem: () => { throw new DOMException("Access denied", "SecurityError"); },
+        removeItem: () => { throw new DOMException("Access denied", "SecurityError"); },
+        setItem: () => { throw new DOMException("Access denied", "SecurityError"); },
+        clear: () => {},
+        key: () => null,
+        length: 0,
+      });
+      const { clearStoredAnonClaim } = await import("@/lib/golf/local-storage");
+      expect(() => clearStoredAnonClaim()).not.toThrow();
+    });
+  });
 });
