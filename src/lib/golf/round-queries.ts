@@ -39,7 +39,10 @@ export async function getUserRounds(
     .order("played_at", { ascending: false })
     .limit(200);
 
-  if (error) return [];
+  if (error) {
+    console.error("[getUserRounds] Supabase query failed", { userId, error });
+    return [];
+  }
   if (!data) return [];
 
   return data.map((row) => ({
