@@ -14,8 +14,6 @@ export const motivating_friend_round = (() => {
     doubleBogeys: 4,
     triplePlus: 2,
   });
-  delete input.upAndDownAttempts;
-  delete input.upAndDownConverted;
 
   const result = makeSGResult({
     benchmarkHandicap: 14.3,
@@ -60,8 +58,6 @@ export const normal_atg_fallback_control = (() => {
     doubleBogeys: 1,
     triplePlus: 1,
   });
-  delete input.upAndDownAttempts;
-  delete input.upAndDownConverted;
 
   const result = makeSGResult({
     benchmarkHandicap: 14.3,
