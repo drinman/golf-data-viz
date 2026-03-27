@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, waitFor } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+
+  return {
+    ...actual,
+    useEffect: (effect: () => void) => effect(),
+  };
+});
 
 // No vi.mock — uses the real logError so we can verify end-to-end
 // from boundary render → logError → sanitized console.error output.
@@ -22,7 +31,7 @@ describe("Error boundary production logging (integration)", () => {
       digest: "abc123",
     });
 
-    render(<ErrorPage error={error} reset={vi.fn()} />);
+    ErrorPage({ error, reset: vi.fn() });
 
     await waitFor(() => {
       expect(spy).toHaveBeenCalledWith("Application error (digest: abc123)");
@@ -51,7 +60,7 @@ describe("Error boundary production logging (integration)", () => {
       digest: "xyz789",
     });
 
-    render(<GlobalError error={error} reset={vi.fn()} />);
+    GlobalError({ error, reset: vi.fn() });
 
     await waitFor(() => {
       expect(logged.length).toBeGreaterThan(0);

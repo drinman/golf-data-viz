@@ -211,6 +211,7 @@ function AuthModalContent({
                   ref={emailRef}
                   id="auth-email"
                   type="email"
+                  autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -229,6 +230,9 @@ function AuthModalContent({
                 <input
                   id="auth-password"
                   type="password"
+                  autoComplete={
+                    mode === "signin" ? "current-password" : "new-password"
+                  }
                   required
                   minLength={6}
                   value={password}

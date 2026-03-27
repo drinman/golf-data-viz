@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { derivePresentationTrust } from "@/lib/golf/presentation-trust";
+import { roundInputSchema } from "@/lib/golf/schemas";
 import { makeRound, makeSGResult } from "../fixtures/factories";
 import {
   motivating_friend_round,
@@ -7,6 +8,11 @@ import {
 } from "../fixtures/sg-trust-hardening";
 
 describe("derivePresentationTrust", () => {
+  it("keeps trust-hardening fixtures schema-valid", () => {
+    expect(roundInputSchema.safeParse(motivating_friend_round.input).success).toBe(true);
+    expect(roundInputSchema.safeParse(normal_atg_fallback_control.input).success).toBe(true);
+  });
+
   it("marks the motivating ATG-fallback round as caveated", () => {
     const trust = derivePresentationTrust({
       input: motivating_friend_round.input,
