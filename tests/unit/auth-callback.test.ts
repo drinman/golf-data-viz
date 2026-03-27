@@ -68,4 +68,30 @@ describe("OAuth callback route", () => {
     expect(loc.pathname).toBe("/strokes-gained");
     expect(loc.searchParams.get("d")).toBe("abc123");
   });
+
+  it("redirects with auth_error=oauth_denied when provider returns error", async () => {
+    const res = await GET(
+      makeRequest("https://golfdataviz.com/auth/callback?error=access_denied&error_description=User+denied+consent")
+    );
+    const loc = new URL(res.headers.get("location")!);
+    expect(loc.pathname).toBe("/strokes-gained/history");
+    expect(loc.searchParams.get("auth_error")).toBe("oauth_denied");
+  });
+
+  it("error redirect always goes to history page, ignoring next param", async () => {
+    const res = await GET(
+      makeRequest("https://golfdataviz.com/auth/callback?error=access_denied&next=/strokes-gained")
+    );
+    const loc = new URL(res.headers.get("location")!);
+    expect(loc.pathname).toBe("/strokes-gained/history");
+    expect(loc.searchParams.get("auth_error")).toBe("oauth_denied");
+  });
+
+  it("prioritizes error over code when both are present", async () => {
+    const res = await GET(
+      makeRequest("https://golfdataviz.com/auth/callback?error=access_denied&code=abc")
+    );
+    const loc = new URL(res.headers.get("location")!);
+    expect(loc.searchParams.get("auth_error")).toBe("oauth_denied");
+  });
 });

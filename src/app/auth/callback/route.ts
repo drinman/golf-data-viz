@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (oauthError) {
     const description = searchParams.get("error_description") ?? oauthError;
     console.error("[auth/callback] OAuth error:", oauthError, description);
-    const errorUrl = new URL(next, request.url);
+    const errorUrl = new URL("/strokes-gained/history", request.url);
     errorUrl.searchParams.set("auth_error", "oauth_denied");
     return NextResponse.redirect(errorUrl);
   }
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("[auth/callback] Failed to exchange code for session:", error.message);
       // Redirect with error flag so the UI can show a sign-in failure message
-      const errorUrl = new URL(next, request.url);
+      const errorUrl = new URL("/strokes-gained/history", request.url);
       errorUrl.searchParams.set("auth_error", "callback_failed");
       return NextResponse.redirect(errorUrl);
     }

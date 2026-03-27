@@ -139,4 +139,12 @@ describe("getCustomerId", () => {
   it("returns null for an empty string", () => {
     expect(getCustomerId("")).toBeNull();
   });
+
+  it("returns null for an object with an empty string id", () => {
+    expect(getCustomerId({ id: "" })).toBeNull();
+  });
+
+  it("returns null for an object with a non-string id", () => {
+    expect(getCustomerId({ id: 12345 })).toBeNull();
+  });
 });

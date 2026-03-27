@@ -33,6 +33,7 @@ export function HistoryAuthPrompt({ authError }: { authError?: string }) {
     <main className="mx-auto max-w-3xl px-4 py-8">
       {authError && (
         <div
+          role="alert"
           data-testid="auth-error-banner"
           className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800"
         >
