@@ -85,6 +85,14 @@ describe("AuthModal", () => {
     expect(screen.getByTestId("auth-email-input")).toBeInTheDocument();
     expect(screen.getByTestId("auth-password-input")).toBeInTheDocument();
     expect(screen.getByTestId("google-signin-btn")).toBeInTheDocument();
+    expect(screen.getByTestId("auth-email-input")).toHaveAttribute(
+      "autocomplete",
+      "email"
+    );
+    expect(screen.getByTestId("auth-password-input")).toHaveAttribute(
+      "autocomplete",
+      "current-password"
+    );
   });
 
   it("toggles between sign-in and sign-up modes", async () => {
@@ -104,11 +112,19 @@ describe("AuthModal", () => {
     expect(screen.getByTestId("auth-submit-btn")).toHaveTextContent(
       "Create account"
     );
+    expect(screen.getByTestId("auth-password-input")).toHaveAttribute(
+      "autocomplete",
+      "new-password"
+    );
 
     // Toggle back to sign-in
     await user.click(screen.getByTestId("auth-toggle-mode"));
     expect(screen.getByTestId("auth-modal-title")).toHaveTextContent(
       "Welcome back"
+    );
+    expect(screen.getByTestId("auth-password-input")).toHaveAttribute(
+      "autocomplete",
+      "current-password"
     );
   });
 

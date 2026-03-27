@@ -5,8 +5,12 @@ import { makeDetailSnapshot, makeRound, makeSGResult } from "./factories";
 export const motivating_friend_round = (() => {
   const input = makeRound({
     handicapIndex: 14.3,
+    score: 87,
     greensInRegulation: 7,
     totalPutts: 31,
+    birdies: 1,
+    pars: 6,
+    bogeys: 5,
     doubleBogeys: 4,
     triplePlus: 2,
   });
@@ -47,10 +51,14 @@ export const motivating_friend_round = (() => {
 export const normal_atg_fallback_control = (() => {
   const input = makeRound({
     handicapIndex: 14.3,
+    score: 87,
     greensInRegulation: 7,
-    totalPutts: 32,
+    totalPutts: 31,
+    birdies: 0,
+    pars: 8,
+    bogeys: 8,
     doubleBogeys: 1,
-    triplePlus: 0,
+    triplePlus: 1,
   });
   delete input.upAndDownAttempts;
   delete input.upAndDownConverted;

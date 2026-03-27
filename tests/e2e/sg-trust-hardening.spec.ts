@@ -2,10 +2,17 @@ import { test, expect, type Page } from "@playwright/test";
 import { fillPartialRound } from "./helpers/round-form";
 
 async function fillCaveatedAtgFallbackRound(page: Page) {
-  await fillPartialRound(page);
+  await page.fill('[name="handicapIndex"]', "14.3");
+  await page.fill('[name="course"]', "Pacifica Sharp Park");
+  await page.fill('[name="courseRating"]', "72.0");
+  await page.fill('[name="slopeRating"]', "130");
+  await page.fill('[name="score"]', "87");
   await page.fill('[name="fairwaysHit"]', "7");
+  await page.fill('[name="fairwayAttempts"]', "14");
   await page.fill('[name="greensInRegulation"]', "7");
   await page.fill('[name="totalPutts"]', "31");
+  await page.fill('[name="penaltyStrokes"]', "2");
+  await page.fill('[name="eagles"]', "0");
   await page.fill('[name="birdies"]', "1");
   await page.fill('[name="pars"]', "6");
   await page.fill('[name="bogeys"]', "5");
@@ -14,15 +21,22 @@ async function fillCaveatedAtgFallbackRound(page: Page) {
 }
 
 async function fillAssertiveAtgFallbackControlRound(page: Page) {
-  await fillPartialRound(page);
+  await page.fill('[name="handicapIndex"]', "14.3");
+  await page.fill('[name="course"]', "Pacifica Sharp Park");
+  await page.fill('[name="courseRating"]', "72.0");
+  await page.fill('[name="slopeRating"]', "130");
+  await page.fill('[name="score"]', "87");
   await page.fill('[name="fairwaysHit"]', "7");
+  await page.fill('[name="fairwayAttempts"]', "14");
   await page.fill('[name="greensInRegulation"]', "7");
-  await page.fill('[name="totalPutts"]', "32");
-  await page.fill('[name="birdies"]', "1");
-  await page.fill('[name="pars"]', "9");
-  await page.fill('[name="bogeys"]', "7");
+  await page.fill('[name="totalPutts"]', "31");
+  await page.fill('[name="penaltyStrokes"]', "2");
+  await page.fill('[name="eagles"]', "0");
+  await page.fill('[name="birdies"]', "0");
+  await page.fill('[name="pars"]', "8");
+  await page.fill('[name="bogeys"]', "8");
   await page.fill('[name="doubleBogeys"]', "1");
-  await page.fill('[name="triplePlus"]', "0");
+  await page.fill('[name="triplePlus"]', "1");
 }
 
 test.describe("SG trust hardening", () => {

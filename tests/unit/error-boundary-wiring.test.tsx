@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, waitFor } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+
+  return {
+    ...actual,
+    useEffect: (effect: () => void) => effect(),
+  };
+});
 
 vi.mock("@/lib/log-error", () => ({
   logError: vi.fn(),
@@ -20,7 +29,7 @@ describe("Error boundary wiring", () => {
     const error = Object.assign(new Error("route error"), { digest: "r1" });
     const reset = vi.fn();
 
-    render(<ErrorPage error={error} reset={reset} />);
+    ErrorPage({ error, reset });
 
     await waitFor(() => {
       expect(logError).toHaveBeenCalledWith(error);
@@ -41,7 +50,7 @@ describe("Error boundary wiring", () => {
     const error = Object.assign(new Error("app error"), { digest: "g1" });
     const reset = vi.fn();
 
-    render(<GlobalError error={error} reset={reset} />);
+    GlobalError({ error, reset });
 
     await waitFor(() => {
       expect(logError).toHaveBeenCalledWith(error);

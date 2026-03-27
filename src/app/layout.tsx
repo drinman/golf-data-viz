@@ -92,6 +92,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const ga4Id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim();
+  const vercelUrl = process.env.VERCEL_URL?.trim();
 
   return (
     <html lang="en">
@@ -103,7 +104,7 @@ export default function RootLayout({
           {children}
           <SiteFooter />
         </AuthProvider>
-        <Analytics />
+        {process.env.VERCEL && vercelUrl && <Analytics />}
         {ga4Id && (
           <>
             <script
