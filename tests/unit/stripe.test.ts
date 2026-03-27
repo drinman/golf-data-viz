@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildCheckoutRedirectUrls,
   deriveProfileUpdateFromSubscription,
+  getCustomerId,
   shouldApplyStripeUpdate,
   verifyStripeWebhookSignature,
 } from "@/lib/billing/stripe";
-import { getCustomerId } from "@/app/api/stripe/webhook/route";
 
 describe("buildCheckoutRedirectUrls", () => {
   it("uses the lesson prep builder for success and cancel redirects", () => {

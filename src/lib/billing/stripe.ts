@@ -49,6 +49,16 @@ function toIsoFromUnix(seconds: number | null): string | null {
   return new Date(seconds * 1000).toISOString();
 }
 
+/** Extract a Stripe customer ID from either a plain string or an expanded object. */
+export function getCustomerId(value: unknown): string | null {
+  if (typeof value === "string" && value.length > 0) return value;
+  if (typeof value === "object" && value !== null && "id" in value) {
+    const id = (value as { id?: unknown }).id;
+    return typeof id === "string" && id.length > 0 ? id : null;
+  }
+  return null;
+}
+
 function getStripeCustomerId(customer: StripeSubscriptionLike["customer"]): string | null {
   if (!customer) return null;
   return typeof customer === "string" ? customer : customer.id ?? null;

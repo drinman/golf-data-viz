@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   deriveProfileUpdateFromSubscription,
+  getCustomerId,
   shouldApplyStripeUpdate,
   verifyStripeWebhookSignature,
 } from "@/lib/billing/stripe";
@@ -28,15 +29,6 @@ function getWebhookSecret(): string {
 
 function getStringValue(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
-}
-
-/** Extract a Stripe customer ID from either a plain string or an expanded object. */
-export function getCustomerId(value: unknown): string | null {
-  if (typeof value === "string" && value.length > 0) return value;
-  if (typeof value === "object" && value !== null && "id" in value) {
-    return getStringValue((value as { id?: unknown }).id);
-  }
-  return null;
 }
 
 function getObjectMetadata(value: Record<string, unknown>): Record<string, unknown> {
