@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   deriveProfileUpdateFromSubscription,
+  getCustomerId,
   shouldApplyStripeUpdate,
   verifyStripeWebhookSignature,
 } from "@/lib/billing/stripe";
@@ -93,7 +94,7 @@ async function resolveUserIdForStripeObject(
     return metadataUserId;
   }
 
-  const customerId = getStringValue(object.customer);
+  const customerId = getCustomerId(object.customer);
   if (!customerId) {
     return null;
   }
@@ -157,7 +158,7 @@ async function handleCheckoutSessionCompleted(event: StripeEventPayload) {
   if (!userId) return;
 
   const patch: Record<string, unknown> = {
-    stripe_customer_id: getStringValue(object.customer),
+    stripe_customer_id: getCustomerId(object.customer),
   };
 
   const subscriptionId = getStringValue(object.subscription);
@@ -179,7 +180,7 @@ async function handleCheckoutSessionCompleted(event: StripeEventPayload) {
       event: "checkout_completed",
       properties: {
         surface: "stripe_webhook",
-        stripe_customer_id: getStringValue(object.customer),
+        stripe_customer_id: getCustomerId(object.customer),
         stripe_subscription_id: getStringValue(object.subscription),
       },
     });
