@@ -16,6 +16,16 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = getSafeRedirect(searchParams.get("next"));
 
+  // OAuth error response — provider returned an error instead of a code
+  const oauthError = searchParams.get("error");
+  if (oauthError) {
+    const description = searchParams.get("error_description") ?? oauthError;
+    console.error("[auth/callback] OAuth error:", oauthError, description);
+    const errorUrl = new URL(next, request.url);
+    errorUrl.searchParams.set("auth_error", "oauth_denied");
+    return NextResponse.redirect(errorUrl);
+  }
+
   if (code) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);

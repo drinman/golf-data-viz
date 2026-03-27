@@ -11,11 +11,17 @@ export const metadata: Metadata = {
     "Track your strokes gained trends over time. See where your game is improving and where to focus practice.",
 };
 
-export default async function HistoryPage() {
+export default async function HistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const authError = typeof params.auth_error === "string" ? params.auth_error : undefined;
   const user = await getUser();
 
   if (!user) {
-    return <HistoryAuthPrompt />;
+    return <HistoryAuthPrompt authError={authError} />;
   }
 
   const [rounds, entitlements] = await Promise.all([

@@ -25,12 +25,20 @@ const features = [
   },
 ] as const;
 
-export function HistoryAuthPrompt() {
+export function HistoryAuthPrompt({ authError }: { authError?: string }) {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
+      {authError && (
+        <div
+          data-testid="auth-error-banner"
+          className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800"
+        >
+          Sign-in failed. Please try again.
+        </div>
+      )}
       <div className="text-center">
         <h1 className="font-display text-3xl tracking-tight text-neutral-950">
           Round History

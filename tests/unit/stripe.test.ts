@@ -6,6 +6,7 @@ import {
   shouldApplyStripeUpdate,
   verifyStripeWebhookSignature,
 } from "@/lib/billing/stripe";
+import { getCustomerId } from "@/app/api/stripe/webhook/route";
 
 describe("buildCheckoutRedirectUrls", () => {
   it("uses the lesson prep builder for success and cancel redirects", () => {
@@ -107,5 +108,35 @@ describe("shouldApplyStripeUpdate", () => {
     expect(
       shouldApplyStripeUpdate("2026-03-08T00:00:00.000Z", 1773187200)
     ).toBe(true);
+  });
+});
+
+describe("getCustomerId", () => {
+  it("returns a plain string customer ID", () => {
+    expect(getCustomerId("cus_abc123")).toBe("cus_abc123");
+  });
+
+  it("extracts id from an expanded customer object", () => {
+    expect(getCustomerId({ id: "cus_abc123", name: "Test User" })).toBe("cus_abc123");
+  });
+
+  it("returns null for null", () => {
+    expect(getCustomerId(null)).toBeNull();
+  });
+
+  it("returns null for undefined", () => {
+    expect(getCustomerId(undefined)).toBeNull();
+  });
+
+  it("returns null for an object without an id field", () => {
+    expect(getCustomerId({ name: "no id" })).toBeNull();
+  });
+
+  it("returns null for a number", () => {
+    expect(getCustomerId(42)).toBeNull();
+  });
+
+  it("returns null for an empty string", () => {
+    expect(getCustomerId("")).toBeNull();
   });
 });
