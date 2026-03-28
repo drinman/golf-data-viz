@@ -536,7 +536,7 @@ export default function StrokesGainedClient({
       trackEvent("plus_handicap_submitted", {
         normalized_value: input.handicapIndex,
         is_plus_handicap: true,
-        benchmark_interpolation_mode: sgResult.benchmarkInterpolationMode ?? "extrapolated",
+        benchmark_interpolation_mode: sgResult.benchmarkInterpolationMode ?? "standard",
       });
     }
 
