@@ -43,6 +43,7 @@ import { ResultsSummary } from "./results-summary";
 import { ShareCard } from "./share-card";
 import { ReceiptCard } from "./receipt-card";
 import { RecipientCta } from "./recipient-cta";
+import { InterstitialCta } from "./interstitial-cta";
 import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
 import { NarrativeBlock, buildNarrativeCacheKey } from "./narrative-block";
@@ -995,6 +996,19 @@ export default function StrokesGainedClient({
             </div>
           </div>
 
+          {/* Interstitial CTA — encoded share recipients only */}
+          {showEncodedRecipientCta && !saveSuccess && (
+            <div className="mt-8 animate-fade-up" style={{ animationDelay: "150ms" }}>
+              <InterstitialCta
+                senderHandicap={lastInput.handicapIndex}
+                senderResult={result}
+                senderChartData={chartData}
+                bracketLabel={BRACKET_LABELS[result.benchmarkBracket]}
+                surface="encoded_share"
+              />
+            </div>
+          )}
+
           {/* Gold section separator */}
           <div
             className="mx-auto mt-10 h-px w-16 animate-fade-up bg-accent-500/40"
@@ -1009,7 +1023,7 @@ export default function StrokesGainedClient({
             >
               Category Breakdown
             </h3>
-            <div className="mt-6 animate-fade-up" style={{ animationDelay: "250ms" }}>
+            <div id="results-summary" className="mt-6 animate-fade-up" style={{ animationDelay: "250ms" }}>
               <ResultsSummary
                 result={result}
                 benchmarkMeta={benchmarkMeta}

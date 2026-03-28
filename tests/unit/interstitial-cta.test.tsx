@@ -199,5 +199,60 @@ describe("InterstitialCta", () => {
       expect(skipLink).toBeVisible();
       expect(skipLink.getAttribute("href")).toBe("#results-summary");
     });
+
+    it("calls scrollIntoView on #results-summary and fires interstitial_skipped", async () => {
+      const { default: userEvent } = await import("@testing-library/user-event");
+      const user = userEvent.setup();
+
+      const scrollIntoViewMock = vi.fn();
+      const fakeEl = { scrollIntoView: scrollIntoViewMock } as unknown as HTMLElement;
+      vi.spyOn(document, "getElementById").mockReturnValue(fakeEl as HTMLElement);
+
+      renderInterstitial();
+      const skipLink = screen.getByText(/Skip to full results/);
+      await user.click(skipLink);
+
+      expect(document.getElementById).toHaveBeenCalledWith("results-summary");
+      expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: "smooth" });
+      expect(mockTrackEvent).toHaveBeenCalledWith("interstitial_skipped", {
+        surface: "token_share",
+      });
+    });
+  });
+
+  describe("surface prop", () => {
+    it("renders with surface=encoded_share without errors", () => {
+      const result = makeSgResult();
+      render(
+        <InterstitialCta
+          senderHandicap={14.3}
+          senderResult={result}
+          senderChartData={sampleChartData}
+          bracketLabel="10–15 HCP"
+          surface="encoded_share"
+        />,
+      );
+      expect(screen.getByTestId("interstitial-cta")).toBeVisible();
+    });
+
+    it("fires interstitial_cta_clicked with surface=encoded_share on CTA click", async () => {
+      const { default: userEvent } = await import("@testing-library/user-event");
+      const user = userEvent.setup();
+      const result = makeSgResult();
+      render(
+        <InterstitialCta
+          senderHandicap={14.3}
+          senderResult={result}
+          senderChartData={sampleChartData}
+          bracketLabel="10–15 HCP"
+          surface="encoded_share"
+        />,
+      );
+      await user.click(screen.getByRole("link", { name: "Compare Your Game" }));
+      expect(mockTrackEvent).toHaveBeenCalledWith("interstitial_cta_clicked", {
+        surface: "encoded_share",
+        sentiment: expect.any(String),
+      });
+    });
   });
 });
