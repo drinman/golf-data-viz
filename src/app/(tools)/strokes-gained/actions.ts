@@ -342,6 +342,8 @@ export async function saveRound(
       captureMonitoringException(new Error(error.message), {
         source: "saveRound",
         code: "DB_ERROR",
+        db_error_code: error.code,
+        db_details: error.details,
       });
       return fail("DB_ERROR", DB_ERROR_MESSAGE);
     }
