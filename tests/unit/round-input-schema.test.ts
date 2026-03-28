@@ -641,4 +641,94 @@ describe("roundInputSchema", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  // === Paired nullability: up-and-down ===
+  it("rejects upAndDownAttempts without upAndDownConverted", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      upAndDownAttempts: 5,
+      upAndDownConverted: undefined,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === "upAndDownConverted");
+      expect(issue?.message).toMatch(/both/i);
+    }
+  });
+
+  it("rejects upAndDownConverted without upAndDownAttempts", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      upAndDownAttempts: undefined,
+      upAndDownConverted: 3,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === "upAndDownConverted");
+      expect(issue?.message).toMatch(/both/i);
+    }
+  });
+
+  it("accepts both upAndDown fields omitted", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      upAndDownAttempts: undefined,
+      upAndDownConverted: undefined,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts both upAndDown fields present", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      upAndDownAttempts: 5,
+      upAndDownConverted: 3,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  // === Paired nullability: sand saves ===
+  it("rejects sandSaveAttempts without sandSaves", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      sandSaveAttempts: 3,
+      sandSaves: undefined,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === "sandSaves");
+      expect(issue?.message).toMatch(/both/i);
+    }
+  });
+
+  it("rejects sandSaves without sandSaveAttempts", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      sandSaveAttempts: undefined,
+      sandSaves: 2,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === "sandSaves");
+      expect(issue?.message).toMatch(/both/i);
+    }
+  });
+
+  it("accepts both sandSave fields omitted", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      sandSaveAttempts: undefined,
+      sandSaves: undefined,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts both sandSave fields present", () => {
+    const result = roundInputSchema.safeParse({
+      ...validInput(),
+      sandSaveAttempts: 3,
+      sandSaves: 1,
+    });
+    expect(result.success).toBe(true);
+  });
 });

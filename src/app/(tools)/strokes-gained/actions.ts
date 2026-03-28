@@ -393,15 +393,25 @@ export async function saveRound(
     if (!baseInsert.user_id) {
       try {
         const claim = await generateClaimToken();
-        claimToken = claim.rawToken;
 
-        await supabase
+        const { error: claimUpdateError } = await supabase
           .from("rounds")
           .update({
             claim_token_hash: claim.hash,
             claim_token_expires_at: claim.expiresAt,
           })
           .eq("id", roundId);
+
+        if (!claimUpdateError) {
+          claimToken = claim.rawToken;
+        } else {
+          captureMonitoringException(
+            new Error(
+              `Claim token DB write failed: ${claimUpdateError.message}`
+            ),
+            { source: "saveRound", code: "CLAIM_WRITE_FAILED", roundId }
+          );
+        }
       } catch (claimErr) {
         // Claim token is best-effort — never block the save
         console.warn("[saveRound] Claim token generation failed:", claimErr);

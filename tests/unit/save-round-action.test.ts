@@ -143,6 +143,26 @@ describe("saveRound server action", () => {
     });
   });
 
+  it("returns empty claimToken when claim token DB write fails", async () => {
+    mockUpdate.mockReturnValue({
+      eq: vi.fn().mockResolvedValue({
+        error: { message: "update failed", code: "PGRST301" },
+      }),
+    });
+
+    const result = await saveRound(makeRound(), verification);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.claimToken).toBe("");
+      expect(result.roundId).toBe("test-round-id");
+    }
+    expect(mockCaptureMonitoringException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.stringContaining("Claim token DB write failed") }),
+      expect.objectContaining({ source: "saveRound", code: "CLAIM_WRITE_FAILED" }),
+    );
+  });
+
   it("returns DB_ERROR when Supabase insert reports an error", async () => {
     mockInsert.mockReturnValue({
       select: vi.fn().mockResolvedValue({

@@ -210,6 +210,24 @@ export const roundInputSchema = z
   )
   .refine(
     (data) =>
+      (data.upAndDownAttempts == null) === (data.upAndDownConverted == null),
+    {
+      message:
+        "Up & Down Attempts and Made must both be filled or both left blank",
+      path: ["upAndDownConverted"],
+    }
+  )
+  .refine(
+    (data) =>
+      (data.sandSaveAttempts == null) === (data.sandSaves == null),
+    {
+      message:
+        "Sand Save Attempts and Made must both be filled or both left blank",
+      path: ["sandSaves"],
+    }
+  )
+  .refine(
+    (data) =>
       data.onePutts == null || data.onePutts <= data.totalPutts,
     {
       message: "One-putts can't exceed total putts",
