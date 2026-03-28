@@ -122,7 +122,8 @@ export function InterstitialCta({
               fillOpacity={0.1}
             />
           </div>
-          <p className="text-2xl font-bold text-neutral-400">???</p>
+          <p className="text-2xl font-bold text-neutral-400" aria-hidden="true">???</p>
+          <span className="sr-only">Your results hidden — compare your game to find out</span>
         </div>
       </div>
 

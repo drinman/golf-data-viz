@@ -789,6 +789,9 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(
       cta.getByText(/(Your friend is outplaying|Where are YOU losing strokes|Same handicap\. Different game|Your friend is losing .+ strokes on)/)
     ).toBeVisible();
+
+    // Interstitial also renders on plain ?d= (no UTM required)
+    await expect(page.getByTestId("interstitial-cta")).toBeVisible();
   });
 
   test("encoded share shows interstitial CTA above category breakdown", async ({
@@ -826,6 +829,29 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(breakdown).toBeVisible();
     const breakdownBox = await breakdown.boundingBox();
     expect(interstitialBox!.y).toBeLessThan(breakdownBox!.y);
+  });
+
+  test("interstitial and recipient CTA disappear after recipient saves own round", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained");
+    await submitFullRound(page);
+    const dParam = new URL(page.url()).searchParams.get("d");
+    expect(dParam).toBeTruthy();
+
+    // Clear localStorage to simulate a genuine recipient
+    await page.evaluate(() => localStorage.clear());
+    await page.goto(`/strokes-gained?d=${dParam}&utm_source=share&utm_medium=cta&utm_campaign=round_share`);
+    await expect(page.getByText("Your Round Breakdown")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId("interstitial-cta")).toBeVisible();
+    await expect(page.getByTestId("recipient-cta")).toBeVisible();
+
+    // Recipient fills in their own round and submits
+    await submitFullRound(page);
+
+    // After submission, saveSuccess state clears the CTAs
+    await expect(page.getByTestId("interstitial-cta")).not.toBeVisible({ timeout: 3000 });
+    await expect(page.getByTestId("recipient-cta")).not.toBeVisible({ timeout: 3000 });
   });
 
   test("shared link header does NOT appear for user-submitted results", async ({

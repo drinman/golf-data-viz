@@ -1012,18 +1012,18 @@ export default function StrokesGainedClient({
           {/* Gold section separator */}
           <div
             className="mx-auto mt-10 h-px w-16 animate-fade-up bg-accent-500/40"
-            style={{ animationDelay: "150ms" }}
+            style={{ animationDelay: "200ms" }}
           />
 
           {/* ── CHAPTER 2: DEEP DIVE ── */}
-          <div className="mt-10">
+          <div id="results-summary" className="mt-10">
             <h3
               className="animate-fade-up text-sm font-semibold uppercase tracking-[0.15em] text-brand-800"
               style={{ animationDelay: "200ms" }}
             >
               Category Breakdown
             </h3>
-            <div id="results-summary" className="mt-6 animate-fade-up" style={{ animationDelay: "250ms" }}>
+            <div className="mt-6 animate-fade-up" style={{ animationDelay: "250ms" }}>
               <ResultsSummary
                 result={result}
                 benchmarkMeta={benchmarkMeta}
