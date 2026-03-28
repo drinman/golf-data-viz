@@ -138,9 +138,9 @@ test("NUMERIC(4,2) overflow — 54 handicap extreme round triggers DB_ERROR", as
     console.log(`INCONCLUSIVE — outcome: ${outcome}`);
   }
 
-  // Soft assertion: log but don't fail the test suite so we can see the full output
+  // Hard assertion: fail CI if the bug regresses
   expect(
-    ["saved", "already_saved", "cta_hidden", "error", "timeout"],
-    `Unexpected outcome: ${outcome}`
+    ["saved", "already_saved", "cta_hidden"],
+    `Save failed with outcome "${outcome}". NUMERIC overflow may have regressed.`
   ).toContain(outcome);
 });
