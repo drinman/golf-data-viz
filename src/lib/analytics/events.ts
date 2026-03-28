@@ -241,7 +241,7 @@ export type AnalyticsEventProps = {
   interstitial_cta_viewed: { surface: "encoded_share" | "token_share" };
   interstitial_cta_clicked: { surface: "encoded_share" | "token_share"; sentiment: "positive" | "negative" | "neutral" };
   interstitial_skipped: { surface: "encoded_share" | "token_share" };
-  bottom_cta_clicked: { surface: "token_share" };
+  bottom_cta_clicked: { surface: "encoded_share" | "token_share" };
 };
 
 type RequiredKeys<T extends object> = {

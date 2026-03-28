@@ -43,6 +43,7 @@ import { ResultsSummary } from "./results-summary";
 import { ShareCard } from "./share-card";
 import { ReceiptCard } from "./receipt-card";
 import { RecipientCta } from "./recipient-cta";
+import { InterstitialCta } from "./interstitial-cta";
 import { TroubleContextPrompt } from "./trouble-context-prompt";
 import { TroubleContextModal } from "./trouble-context-modal";
 import { NarrativeBlock, buildNarrativeCacheKey } from "./narrative-block";
@@ -995,14 +996,27 @@ export default function StrokesGainedClient({
             </div>
           </div>
 
+          {/* Interstitial CTA — encoded share recipients only */}
+          {showEncodedRecipientCta && !saveSuccess && (
+            <div className="mt-8 animate-fade-up" style={{ animationDelay: "150ms" }}>
+              <InterstitialCta
+                senderHandicap={lastInput.handicapIndex}
+                senderResult={result}
+                senderChartData={chartData}
+                bracketLabel={BRACKET_LABELS[result.benchmarkBracket]}
+                surface="encoded_share"
+              />
+            </div>
+          )}
+
           {/* Gold section separator */}
           <div
             className="mx-auto mt-10 h-px w-16 animate-fade-up bg-accent-500/40"
-            style={{ animationDelay: "150ms" }}
+            style={{ animationDelay: "200ms" }}
           />
 
           {/* ── CHAPTER 2: DEEP DIVE ── */}
-          <div className="mt-10">
+          <div id="results-summary" className="mt-10">
             <h3
               className="animate-fade-up text-sm font-semibold uppercase tracking-[0.15em] text-brand-800"
               style={{ animationDelay: "200ms" }}
