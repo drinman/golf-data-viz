@@ -7,7 +7,7 @@
  * Run: npx playwright test repro-save-bug --project=functional --reporter=list
  */
 import { test, expect } from "@playwright/test";
-import { submitFullRound } from "./helpers/round-form";
+import { submitFullRound, submitPlusHandicapRound } from "./helpers/round-form";
 
 test.describe("Save flow", () => {
   /**
@@ -91,6 +91,39 @@ test.describe("Save flow", () => {
     const honeypot = page.locator('input[name="website"]');
     await expect(honeypot).toHaveCount(1);
     await expect(honeypot).not.toBeVisible();
+  });
+
+  test("Plus-handicap round save succeeds", async ({
+    page,
+  }) => {
+    await page.goto("/strokes-gained", { waitUntil: "networkidle" });
+    await submitPlusHandicapRound(page);
+
+    const saveCta = page.locator('[data-testid="post-results-save-cta"]');
+    const visible = await saveCta.isVisible().catch(() => false);
+    if (!visible) {
+      await page.waitForTimeout(2000);
+      const retryVisible = await saveCta.isVisible().catch(() => false);
+      if (!retryVisible) {
+        test.skip(true, "Save CTA not rendered — ENABLE_ROUND_SAVE likely disabled on server");
+      }
+    }
+
+    await saveCta.locator("button").first().click();
+
+    const savedFlash = page.locator("text=Saved!");
+    const alreadySaved = page.locator("text=Already saved");
+
+    const succeeded = await Promise.race([
+      savedFlash.waitFor({ timeout: 15000 }).then(() => "saved" as const),
+      alreadySaved.waitFor({ timeout: 15000 }).then(() => "already_saved" as const),
+      saveCta.waitFor({ state: "hidden", timeout: 15000 }).then(() => "cta_unmounted" as const),
+    ]).catch(() => "timeout" as const);
+
+    console.log(`\n=== PLUS HANDICAP SAVE ===`);
+    console.log(`Result: ${succeeded}`);
+
+    expect(["saved", "already_saved", "cta_unmounted"]).toContain(succeeded);
   });
 
   test("Save CTA shows no Turnstile disclosure", async ({

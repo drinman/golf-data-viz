@@ -69,3 +69,37 @@ export async function submitFullRound(page: Page) {
     page.getByText("Your Round Breakdown")
   ).toBeVisible({ timeout: 5000 });
 }
+
+/**
+ * Fill a plus-handicap round (handicapIndex -2.1).
+ * Clicks the plus-handicap toggle, then enters absolute value 2.1.
+ * Scoring: 5 birdies + 9 pars + 4 bogeys = 18 holes, score 70.
+ */
+export async function fillPlusHandicapRound(page: Page) {
+  // Toggle to plus handicap mode
+  await page.click('[data-testid="plus-handicap-toggle"]');
+  await page.fill('[name="handicapIndex"]', "2.1");
+  await page.fill('[name="course"]', "Repro Plus HCP Course");
+  await page.fill('[name="courseRating"]', "72.0");
+  await page.fill('[name="slopeRating"]', "130");
+  await page.fill('[name="score"]', "70");
+  await page.fill('[name="fairwaysHit"]', "10");
+  await page.fill('[name="fairwayAttempts"]', "14");
+  await page.fill('[name="greensInRegulation"]', "12");
+  await page.fill('[name="totalPutts"]', "28");
+  await page.fill('[name="penaltyStrokes"]', "0");
+  await page.fill('[name="eagles"]', "0");
+  await page.fill('[name="birdies"]', "5");
+  await page.fill('[name="pars"]', "9");
+  await page.fill('[name="bogeys"]', "4");
+  await page.fill('[name="doubleBogeys"]', "0");
+  await page.fill('[name="triplePlus"]', "0");
+}
+
+export async function submitPlusHandicapRound(page: Page) {
+  await fillPlusHandicapRound(page);
+  await page.click('button[type="submit"]');
+  await expect(
+    page.getByText("Your Round Breakdown")
+  ).toBeVisible({ timeout: 5000 });
+}

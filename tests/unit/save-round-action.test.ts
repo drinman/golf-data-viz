@@ -732,4 +732,31 @@ describe("saveRound server action", () => {
       "/strokes-gained/rounds/existing-round-id"
     );
   });
+
+  it("plus-handicap V3 save writes 'extrapolated' interpolation mode", async () => {
+    vi.stubEnv("SG_PHASE2_MODE", "full");
+
+    const plusHandicapRound = makeRound({
+      handicapIndex: -2.1,
+      score: 70,
+      eagles: 0,
+      birdies: 5,
+      pars: 9,
+      bogeys: 4,
+      doubleBogeys: 0,
+      triplePlus: 0,
+      fairwaysHit: 10,
+      fairwayAttempts: 14,
+      greensInRegulation: 12,
+      totalPutts: 28,
+      penaltyStrokes: 0,
+    });
+
+    const result = await saveRound(plusHandicapRound, verification);
+
+    expect(result.success).toBe(true);
+    const insertedRow = mockInsert.mock.calls[0][0];
+    expect(insertedRow.benchmark_interpolation_mode).toBe("extrapolated");
+    expect(insertedRow.handicap_index).toBe(-2.1);
+  });
 });
