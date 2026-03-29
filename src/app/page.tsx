@@ -67,7 +67,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             <p className="mt-3 text-sm text-neutral-500">
               or{" "}
               <a
-                href="/strokes-gained"
+                href="/strokes-gained#try-sample"
                 className="text-brand-800 underline transition-colors hover:text-brand-700"
               >
                 see a sample breakdown

@@ -837,7 +837,7 @@ export default function StrokesGainedClient({
 
           {/* Hero cascade: h1=100ms, subhead=200ms, preview=300ms, button=400ms */}
           {!isFromHistory && samplePreview && !result && (
-            <div className="animate-fade-up [animation-delay:300ms] mt-8">
+            <div id="try-sample" className="animate-fade-up [animation-delay:300ms] mt-8">
               <SampleResultPreview {...samplePreview} />
               <button
                 type="button"

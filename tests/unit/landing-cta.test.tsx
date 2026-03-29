@@ -2,7 +2,7 @@
 
 import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LandingCta } from "@/app/_components/landing-cta";
 
 const { mockTrackEvent } = vi.hoisted(() => ({
@@ -14,6 +14,8 @@ vi.mock("@/lib/analytics/client", () => ({
 }));
 
 describe("LandingCta analytics", () => {
+  afterEach(() => cleanup());
+
   beforeEach(() => {
     mockTrackEvent.mockClear();
     window.history.pushState({}, "", "/?utm_source=reddit");
@@ -40,7 +42,6 @@ describe("LandingCta analytics", () => {
   });
 
   it("does not render trust line by default", () => {
-    cleanup();
     render(<LandingCta />);
     expect(screen.queryByText(/6 numbers/)).not.toBeInTheDocument();
   });
