@@ -66,6 +66,13 @@ import type { SamplePreviewData } from "@/lib/golf/sample-round";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useSupabaseUser } from "@/lib/supabase/auth-client";
 
+const GHOST_RADAR_DATA: RadarChartDatum[] = [
+  { category: "Off the Tee", player: 50 },
+  { category: "Approach", player: 50 },
+  { category: "Around the Green", player: 50 },
+  { category: "Putting", player: 50 },
+];
+
 function getClientPhase2Mode(): SgPhase2Mode {
   const mode = process.env.NEXT_PUBLIC_SG_PHASE2_MODE;
   if (mode === "off" || mode === "shadow") return mode;
@@ -836,10 +843,32 @@ export default function StrokesGainedClient({
                 type="button"
                 data-testid="try-sample-btn"
                 onClick={handleTrySample}
-                className="animate-fade-up [animation-delay:400ms] mt-4 w-full rounded-lg border-2 border-brand-800/20 bg-white px-4 py-3 text-sm font-semibold text-brand-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-800/40 hover:bg-brand-50 hover:shadow-md active:translate-y-0"
+                className="animate-fade-up [animation-delay:400ms] mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border-2 border-cream-200 bg-white px-5 py-2.5 text-sm font-medium text-neutral-800 transition-all duration-200 hover:border-brand-800/30 hover:bg-cream-50"
               >
                 Try with Sample Data
               </button>
+            </div>
+          )}
+
+          {!isFromHistory && samplePreview && !result && (
+            <div className="animate-fade-up [animation-delay:500ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-800">
+                Every 14-handicap has a different shape
+              </p>
+              <p className="mt-1 font-display text-lg tracking-tight text-neutral-950">
+                What&apos;s yours?
+              </p>
+              <div className="mx-auto mt-3 h-[140px] sm:h-[180px]">
+                <RadarChart
+                  data={GHOST_RADAR_DATA}
+                  compact
+                  colors={["#a8a29e"]}
+                  fillOpacity={0.1}
+                />
+              </div>
+              <p className="mt-2 text-sm text-neutral-500">
+                6 core numbers — that&apos;s all we need.
+              </p>
             </div>
           )}
 

@@ -3,7 +3,9 @@ import { PenLine, BarChart3, Share2 } from "lucide-react";
 import { ContourBg } from "@/components/contour-bg";
 import { SampleResultPreview } from "@/components/sample-result-preview";
 import { getSampleResult } from "@/lib/golf/sample-round";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { LandingCta } from "./_components/landing-cta";
+import { PeerAnchorBlock } from "./_components/peer-anchor-block";
 
 interface HomePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -14,6 +16,15 @@ export default async function Home({ searchParams }: HomePageProps) {
   const utmSource = typeof params.utm_source === "string" ? params.utm_source : undefined;
 
   const sample = getSampleResult();
+
+  let roundCount: number | null = null;
+  try {
+    const supabase = createAdminClient();
+    const { count } = await supabase
+      .from("rounds")
+      .select("*", { count: "exact", head: true });
+    roundCount = count;
+  } catch { /* fail open — env vars may be missing in local dev */ }
 
   return (
     <main>
@@ -34,11 +45,24 @@ export default async function Home({ searchParams }: HomePageProps) {
             Where did your strokes go?
           </h1>
           <p className="animate-fade-up delay-1 mt-6 max-w-[22rem] text-base leading-relaxed text-neutral-600 sm:max-w-xl sm:text-lg">
-            Enter your scorecard stats after a round. See exactly where you
-            gained and lost strokes compared to golfers at your level.
+            You left strokes on the course last round. Find out which
+            ones — and which part of your game is costing you the most.
           </p>
+          <div className="animate-fade-up delay-1 mt-6">
+            <PeerAnchorBlock />
+          </div>
           <div className="animate-fade-up delay-2 mt-8 sm:mt-10">
-            <LandingCta utmSource={utmSource} />
+            <LandingCta utmSource={utmSource} showTrustLine />
+            <p className="mt-3 text-sm text-neutral-500">
+              or{" "}
+              <a
+                href="/strokes-gained"
+                className="text-brand-800 underline transition-colors hover:text-brand-700"
+              >
+                see a sample breakdown
+              </a>{" "}
+              first
+            </p>
           </div>
         </div>
       </section>
@@ -70,9 +94,15 @@ export default async function Home({ searchParams }: HomePageProps) {
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-y-1 text-center
           text-[10px] font-medium uppercase tracking-[0.08em] text-cream-100/80
           sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-8 sm:gap-y-2 sm:text-xs sm:tracking-[0.15em]">
-          <span>Compared against amateur peers, not Tour pros</span>
+          {roundCount !== null && roundCount >= 100 ? (
+            <span>
+              <span className="font-mono tabular-nums">{roundCount.toLocaleString()}</span> rounds analyzed
+            </span>
+          ) : (
+            <span>Built on 50,000+ amateur shot distributions</span>
+          )}
           <span className="hidden sm:inline text-accent-500/60" aria-hidden="true">&bull;</span>
-          <span>Open methodology &amp; published data sources</span>
+          <span>Compared against amateur peers, not Tour pros</span>
           <span className="hidden sm:inline text-accent-500/60" aria-hidden="true">&bull;</span>
           <span>Free — no account required</span>
         </div>
@@ -90,11 +120,11 @@ export default async function Home({ searchParams }: HomePageProps) {
                 <PenLine className="h-5 w-5" />
               </div>
               <h3 className="mt-4 font-display text-base tracking-tight text-neutral-950">
-                Enter your stats
+                Punch in 6 numbers
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                Score, fairways, greens, putts, and scoring breakdown from your
-                round.
+                Your score, fairways, greens, and putts — that&apos;s the core.
+                Add more for a deeper breakdown.
               </p>
             </div>
             <div data-testid="step-2" className="animate-fade-up delay-4">
@@ -102,11 +132,11 @@ export default async function Home({ searchParams }: HomePageProps) {
                 <BarChart3 className="h-5 w-5" />
               </div>
               <h3 className="mt-4 font-display text-base tracking-tight text-neutral-950">
-                See your breakdown
+                See what&apos;s costing you
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                Get a strokes gained analysis across four categories benchmarked
-                against your handicap peers.
+                A strokes gained breakdown shows exactly where you&apos;re losing
+                shots to golfers at your level.
               </p>
             </div>
             <div data-testid="step-3" className="animate-fade-up delay-5">
@@ -114,11 +144,11 @@ export default async function Home({ searchParams }: HomePageProps) {
                 <Share2 className="h-5 w-5" />
               </div>
               <h3 className="mt-4 font-display text-base tracking-tight text-neutral-950">
-                Share with your group
+                Show your buddies
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                Download a shareable card or copy a link to show your buddies
-                where you stack up.
+                Download a shareable card or copy a link. Let your group see
+                where they stack up against you.
               </p>
             </div>
           </div>
