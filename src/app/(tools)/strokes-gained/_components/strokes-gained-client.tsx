@@ -848,14 +848,14 @@ export default function StrokesGainedClient({
                 Try with Sample Data
               </button>
               {/* Ghost radar — curiosity gap */}
-              <div className="animate-fade-up [animation-delay:500ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-4 text-center">
+              <div className="animate-fade-up [animation-delay:500ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-4 text-center [&_svg]:overflow-visible">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-800">
                   Every 14-handicap has a different shape
                 </p>
                 <p className="mt-1 font-display text-lg tracking-tight text-neutral-950">
                   What&apos;s yours?
                 </p>
-                <div className="mx-auto mt-3 h-[140px] sm:h-[180px]">
+                <div className="mx-auto mt-3 h-[200px] sm:h-[240px]">
                   <RadarChart
                     data={GHOST_RADAR_DATA}
                     compact

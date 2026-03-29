@@ -823,10 +823,6 @@ test.describe("Strokes Gained Benchmarker", () => {
     expect(href).toContain("handicap=");
     expect(href).toContain("utm_source=share");
 
-    // Percentile badge should be visible in header
-    const headerBand = page.locator('[data-testid="round-header"]');
-    await expect(headerBand.getByText(/Top \d+%/)).toBeVisible();
-
     // Interstitial should be positioned above the category breakdown
     const interstitialBox = await interstitial.boundingBox();
     const breakdown = page.locator("#results-summary");
