@@ -44,6 +44,8 @@ interface RoundLayoutProps {
   shareCardRef: RefObject<HTMLDivElement | null>;
   /** Slot rendered before the header band (e.g. back link). */
   beforeHeader?: ReactNode;
+  /** Slot rendered inside the dark header band, after the score/SG row, before the gold separator. */
+  headerBadge?: ReactNode;
   /** Slot rendered between radar chart and first gold separator. */
   interstitial?: ReactNode;
   /** Slot rendered after the second gold separator (share/download actions). */
@@ -61,6 +63,7 @@ export function RoundLayout({
   derived,
   shareCardRef,
   beforeHeader,
+  headerBadge,
   interstitial,
   actions,
   bottomCta,
@@ -76,6 +79,7 @@ export function RoundLayout({
 
       {/* Header band — score-first box score */}
       <div
+        data-testid="round-header"
         className="mt-6 animate-fade-up overflow-hidden rounded-xl bg-brand-900 px-6 py-6 shadow-lg sm:px-8"
         style={d(1)}
       >
@@ -131,6 +135,13 @@ export function RoundLayout({
         <p className="mt-0.5 text-xs text-brand-100/50">
           Scorecard-based estimate
         </p>
+
+        {/* Percentile badge slot */}
+        {headerBadge && (
+          <div className="mt-3">
+            {headerBadge}
+          </div>
+        )}
 
         {/* Gold separator */}
         <div className="mt-4 h-px bg-accent-500/50" />

@@ -123,7 +123,7 @@ export function InterstitialCta({
             />
           </div>
           <p className="text-2xl font-bold text-neutral-400" aria-hidden="true">???</p>
-          <span className="sr-only">Your results hidden — compare your game to find out</span>
+          <span className="sr-only">Your results hidden — find where you&apos;re losing strokes</span>
         </div>
       </div>
 
@@ -133,10 +133,10 @@ export function InterstitialCta({
         onClick={handleCtaClick}
         className="mt-4 inline-block min-h-11 rounded-lg bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
       >
-        Compare Your Game
+        Find Where You&apos;re Losing Strokes
       </a>
       <p className="mt-2 text-xs text-neutral-400">
-        Takes 60 seconds · Free
+        Takes 90 seconds · Free
       </p>
 
       {/* Skip link */}

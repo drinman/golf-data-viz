@@ -47,7 +47,7 @@ function getShortChallenge(result: StrokesGainedResult): string {
     case "positive":
       return "Outplay your friend?";
     default:
-      return "Your turn";
+      return "Your strokes";
   }
 }
 
@@ -104,10 +104,10 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
           onClick={handleClick}
           className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
         >
-          Compare Your Game
+          Find Where You&apos;re Losing Strokes
         </a>
         <p className="mt-2 text-xs text-neutral-400">
-          Takes 60 seconds · Free
+          Takes 90 seconds · Free
         </p>
       </div>
 
@@ -129,7 +129,7 @@ export function RecipientCta({ senderHandicap, senderResult, surface }: Recipien
               onClick={handleClick}
               className="shrink-0 inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md active:translate-y-0"
             >
-              Your Turn
+              Your Strokes
             </a>
           </div>
         </div>

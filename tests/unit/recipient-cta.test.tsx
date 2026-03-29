@@ -209,7 +209,7 @@ describe("RecipientCta", () => {
         />
       );
 
-      await user.click(screen.getByRole("link", { name: "Compare Your Game" }));
+      await user.click(screen.getByRole("link", { name: "Find Where You're Losing Strokes" }));
 
       expect(mockTrackEvent).toHaveBeenCalledWith("shared_round_cta_clicked", {
         surface: "token_share",
