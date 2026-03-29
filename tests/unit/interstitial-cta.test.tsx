@@ -182,7 +182,7 @@ describe("InterstitialCta", () => {
     it("has correct href with handicap and UTM params", () => {
       renderInterstitial();
 
-      const link = screen.getByRole("link", { name: "Compare Your Game" });
+      const link = screen.getByRole("link", { name: "Find Where You're Losing Strokes" });
       const href = link.getAttribute("href");
       expect(href).toContain("handicap=14.3");
       expect(href).toContain("utm_source=share");
@@ -248,7 +248,7 @@ describe("InterstitialCta", () => {
           surface="encoded_share"
         />,
       );
-      await user.click(screen.getByRole("link", { name: "Compare Your Game" }));
+      await user.click(screen.getByRole("link", { name: "Find Where You're Losing Strokes" }));
       expect(mockTrackEvent).toHaveBeenCalledWith("interstitial_cta_clicked", {
         surface: "encoded_share",
         sentiment: expect.any(String),

@@ -817,11 +817,15 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(interstitial.getByText("???")).toBeVisible();
 
     // CTA link has correct href — scoped to interstitial to avoid ambiguity with bottom RecipientCta
-    const ctaLink = interstitial.getByRole("link", { name: "Compare Your Game" });
+    const ctaLink = interstitial.getByRole("link", { name: "Find Where You're Losing Strokes" });
     await expect(ctaLink).toBeVisible();
     const href = await ctaLink.getAttribute("href");
     expect(href).toContain("handicap=");
     expect(href).toContain("utm_source=share");
+
+    // Percentile badge should be visible in header
+    const headerBand = page.locator('[data-testid="round-header"]');
+    await expect(headerBand.getByText(/Top \d+%/)).toBeVisible();
 
     // Interstitial should be positioned above the category breakdown
     const interstitialBox = await interstitial.boundingBox();
@@ -964,7 +968,7 @@ test.describe("Strokes Gained Benchmarker", () => {
     await expect(page.getByTestId("recipient-cta")).toBeVisible({ timeout: 5000 });
 
     // Click the CTA link
-    const ctaLink = page.getByTestId("recipient-cta").getByRole("link", { name: "Compare Your Game" });
+    const ctaLink = page.getByTestId("recipient-cta").getByRole("link", { name: "Find Where You're Losing Strokes" });
     await expect(ctaLink).toBeVisible();
     const href = await ctaLink.getAttribute("href");
     expect(href).toContain("handicap=");

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Download } from "lucide-react";
-import type { RoundDetailSnapshot } from "@/lib/golf/types";
+import type { RoundDetailSnapshot, StrokesGainedCategory } from "@/lib/golf/types";
 import {
   RoundLayout,
   deriveRoundData,
@@ -11,6 +11,8 @@ import { captureElementAsPng, downloadBlob } from "@/lib/capture";
 import { trackEvent } from "@/lib/analytics/client";
 import { RecipientCta } from "@/app/(tools)/strokes-gained/_components/recipient-cta";
 import { InterstitialCta } from "@/app/(tools)/strokes-gained/_components/interstitial-cta";
+import { getPresentationPercentiles, type PercentileResult } from "@/lib/golf/percentile";
+import { CATEGORY_LABELS } from "@/lib/golf/constants";
 
 interface SharedRoundClientProps {
   snapshot: RoundDetailSnapshot;
@@ -19,6 +21,11 @@ interface SharedRoundClientProps {
 export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
   const derived = deriveRoundData(snapshot);
   const shareCardRef = useRef<HTMLDivElement>(null);
+
+  const percentiles = getPresentationPercentiles(derived.sgResult, derived.presentationTrust);
+  const strongestEntry = (Object.entries(percentiles) as [StrokesGainedCategory, PercentileResult | null][])
+    .filter(([, v]) => v !== null)
+    .sort(([, a], [, b]) => b!.percentile - a!.percentile)[0];
 
   useEffect(() => {
     trackEvent("shared_saved_round_viewed", {
@@ -44,6 +51,17 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
       snapshot={snapshot}
       derived={derived}
       shareCardRef={shareCardRef}
+      headerBadge={
+        strongestEntry ? (
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100/80">
+            {CATEGORY_LABELS[strongestEntry[0]]}:{" "}
+            <span className="font-mono text-data-positive-on-dark">
+              Top {100 - strongestEntry[1]!.percentile}%
+            </span>{" "}
+            of {derived.bracketLabel} golfers
+          </p>
+        ) : undefined
+      }
       interstitial={
         <InterstitialCta
           senderHandicap={snapshot.handicapIndex}
@@ -81,7 +99,7 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
             onClick={() => trackEvent("bottom_cta_clicked", { surface: "token_share" })}
             className="mt-2 inline-flex items-center text-sm font-medium text-brand-800 underline transition-colors hover:text-brand-700"
           >
-            Compare Your Game — Free
+            Find Where You&apos;re Losing Strokes — Free
           </a>
         </div>
       }
