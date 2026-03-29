@@ -31,10 +31,10 @@ test.describe("Production smoke", () => {
     await expect(page.getByTestId("sg-results")).toBeVisible({ timeout: 15000 });
     await expect(page).toHaveURL(/\?d=/);
 
-    const downloadPromise = page.waitForEvent("download", { timeout: 10000 });
-    await page.getByTestId("download-png").click();
-    const download = await downloadPromise;
-    expect(download.suggestedFilename()).toBe("strokes-gained.png");
+    // Verify share buttons render (download behavior is browser-specific;
+    // covered by functional tests on Chromium)
+    await expect(page.getByTestId("share-image")).toBeVisible();
+    await expect(page.getByTestId("copy-link")).toBeVisible();
   });
 
   test("partial round flow shows confidence badges", async ({ page }) => {
