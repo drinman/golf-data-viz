@@ -18,25 +18,34 @@ interface LandingCtaProps {
   utmSource?: string;
   eventName?: "landing_cta_clicked" | "sample_preview_cta_clicked";
   testId?: string;
+  showTrustLine?: boolean;
 }
 
 export function LandingCta({
   utmSource,
   eventName = "landing_cta_clicked",
   testId = "hero-cta",
+  showTrustLine = false,
 }: LandingCtaProps) {
   const effectiveUtmSource = utmSource ?? getUtmSource();
 
   return (
-    <a
-      href={getCtaHref(effectiveUtmSource)}
-      data-testid={testId}
-      className="inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-6 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0"
-      onClick={() => {
-        trackEvent(eventName, { utm_source: effectiveUtmSource });
-      }}
-    >
-      Benchmark My Round
-    </a>
+    <div className="inline-flex flex-col items-start">
+      <a
+        href={getCtaHref(effectiveUtmSource)}
+        data-testid={testId}
+        className="inline-flex min-h-11 items-center rounded-lg bg-brand-800 px-6 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-800/30 focus:ring-offset-2 active:translate-y-0"
+        onClick={() => {
+          trackEvent(eventName, { utm_source: effectiveUtmSource });
+        }}
+      >
+        Find Where I&apos;m Losing Strokes
+      </a>
+      {showTrustLine && (
+        <p className="mt-2 text-xs text-neutral-400">
+          6 numbers &middot; 90 seconds &middot; Free
+        </p>
+      )}
+    </div>
   );
 }
