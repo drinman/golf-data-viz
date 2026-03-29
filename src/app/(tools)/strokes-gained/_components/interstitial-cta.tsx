@@ -123,7 +123,7 @@ export function InterstitialCta({
             />
           </div>
           <p className="text-2xl font-bold text-neutral-400" aria-hidden="true">???</p>
-          <span className="sr-only">Your results hidden — compare your game to find out</span>
+          <span className="sr-only">Your results hidden — find where you&apos;re losing strokes</span>
         </div>
       </div>
 

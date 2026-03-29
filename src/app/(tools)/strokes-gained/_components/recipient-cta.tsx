@@ -47,7 +47,7 @@ function getShortChallenge(result: StrokesGainedResult): string {
     case "positive":
       return "Outplay your friend?";
     default:
-      return "Your turn";
+      return "Your strokes";
   }
 }
 
