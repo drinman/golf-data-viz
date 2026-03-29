@@ -847,28 +847,26 @@ export default function StrokesGainedClient({
               >
                 Try with Sample Data
               </button>
-            </div>
-          )}
-
-          {!isFromHistory && samplePreview && !result && (
-            <div className="animate-fade-up [animation-delay:500ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-4 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-800">
-                Every 14-handicap has a different shape
-              </p>
-              <p className="mt-1 font-display text-lg tracking-tight text-neutral-950">
-                What&apos;s yours?
-              </p>
-              <div className="mx-auto mt-3 h-[140px] sm:h-[180px]">
-                <RadarChart
-                  data={GHOST_RADAR_DATA}
-                  compact
-                  colors={["#a8a29e"]}
-                  fillOpacity={0.1}
-                />
+              {/* Ghost radar — curiosity gap */}
+              <div className="animate-fade-up [animation-delay:500ms] mt-6 rounded-xl border border-cream-200 bg-cream-50 px-5 py-4 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-800">
+                  Every 14-handicap has a different shape
+                </p>
+                <p className="mt-1 font-display text-lg tracking-tight text-neutral-950">
+                  What&apos;s yours?
+                </p>
+                <div className="mx-auto mt-3 h-[140px] sm:h-[180px]">
+                  <RadarChart
+                    data={GHOST_RADAR_DATA}
+                    compact
+                    colors={["#a8a29e"]}
+                    fillOpacity={0.1}
+                  />
+                </div>
+                <p className="mt-2 text-sm text-neutral-500">
+                  6 core numbers — that&apos;s all we need.
+                </p>
               </div>
-              <p className="mt-2 text-sm text-neutral-500">
-                6 core numbers — that&apos;s all we need.
-              </p>
             </div>
           )}
 

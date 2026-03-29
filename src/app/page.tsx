@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { PenLine, BarChart3, Share2 } from "lucide-react";
 import { ContourBg } from "@/components/contour-bg";
 import { SampleResultPreview } from "@/components/sample-result-preview";
@@ -6,6 +7,23 @@ import { getSampleResult } from "@/lib/golf/sample-round";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { LandingCta } from "./_components/landing-cta";
 import { PeerAnchorBlock } from "./_components/peer-anchor-block";
+
+const getRoundCount = unstable_cache(
+  async (): Promise<number | null> => {
+    try {
+      const supabase = createAdminClient();
+      const { count } = await supabase
+        .from("rounds")
+        .select("*", { count: "exact", head: true });
+      return count;
+    } catch {
+      /* fail open — service role key may be missing in local dev */
+      return null;
+    }
+  },
+  ["round-count"],
+  { revalidate: 60 },
+);
 
 interface HomePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -17,14 +35,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   const sample = getSampleResult();
 
-  let roundCount: number | null = null;
-  try {
-    const supabase = createAdminClient();
-    const { count } = await supabase
-      .from("rounds")
-      .select("*", { count: "exact", head: true });
-    roundCount = count;
-  } catch { /* fail open — env vars may be missing in local dev */ }
+  const roundCount = await getRoundCount();
 
   return (
     <main>
