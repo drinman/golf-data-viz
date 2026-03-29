@@ -25,7 +25,7 @@ export function SampleResultPreview({
         <RadarChart data={chartData} bracketLabel={bracketLabel} />
       </div>
 
-      <div className="-mt-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {categories.map((cat) => {
           const sg = presentSG(cat.value);
           return (
