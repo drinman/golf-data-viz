@@ -8,7 +8,8 @@ import {
   RoundLayout,
   deriveRoundData,
 } from "@/app/(tools)/strokes-gained/_components/round-layout";
-import { captureElementAsPng, downloadBlob } from "@/lib/capture";
+import { captureElementAsPng } from "@/lib/capture";
+import { shareImage } from "@/lib/share";
 import { trackEvent } from "@/lib/analytics/client";
 import { createShareToken } from "@/app/(tools)/strokes-gained/actions";
 
@@ -20,6 +21,7 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
   const derived = deriveRoundData(snapshot);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
+  const [saving, setSaving] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [clipboardFailed, setClipboardFailed] = useState(false);
   const [tokenError, setTokenError] = useState(false);
@@ -38,15 +40,21 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
     });
   }, [snapshot.roundId, snapshot.methodologyVersion]);
 
-  async function handleDownloadPng() {
-    if (!shareCardRef.current) return;
-    const blob = await captureElementAsPng(shareCardRef.current);
-    const filename = `${snapshot.courseName.replace(/\s+/g, "-").toLowerCase()}-sg-${snapshot.playedAt}.png`;
-    downloadBlob(blob, filename);
-    trackEvent("saved_round_png_downloaded", {
-      round_id: snapshot.roundId,
-      surface: "round_detail",
-    });
+  async function handleShareImage() {
+    if (!shareCardRef.current || saving) return;
+    setSaving(true);
+    try {
+      const blob = await captureElementAsPng(shareCardRef.current);
+      const filename = `${snapshot.courseName.replace(/\s+/g, "-").toLowerCase()}-sg-${snapshot.playedAt}.png`;
+      const outcome = await shareImage(blob, filename);
+      trackEvent("saved_round_png_shared", {
+        round_id: snapshot.roundId,
+        surface: "round_detail",
+        share_method: outcome,
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleCopyShareLink() {
@@ -133,11 +141,13 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
-              onClick={handleDownloadPng}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
+              data-testid="share-image"
+              onClick={handleShareImage}
+              disabled={saving}
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
             >
               <Download className="h-4 w-4" />
-              Download PNG
+              {saving ? "Preparing..." : "Share"}
             </button>
 
             <button
