@@ -59,7 +59,6 @@ vi.mock("@/app/(tools)/strokes-gained/_components/confidence-badge", () => ({
 
 vi.mock("@/lib/capture", () => ({
   captureElementAsPng: vi.fn(() => Promise.resolve(new Blob())),
-  downloadBlob: vi.fn(),
 }));
 
 vi.mock("@/lib/analytics/client", () => ({

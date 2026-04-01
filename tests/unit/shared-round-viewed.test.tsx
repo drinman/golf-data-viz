@@ -126,7 +126,6 @@ vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
 
 vi.mock("@/lib/capture", () => ({
   captureElementAsPng: vi.fn(() => Promise.resolve(new Blob())),
-  downloadBlob: vi.fn(),
 }));
 
 vi.mock("@/components/charts/radar-chart", () => ({
