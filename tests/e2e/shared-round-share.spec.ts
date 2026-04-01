@@ -148,6 +148,9 @@ test.describe("Shared round share button", () => {
     expect(shareData!.fileName).toContain("e2e-share-test-course");
   });
 
+  // This test does NOT stub navigator.canShare — it relies on headless Chromium
+  // lacking Web Share API support, so shareImage falls back to downloadBlob.
+  // If Playwright's Chromium gains canShare support, this test will need a stub.
   test("share button shows Preparing... while capturing", async ({ page }) => {
     await page.goto(`/strokes-gained/shared/round/${SHARE_TOKEN}`);
     await expect(page.getByText("E2E Share Test Course")).toBeVisible({ timeout: 10000 });

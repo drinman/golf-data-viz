@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Link2, Check } from "lucide-react";
+import { ArrowLeft, Share2, Link2, Check } from "lucide-react";
 import type { RoundDetailSnapshot } from "@/lib/golf/types";
 import {
   RoundLayout,
@@ -146,7 +146,7 @@ export function RoundDetailClient({ snapshot }: RoundDetailClientProps) {
               disabled={saving}
               className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
             >
-              <Download className="h-4 w-4" />
+              <Share2 className="h-4 w-4" />
               {saving ? "Preparing..." : "Share"}
             </button>
 

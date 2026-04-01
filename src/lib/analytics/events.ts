@@ -1,5 +1,6 @@
 import type { StrokesGainedCategory, StrokesGainedResult } from "@/lib/golf/types";
 import type { TroubleCause } from "@/lib/golf/trouble-context";
+import type { ShareOutcome } from "@/lib/share";
 
 export type AnalyticsEvent =
   | "landing_cta_clicked"
@@ -175,8 +176,8 @@ export type AnalyticsEventProps = {
   history_card_clicked: { round_id: string };
   share_token_created: { round_id: string };
   share_link_copied: { round_id: string; surface: "round_detail" };
-  saved_round_png_shared: { round_id: string; surface: "round_detail" | "shared_page"; share_method: string };
-  lesson_report_png_shared: { report_id: string; surface: "owner" | "shared"; share_method: string };
+  saved_round_png_shared: { round_id: string; surface: "round_detail" | "shared_page"; share_method: ShareOutcome };
+  lesson_report_png_shared: { report_id: string; surface: "owner" | "shared"; share_method: ShareOutcome };
   shared_saved_round_viewed: { referrer: string };
   premium_cta_viewed: {
     surface: "history_dashboard" | "lesson_prep_builder";

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Download, Link2, RefreshCcw } from "lucide-react";
+import { ArrowLeft, Check, Share2, Link2, RefreshCcw } from "lucide-react";
 import { captureElementAsPng } from "@/lib/capture";
 import { shareImage } from "@/lib/share";
 import { RadarChart } from "@/components/charts/radar-chart";
@@ -498,7 +498,7 @@ export function LessonReportView({
             disabled={saving}
             className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
           >
-            <Download className="h-4 w-4" />
+            <Share2 className="h-4 w-4" />
             {saving ? "Preparing..." : "Share"}
           </button>
 

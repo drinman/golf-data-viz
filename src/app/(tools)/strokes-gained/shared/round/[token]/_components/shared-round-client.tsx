@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Download } from "lucide-react";
+import { Share2 } from "lucide-react";
 import type { RoundDetailSnapshot, StrokesGainedCategory } from "@/lib/golf/types";
 import {
   RoundLayout,
@@ -94,7 +94,7 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
             disabled={saving}
             className="mt-6 inline-flex items-center gap-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600 disabled:opacity-50"
           >
-            <Download className="h-3.5 w-3.5" />
+            <Share2 className="h-3.5 w-3.5" />
             {saving ? "Preparing..." : "Share"}
           </button>
         </div>
