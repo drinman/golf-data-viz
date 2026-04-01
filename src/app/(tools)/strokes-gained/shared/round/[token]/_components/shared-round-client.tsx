@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Download } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Share2 } from "lucide-react";
 import type { RoundDetailSnapshot, StrokesGainedCategory } from "@/lib/golf/types";
 import {
   RoundLayout,
   deriveRoundData,
 } from "@/app/(tools)/strokes-gained/_components/round-layout";
-import { captureElementAsPng, downloadBlob } from "@/lib/capture";
+import { captureElementAsPng } from "@/lib/capture";
+import { shareImage } from "@/lib/share";
 import { trackEvent } from "@/lib/analytics/client";
 import { RecipientCta } from "@/app/(tools)/strokes-gained/_components/recipient-cta";
 import { InterstitialCta } from "@/app/(tools)/strokes-gained/_components/interstitial-cta";
@@ -21,6 +22,7 @@ interface SharedRoundClientProps {
 export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
   const derived = deriveRoundData(snapshot);
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
 
   const percentiles = getPresentationPercentiles(derived.sgResult, derived.presentationTrust);
   const strongestEntry = (Object.entries(percentiles) as [StrokesGainedCategory, PercentileResult | null][])
@@ -33,15 +35,21 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
     });
   }, []);
 
-  async function handleDownloadPng() {
-    if (!shareCardRef.current) return;
-    const blob = await captureElementAsPng(shareCardRef.current);
-    const filename = `${snapshot.courseName.replace(/\s+/g, "-").toLowerCase()}-sg-${snapshot.playedAt}.png`;
-    downloadBlob(blob, filename);
-    trackEvent("saved_round_png_downloaded", {
-      round_id: snapshot.roundId,
-      surface: "shared_page",
-    });
+  async function handleShareImage() {
+    if (!shareCardRef.current || saving) return;
+    setSaving(true);
+    try {
+      const blob = await captureElementAsPng(shareCardRef.current);
+      const filename = `${snapshot.courseName.replace(/\s+/g, "-").toLowerCase()}-sg-${snapshot.playedAt}.png`;
+      const outcome = await shareImage(blob, filename);
+      trackEvent("saved_round_png_shared", {
+        round_id: snapshot.roundId,
+        surface: "shared_page",
+        share_method: outcome,
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   const ctaUrl = `/strokes-gained?handicap=${snapshot.handicapIndex}&utm_source=share&utm_medium=cta&utm_campaign=round_share`;
@@ -81,11 +89,13 @@ export function SharedRoundClient({ snapshot }: SharedRoundClientProps) {
 
           <button
             type="button"
-            onClick={handleDownloadPng}
-            className="mt-6 inline-flex items-center gap-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600"
+            data-testid="share-image"
+            onClick={handleShareImage}
+            disabled={saving}
+            className="mt-6 inline-flex items-center gap-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600 disabled:opacity-50"
           >
-            <Download className="h-3.5 w-3.5" />
-            Save image
+            <Share2 className="h-3.5 w-3.5" />
+            {saving ? "Preparing..." : "Share"}
           </button>
         </div>
       }

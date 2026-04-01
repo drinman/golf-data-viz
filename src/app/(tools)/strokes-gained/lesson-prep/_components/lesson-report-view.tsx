@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Download, Link2, RefreshCcw } from "lucide-react";
-import { captureElementAsPng, downloadBlob } from "@/lib/capture";
+import { ArrowLeft, Check, Share2, Link2, RefreshCcw } from "lucide-react";
+import { captureElementAsPng } from "@/lib/capture";
+import { shareImage } from "@/lib/share";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ConfidenceBadge } from "@/app/(tools)/strokes-gained/_components/confidence-badge";
 import { SgTrendChart } from "@/app/(tools)/strokes-gained/history/_components/sg-trend-chart";
@@ -93,6 +94,7 @@ export function LessonReportView({
   const router = useRouter();
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -105,10 +107,20 @@ export function LessonReportView({
     }
   }, [report.assertiveRoundCount, surface]);
 
-  async function handleDownloadPng() {
-    if (!shareCardRef.current) return;
-    const blob = await captureElementAsPng(shareCardRef.current);
-    downloadBlob(blob, buildPngFilename(snapshot));
+  async function handleShareImage() {
+    if (!shareCardRef.current || saving) return;
+    setSaving(true);
+    try {
+      const blob = await captureElementAsPng(shareCardRef.current);
+      const outcome = await shareImage(blob, buildPngFilename(snapshot));
+      trackEvent("lesson_report_png_shared", {
+        report_id: snapshot.id,
+        surface,
+        share_method: outcome,
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleCopyShareLink() {
@@ -481,11 +493,13 @@ export function LessonReportView({
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
-            onClick={handleDownloadPng}
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50"
+            data-testid="share-image"
+            onClick={handleShareImage}
+            disabled={saving}
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-cream-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition-colors hover:border-brand-800/30 hover:bg-cream-50 disabled:opacity-50"
           >
-            <Download className="h-4 w-4" />
-            Download PNG
+            <Share2 className="h-4 w-4" />
+            {saving ? "Preparing..." : "Share"}
           </button>
 
           {surface === "owner" && (

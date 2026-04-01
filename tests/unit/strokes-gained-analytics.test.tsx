@@ -138,6 +138,8 @@ vi.mock("@/app/(tools)/strokes-gained/actions", () => ({
 
 vi.mock("@/lib/capture", () => ({
   captureElementAsPng: vi.fn(() => Promise.resolve(new Blob())),
+  // downloadBlob is needed here: shareImage() (from @/lib/share) imports it
+  // from @/lib/capture for the desktop fallback path.
   downloadBlob: vi.fn(),
 }));
 
